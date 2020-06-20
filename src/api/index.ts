@@ -67,14 +67,14 @@ IO.on('connection', (socket) => {
         // Add player from the room
         rooms[gameID].players.push(player)
         console.log('Emitting GAME_CONFIG', rooms[gameID].config)
-        socket.emit(ServerEvent.GAME_CONFIG, rooms[gameID].config)
         console.log(
-          `Emitting PLAYER_JOINED_GAME to ${gameID}`,
+          '[REQUEST_JOIN_GAME] Emitting game config and player joined event to room'
+        )
+        IO.in(gameID).emit(ServerEvent.GAME_CONFIG, rooms[gameID].config)
+        IO.in(gameID).emit(
+          ServerEvent.PLAYER_JOINED_GAME,
           rooms[gameID].players
         )
-        socket
-          .to(gameID)
-          .emit(ServerEvent.PLAYER_JOINED_GAME, rooms[gameID].players)
       })
 
       socket.on(ClientEvent.DISCONNECT, () => {
@@ -85,7 +85,7 @@ IO.on('connection', (socket) => {
           )
           console.log(`Removed ${player.uuid} from the room`)
         }
-        socket.to(gameID).emit(ServerEvent.PLAYER_LEFT, rooms[gameID].players)
+        socket.in(gameID).emit(ServerEvent.PLAYER_LEFT, rooms[gameID].players)
       })
     }
   )
@@ -114,9 +114,11 @@ IO.on('connection', (socket) => {
 
       socket.join(gameID, () => {
         const { players, config } = rooms[gameID]
-        console.log('Joining host to game and emitting things', players, config)
-        socket.emit(ServerEvent.GAME_CONFIG, config)
-        socket.emit(ServerEvent.PLAYER_JOINED_GAME, players)
+        console.log(
+          '[REQUEST_START_GAME] Emitting game config and player joined event to room'
+        )
+        IO.in(gameID).emit(ServerEvent.GAME_CONFIG, config)
+        IO.in(gameID).emit(ServerEvent.PLAYER_JOINED_GAME, players)
       })
     }
   )
@@ -142,7 +144,7 @@ IO.on('connection', (socket) => {
     }
 
     const response = { ...payload, lastAuthor: player.uuid }
-    socket.to(gameID).emit(ServerEvent.GAME_CONFIG, response)
+    socket.in(gameID).emit(ServerEvent.GAME_CONFIG, response)
   })
 })
 

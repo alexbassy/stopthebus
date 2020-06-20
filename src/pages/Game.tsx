@@ -41,42 +41,65 @@ const useSocket = (
     const soc = io({ query: { sessionID } })
     socketRef.current = soc
 
-    soc.on(ClientEvent.DISCONNECT, () => {
-      socketRef.current = undefined
-    })
-  }, [socket])
-
-  useEffect(() => {
-    if (!socketRef.current) return
-    const socket = socketRef.current
-
-    console.log('[useSocket] adding listeners', socket, Object.keys(callbacks))
-
-    socket.on('ping', (arg: any) => console.log('pong', arg))
-
-    // Add all event listeners to the socket
     const boundCallbacks: [string, Function][] = Object.entries(callbacks).map(
       ([name, callback]) => {
-        console.log(name, callback)
         if (!callback) return [name, () => {}]
 
         const cb = (...args: any) => {
           if (logEvents) console.log(`[${name}]`, ...args)
-          return callback(socket, ...args)
+          return callback(soc, ...args)
         }
 
-        socket.on(name, cb)
+        soc.on(name, cb)
 
         return [name, cb]
       }
     )
 
     return () => {
-      boundCallbacks.forEach(([name, callback]: [string, Function]) => {
-        socket.off(name, callback)
-      })
+      if (!socket?.connected) {
+        console.log('[useSocket] removing listeners')
+        boundCallbacks.forEach(([name, callback]: [string, Function]) => {
+          soc.off(name, callback)
+        })
+      }
     }
-  }, [callbacks])
+  }, [socket, callbacks])
+
+  // useEffect(() => {
+  //   if (socketRef.current?.connected) {
+  //     return
+  //   }
+
+  //   const socket = socketRef.current
+
+  //   console.log('[useSocket] adding listeners', socket, Object.keys(callbacks))
+
+  //   socket.on('ping', (arg: any) => console.log('ping', arg))
+
+  //   // Add all event listeners to the socket
+  //   const boundCallbacks: [string, Function][] = Object.entries(callbacks).map(
+  //     ([name, callback]) => {
+  //       if (!callback) return [name, () => {}]
+
+  //       const cb = (...args: any) => {
+  //         if (logEvents) console.log(`[${name}]`, ...args)
+  //         return callback(socket, ...args)
+  //       }
+
+  //       socket.on(name, cb)
+
+  //       return [name, cb]
+  //     }
+  //   )
+
+  //   return () => {
+  //     console.log('[useSocket] removing listeners')
+  //     boundCallbacks.forEach(([name, callback]: [string, Function]) => {
+  //       socket.off(name, callback)
+  //     })
+  //   }
+  // }, [callbacks])
 
   return socket
 }
@@ -131,37 +154,36 @@ export default function Game() {
   //   [gameID]
   // )
 
-  const socket = useSocket({
-    [ClientEvent.CONNECT]: (socket) => {
-      console.log('[CONNECT] with ID', socket.id)
-      setIsConnected(true)
-    },
+  const callbacks: SocketCallbacks = useMemo(
+    () => ({
+      [ClientEvent.CONNECT]: (socket) => {
+        setIsConnected(true)
+      },
 
-    [ClientEvent.DISCONNECT]: (socket) => {
-      console.log('[DISCONNECTED]')
-    },
+      [ClientEvent.DISCONNECT]: (socket) => {},
 
-    [ServerEvent.PLAYER_JOINED_GAME]: (socket, players: Player[]) => {
-      console.log('[PLAYER_JOINED_GAME]', players)
-      debugger
-      setPlayers(players)
-    },
+      [ServerEvent.PLAYER_JOINED_GAME]: (socket, players: Player[]) => {
+        debugger
+        setPlayers(players)
+      },
 
-    [ServerEvent.PLAYER_LEFT]: (socket, players: Player[]) => {
-      console.log('[PLAYER_LEFT]', players)
-      setPlayers(players)
-    },
+      [ServerEvent.PLAYER_LEFT]: (socket, players: Player[]) => {
+        setPlayers(players)
+      },
 
-    [ServerEvent.GAME_CONFIG]: (socket, gameConfig: GameConfig) => {
-      console.log('[GAME_CONFIG]', gameConfig)
-      if (gameConfig.lastAuthor !== sessionID) {
-        console.log('[GAME_CONFIG] Updating game config')
-        setGameConfig(gameConfig)
-      } else {
-        console.log('[GAME_CONFIG] Not setting because client is last author')
-      }
-    },
-  })
+      [ServerEvent.GAME_CONFIG]: (socket, gameConfig: GameConfig) => {
+        if (gameConfig.lastAuthor !== sessionID) {
+          console.log('[GAME_CONFIG] Updating game config')
+          setGameConfig(gameConfig)
+        } else {
+          console.log('[GAME_CONFIG] Not setting because client is last author')
+        }
+      },
+    }),
+    []
+  )
+
+  const socket = useSocket(callbacks)
 
   useEffect(() => {
     // debugger
