@@ -1,26 +1,34 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react'
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+import Firebase from './contexts/FirebaseContext'
+import Home from './pages/Home'
+import Game from './pages/Game'
+import initFirebase from './helpers/initFirebase'
+import * as firebase from 'firebase'
 
 function App() {
+  const [firebaseClient, setFirebaseClient] = useState<
+    firebase.app.App | undefined
+  >()
+
+  React.useEffect(() => {
+    setFirebaseClient(initFirebase())
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <Firebase.Provider value={firebaseClient}>
+      <Router>
+        <Switch>
+          <Route exact path='/'>
+            <Home />
+          </Route>
+          <Route path='/game/:gameID'>
+            <Game />
+          </Route>
+        </Switch>
+      </Router>
+    </Firebase.Provider>
+  )
 }
 
-export default App;
+export default App
