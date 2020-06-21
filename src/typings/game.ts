@@ -1,7 +1,15 @@
+export enum GameMode {
+  RACE = 'race',
+  TIMER = 'timer',
+}
+
 export interface GameConfig {
   id: string
   categories: string[]
-  letters?: string[]
+  rounds: number
+  mode: GameMode
+  time?: number
+  letters: string[]
   created: number
   lastAuthor?: string
 }

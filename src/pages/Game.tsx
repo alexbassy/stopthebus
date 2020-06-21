@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useCallback,
   SyntheticEvent,
+  ChangeEvent,
 } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
@@ -15,7 +16,7 @@ import { getUserSessionID } from '../helpers/getUserSession'
 import log from '../helpers/log'
 import { ENGLISH_LETTERS } from '../constants/letters'
 import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
-import { Player, GameConfig } from '../typings/game'
+import { Player, GameConfig, GameMode } from '../typings/game'
 
 const sessionID = getUserSessionID()
 
@@ -113,6 +114,30 @@ export default function Game() {
     })
   }
 
+  const handleModeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value
+    setGameConfig((gameConfig) => {
+      const newGameConfig = {
+        ...gameConfig,
+        mode: value as GameMode,
+      }
+      emit(ClientEvent.GAME_CONFIG, newGameConfig)
+      return newGameConfig as GameConfig
+    })
+  }
+
+  const handleTimeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = Number(event.target.value)
+    setGameConfig((gameConfig) => {
+      const newGameConfig = {
+        ...gameConfig,
+        time: value,
+      }
+      emit(ClientEvent.GAME_CONFIG, newGameConfig)
+      return newGameConfig as GameConfig
+    })
+  }
+
   const handleReconnectButtonClick = (
     event: SyntheticEvent<HTMLButtonElement>
   ) => {}
@@ -154,15 +179,36 @@ export default function Game() {
     <>
       <h1>Game {gameID}</h1>
       <p>Welcome, {sessionID}!</p>
+      <h2>Game settings</h2>
       <section>
-        <h2>Categories</h2>
+        <h3>Categories</h3>
         <ul>
           {gameConfig?.categories &&
             gameConfig?.categories.map((cat) => <li key={cat}>{cat}</li>)}
         </ul>
       </section>
       <section>
-        <h2>Letters</h2>
+        <h3>Mode</h3>
+        <label>
+          Play mode{' '}
+          <select value={gameConfig?.mode} onChange={handleModeChange}>
+            <option value={GameMode.RACE}>Race</option>
+            <option value={GameMode.TIMER}>Timer</option>
+          </select>
+        </label>
+        {gameConfig?.mode === GameMode.TIMER && (
+          <label>
+            Time (seconds)
+            <input
+              type='number'
+              value={gameConfig.time || 60}
+              onChange={handleTimeChange}
+            />
+          </label>
+        )}
+      </section>
+      <section>
+        <h3>Letters</h3>
         <ul>
           {gameConfig &&
             ENGLISH_LETTERS.map((letter) => {
@@ -183,7 +229,7 @@ export default function Game() {
         </ul>
       </section>
       <section>
-        <h2>Players</h2>
+        <h3>Players</h3>
         <ul>
           {players &&
             players.map((player) => <li key={player.uuid}>{player.uuid}</li>)}

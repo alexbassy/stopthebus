@@ -1,4 +1,4 @@
-import { GameConfig } from '../typings/game'
+import { GameConfig, GameMode } from '../typings/game'
 import getLetters from './getLetters'
 
 const KEY = 'newGame'
@@ -10,6 +10,8 @@ export const persistGameConfig = (
   const gameConfig = JSON.stringify({
     id: gameID,
     categories: Array.from(categories),
+    rounds: 3,
+    mode: GameMode.RACE,
     letters: getLetters(),
     created: Date.now(),
   })
@@ -32,6 +34,9 @@ export const readGameConfig = (): GameConfig | undefined => {
     id: parsed.id,
     categories: parsed.categories,
     letters: parsed.letters,
+    rounds: parsed.rounds,
+    mode: parsed.mode as GameMode,
+    time: parsed.time,
     created: parsed.created,
     lastAuthor: parsed.lastAuthor,
   }
