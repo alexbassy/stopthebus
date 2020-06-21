@@ -11,16 +11,24 @@ const server = http.createServer(app)
 const port = 4000
 
 const IO = socketIO(server)
+const rooms: Rooms = {}
+const players: { [uuid: string]: Player } = {}
+
+app.set('json spaces', 2)
 
 app.use(express.static(path.resolve('build')))
+
+app.get('/_debug/rooms', (req, res) => {
+  res.json(rooms)
+})
+
+app.get('/_debug/players', (req, res) => {
+  res.json(players)
+})
 
 app.get('*', (req, res) => {
   res.sendFile(path.resolve('build/index.html'))
 })
-
-const rooms: Rooms = {}
-
-const players: { [uuid: string]: Player } = {}
 
 const getUUID = (socket: SocketIO.Socket) => {
   return socket.handshake.query.sessionID
