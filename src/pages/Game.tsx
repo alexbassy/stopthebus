@@ -7,6 +7,7 @@ import React, {
   ChangeEvent,
 } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import ActiveGame from '../components/ActiveGame'
 import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
@@ -24,6 +25,8 @@ import {
   GameStage,
   Room,
 } from '../typings/game'
+import GameContext from '../contexts/GameContext'
+import EmitterContext from '../contexts/EmitterContext'
 
 const sessionID = getUserSessionID()
 
@@ -206,6 +209,21 @@ export default function Game() {
           Please refresh the page or <Link to='/'>create a new game</Link>
         </p>
       </>
+    )
+  }
+
+  if (gameConfig && gameState?.stage === GameStage.ACTIVE) {
+    const game = {
+      config: gameConfig,
+      state: gameState,
+      players: players || [],
+    }
+    return (
+      <EmitterContext.Provider value={emit}>
+        <GameContext.Provider value={game}>
+          <ActiveGame />
+        </GameContext.Provider>
+      </EmitterContext.Provider>
     )
   }
 

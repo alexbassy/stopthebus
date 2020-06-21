@@ -11,6 +11,7 @@ import {
   GameStage,
   GameRound,
   Round,
+  RoundResults,
 } from '../typings/game'
 
 const app = express()
@@ -177,7 +178,6 @@ IO.on('connection', (socket) => {
     const isGameActiveOrEnded =
       room.state.stage === GameStage.ACTIVE ||
       room.state.stage === GameStage.END
-    const isGameInReviewStage = GameStage.REVIEW
 
     if (isGameActiveOrEnded) {
       console.log('Cannot start a round that is in progress or has ended')
@@ -198,7 +198,7 @@ IO.on('connection', (socket) => {
       timeStarted: Date.now(),
       answers: answersTemplate,
     }
-    room.state.rounds.push(newRound)
+    room.state.currentRound = newRound
 
     // maybe this is not necessary but idk
     rooms[gameID].state = room.state
@@ -222,13 +222,36 @@ IO.on('connection', (socket) => {
 
     const roundResults = room.state.currentRound
     if (roundResults) room.state.rounds.push(roundResults)
+    delete room.state.currentRound
     const numRoundsPlayed = room.state.rounds.length
-    const hasPlayedAllRounds = room.config.rounds - 1 === numRoundsPlayed
+    const hasPlayedAllRounds = room.config.rounds + 1 === numRoundsPlayed
 
     room.state.stage = hasPlayedAllRounds ? GameStage.END : GameStage.REVIEW
 
     IO.in(gameID).emit(ServerEvent.ROUND_ENDED, room.state)
   })
+
+  socket.on(
+    ClientEvent.FILLED_ANSWER,
+    ({ gameID, payload }: Payload<RoundResults>) => {
+      const player = getPlayerByUUID(socket)
+      if (!gameID || !player || !rooms[gameID]) {
+        return
+      }
+
+      console.log('[FILLED_ANSWER]', payload)
+      // fucking typescript
+      const game = rooms[gameID]
+      if (game.state.currentRound && payload) {
+        console.log('has payload', payload)
+        game.state.currentRound.answers[player.uuid] = payload
+        rooms[gameID] = game
+      } else {
+        debugger
+        console.log('something was false', payload)
+      }
+    }
+  )
 })
 
 server.listen(port, () => console.log(`Listening on port ${port}`))

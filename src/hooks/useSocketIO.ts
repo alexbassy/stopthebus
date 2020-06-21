@@ -17,10 +17,14 @@ interface SocketHooksArgs {
   getPayload: (payload?: any) => Payload
 }
 
+export type SocketEmitter = {
+  (name: ClientEvent, payload?: any): SocketIOClient.Socket | undefined
+}
+
 interface SocketHook {
   socket: SocketIOClient.Socket | undefined
   isInitialised: boolean
-  emit: (name: ClientEvent, payload?: any) => SocketIOClient.Socket | undefined
+  emit: SocketEmitter
 }
 
 const logEvents = true
