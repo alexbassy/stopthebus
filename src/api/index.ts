@@ -3,7 +3,15 @@ import express from 'express'
 import http from 'http'
 import socketIO from 'socket.io'
 import { Payload, ClientEvent, ServerEvent } from '../typings/socket-events'
-import { Rooms, Player, GameConfig } from '../typings/game'
+import {
+  Room,
+  Rooms,
+  Player,
+  GameConfig,
+  GameStage,
+  GameRound,
+  Round,
+} from '../typings/game'
 
 const app = express()
 const server = http.createServer(app)
@@ -82,11 +90,10 @@ IO.on('connection', (socket) => {
           '[REQUEST_JOIN_GAME] Emitting GAME_CONFIG',
           rooms[gameID].config
         )
-        IO.in(gameID).emit(ServerEvent.GAME_CONFIG, rooms[gameID].config)
-        IO.in(gameID).emit(
-          ServerEvent.PLAYER_JOINED_GAME,
-          rooms[gameID].players
-        )
+        socket.emit(ServerEvent.JOINED_GAME, rooms[gameID])
+        socket
+          .in(gameID)
+          .emit(ServerEvent.PLAYER_JOINED_GAME, rooms[gameID].players)
       })
 
       socket.on(ClientEvent.DISCONNECT, () => {
@@ -103,10 +110,10 @@ IO.on('connection', (socket) => {
   )
 
   socket.on(
-    ClientEvent.REQUEST_START_GAME,
+    ClientEvent.REQUEST_CREATE_GAME,
     ({ gameID, payload }: Payload<GameConfig>) => {
       const player = getPlayerByUUID(socket)
-      console.log('[REQUEST_START_GAME]', { gameID, player, payload })
+      console.log('[REQUEST_CREATE_GAME]', { gameID, player, payload })
 
       if (!gameID || !payload || !player) {
         return
@@ -119,15 +126,21 @@ IO.on('connection', (socket) => {
         console.log('host rejoined')
       }
 
-      rooms[gameID] = {
+      const newRoom: Room = {
         config: { ...payload, lastAuthor: player.uuid },
         players: [player],
+        state: {
+          stage: GameStage.PRE,
+          rounds: [],
+        },
       }
+
+      rooms[gameID] = newRoom
 
       socket.join(gameID, () => {
         const { players, config } = rooms[gameID]
         console.log(
-          '[REQUEST_START_GAME] Emitting game config and player joined event to room',
+          '[REQUEST_CREATE_GAME] Emitting game config and player joined event to room',
           config
         )
         IO.in(gameID).emit(ServerEvent.GAME_CONFIG, config)
@@ -151,6 +164,70 @@ IO.on('connection', (socket) => {
 
     rooms[gameID].config = { ...payload, lastAuthor: player.uuid }
     socket.in(gameID).emit(ServerEvent.GAME_CONFIG, rooms[gameID].config)
+  })
+
+  socket.on(ClientEvent.START_ROUND, ({ gameID }: Payload) => {
+    const player = getPlayerByUUID(socket)
+    if (!gameID || !player || !rooms[gameID]) {
+      return
+    }
+
+    const room = rooms[gameID]
+
+    const isGameActiveOrEnded =
+      room.state.stage === GameStage.ACTIVE ||
+      room.state.stage === GameStage.END
+    const isGameInReviewStage = GameStage.REVIEW
+
+    if (isGameActiveOrEnded) {
+      console.log('Cannot start a round that is in progress or has ended')
+      return
+    }
+
+    const answersTemplate: Round = room.players.reduce(
+      (round: Round, player) => {
+        round[player.uuid] = {}
+        return round
+      },
+      {}
+    )
+
+    // If on the start screen or review screen, we can go ahead
+    room.state.stage = GameStage.ACTIVE
+    const newRound: GameRound = {
+      timeStarted: Date.now(),
+      answers: answersTemplate,
+    }
+    room.state.rounds.push(newRound)
+
+    // maybe this is not necessary but idk
+    rooms[gameID].state = room.state
+
+    IO.in(gameID).emit(ServerEvent.ROUND_STARTED, room.state)
+  })
+
+  socket.on(ClientEvent.END_ROUND, ({ gameID }: Payload) => {
+    const player = getPlayerByUUID(socket)
+    if (!gameID || !player || !rooms[gameID]) {
+      return
+    }
+
+    const room = rooms[gameID]
+    const isGameActive = room.state.stage === GameStage.ACTIVE
+
+    if (!isGameActive) {
+      console.log('Cannot end a round for a game not in progress')
+      return
+    }
+
+    const roundResults = room.state.currentRound
+    if (roundResults) room.state.rounds.push(roundResults)
+    const numRoundsPlayed = room.state.rounds.length
+    const hasPlayedAllRounds = room.config.rounds - 1 === numRoundsPlayed
+
+    room.state.stage = hasPlayedAllRounds ? GameStage.END : GameStage.REVIEW
+
+    IO.in(gameID).emit(ServerEvent.ROUND_ENDED, room.state)
   })
 })
 

@@ -16,7 +16,14 @@ import { getUserSessionID } from '../helpers/getUserSession'
 import log from '../helpers/log'
 import { ENGLISH_LETTERS } from '../constants/letters'
 import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
-import { Player, GameConfig, GameMode } from '../typings/game'
+import {
+  Player,
+  GameConfig,
+  GameMode,
+  GameState,
+  GameStage,
+  Room,
+} from '../typings/game'
 
 const sessionID = getUserSessionID()
 
@@ -24,11 +31,20 @@ interface GameParams {
   gameID: string
 }
 
+const defaultGameState: GameState = {
+  stage: GameStage.PRE,
+  rounds: [],
+}
+
 export default function Game() {
   const { gameID }: GameParams = useParams()
   const [isConnected, setIsConnected] = useState<boolean>(false)
+
+  // Each of these states represents a top level property on the room
+  const [gameState, setGameState] = useState<GameState>(defaultGameState)
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null)
   const [players, setPlayers] = useState<Player[]>()
+
   const hasGameConfig = gameConfig !== null
 
   const getPayload = useCallback(
@@ -49,6 +65,12 @@ export default function Game() {
 
       [ClientEvent.DISCONNECT]: () => {
         setGameConfig(null)
+      },
+
+      [ServerEvent.JOINED_GAME]: (socket, room: Room) => {
+        setPlayers(room.players)
+        setGameConfig(room.config)
+        setGameState(room.state)
       },
 
       [ServerEvent.PLAYER_JOINED_GAME]: (socket, players: Player[]) => {
@@ -73,6 +95,14 @@ export default function Game() {
           log.r('GAME_CONFIG', 'Not setting because client is last author')
         }
       },
+
+      [ServerEvent.ROUND_STARTED]: (socket, newGameState: GameState) => {
+        setGameState(newGameState)
+      },
+
+      [ServerEvent.ROUND_ENDED]: (socket, newGameState: GameState) => {
+        setGameState(newGameState)
+      },
     }),
     [hasGameConfig]
   )
@@ -86,7 +116,7 @@ export default function Game() {
 
     if (persistedGameConfig && !gameConfig) {
       setGameConfig(persistedGameConfig)
-      emit(ClientEvent.REQUEST_START_GAME, persistedGameConfig)
+      emit(ClientEvent.REQUEST_CREATE_GAME, persistedGameConfig)
     } else if (!gameConfig) {
       emit(ClientEvent.REQUEST_JOIN_GAME)
     }
@@ -142,6 +172,10 @@ export default function Game() {
     event: SyntheticEvent<HTMLButtonElement>
   ) => {}
 
+  const handleStartGameClick = (event: SyntheticEvent<HTMLButtonElement>) => {
+    emit(ClientEvent.START_ROUND)
+  }
+
   if (!isConnected) {
     return (
       <>
@@ -179,6 +213,10 @@ export default function Game() {
     <>
       <h1>Game {gameID}</h1>
       <p>Welcome, {sessionID}!</p>
+      <p>
+        Game state: {gameState?.stage}{' '}
+        <button onClick={() => console.log(gameState)}>log to console</button>
+      </p>
       <h2>Game settings</h2>
       <section>
         <h3>Categories</h3>
@@ -242,6 +280,7 @@ export default function Game() {
             players.map((player) => <li key={player.uuid}>{player.uuid}</li>)}
         </ul>
       </section>
+      <button onClick={handleStartGameClick}>Start game</button>
     </>
   )
 }
