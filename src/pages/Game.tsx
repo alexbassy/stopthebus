@@ -3,100 +3,24 @@ import React, {
   useState,
   useMemo,
   useCallback,
-  useRef,
   SyntheticEvent,
 } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import io from 'socket.io-client'
+import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
-  persistGameConfig,
   clearPersistedGameConfig,
 } from '../helpers/persistGame'
 import { getUserSessionID } from '../helpers/getUserSession'
+import log from '../helpers/log'
 import { ENGLISH_LETTERS } from '../constants/letters'
 import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
-import { Player, Room, GameConfig } from '../typings/game'
-
-const logEvents = true
+import { Player, GameConfig } from '../typings/game'
 
 const sessionID = getUserSessionID()
 
-const log = {
-  r: (name: string, ...rest: any) => console.log(`⬇️ [${name}]`, ...rest),
-  s: (name: string, ...rest: any) => console.log(`⬆️ [${name}]`, ...rest),
-}
-
 interface GameParams {
   gameID: string
-}
-
-interface GameState {
-  gameConfig: GameConfig | undefined
-  players: Player[]
-}
-
-type SocketCallback = {
-  (socket: SocketIOClient.Socket, ...args: any): void
-}
-
-type SocketCallbacks = {
-  [key in ClientEvent | ServerEvent]?: SocketCallback
-}
-
-interface SocketHooksArgs {
-  callbacks: SocketCallbacks
-  getPayload: (payload?: any) => Payload
-}
-
-interface SocketHook {
-  socket: SocketIOClient.Socket | undefined
-  isInitialised: boolean
-  emit: (name: ClientEvent, payload?: any) => SocketIOClient.Socket | undefined
-}
-
-const useSocket = ({ callbacks, getPayload }: SocketHooksArgs): SocketHook => {
-  const socketRef = useRef<SocketIOClient.Socket>()
-  const socket = socketRef.current
-
-  useEffect(() => {
-    if (socket?.connected) {
-      return
-    }
-
-    const soc = io({ query: { sessionID } })
-    socketRef.current = soc
-
-    const boundCallbacks: [string, Function][] = Object.entries(callbacks).map(
-      ([name, callback]) => {
-        if (!callback) return [name, () => {}]
-
-        const cb = (...args: any) => {
-          if (logEvents) log.r(name, ...args)
-          return callback(soc, ...args)
-        }
-
-        soc.on(name, cb)
-
-        return [name, cb]
-      }
-    )
-
-    return () => {
-      if (!socket?.connected) {
-        console.log('[useSocket] removing listeners')
-        boundCallbacks.forEach(([name, callback]: [string, Function]) => {
-          soc.off(name, callback)
-        })
-      }
-    }
-  }, [socket, callbacks])
-
-  return {
-    socket,
-    isInitialised: Boolean(socket),
-    emit: (name, payload) => socket?.emit(name, getPayload(payload)),
-  }
 }
 
 export default function Game() {
@@ -104,6 +28,7 @@ export default function Game() {
   const [isConnected, setIsConnected] = useState<boolean>(false)
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null)
   const [players, setPlayers] = useState<Player[]>()
+  const hasGameConfig = gameConfig !== null
 
   const getPayload = useCallback(
     (payload?: any): Payload => {
@@ -139,7 +64,7 @@ export default function Game() {
           return
         }
 
-        if (!gameConfig || newGameConfig.lastAuthor !== sessionID) {
+        if (!hasGameConfig || newGameConfig.lastAuthor !== sessionID) {
           log.r('GAME_CONFIG', 'Updating game config', newGameConfig)
           setGameConfig(newGameConfig)
           clearPersistedGameConfig()
@@ -148,10 +73,10 @@ export default function Game() {
         }
       },
     }),
-    []
+    [hasGameConfig]
   )
 
-  const { socket, isInitialised, emit } = useSocket({ callbacks, getPayload })
+  const { socket, isInitialised, emit } = useSocketIO({ callbacks, getPayload })
 
   const createOrJoinGame = useCallback(() => {
     if (!isInitialised) return
@@ -164,11 +89,11 @@ export default function Game() {
     } else if (!gameConfig) {
       emit(ClientEvent.REQUEST_JOIN_GAME)
     }
-  }, [emit, isInitialised, isConnected, gameConfig, getPayload])
+  }, [emit, isInitialised, gameConfig])
 
   useEffect(() => {
     if (socket && isConnected) createOrJoinGame()
-  }, [socket, isConnected, gameConfig, gameID, getPayload])
+  }, [socket, isConnected, createOrJoinGame])
 
   const handleLetterChange = (letter: string) => () => {
     setGameConfig((gameConfig) => {
