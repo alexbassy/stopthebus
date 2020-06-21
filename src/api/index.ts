@@ -4,7 +4,6 @@ import http from 'http'
 import socketIO from 'socket.io'
 import { Payload, ClientEvent, ServerEvent } from '../typings/socket-events'
 import { Rooms, Player, GameConfig } from '../typings/game'
-import { User } from '../helpers/getUserSession'
 
 const app = express()
 const server = http.createServer(app)
@@ -39,17 +38,21 @@ const getPlayerByUUID = (socket: SocketIO.Socket): Player | undefined => {
   return players[uuid]
 }
 
-IO.use((socket, next) => {
+IO.on('connection', (socket) => {
   const uuid = getUUID(socket)
 
+  // Add player to global players list
   if (!players[uuid]) {
     players[uuid] = { uuid, id: socket.id }
   }
 
-  next()
-})
+  // Remove player from global players list upon disconnection
+  socket.on(ClientEvent.DISCONNECT, () => {
+    if (players[uuid]) {
+      delete players[uuid]
+    }
+  })
 
-IO.on('connection', (socket) => {
   socket.on(
     ClientEvent.REQUEST_JOIN_GAME,
     ({ gameID, payload }: Payload<GameConfig>) => {
@@ -69,11 +72,11 @@ IO.on('connection', (socket) => {
 
       socket.join(gameID, () => {
         // Add player from the room
-        try {
+        const isPlayerAlreadyInRoom = rooms[gameID].players.find(
+          (player) => player.uuid === uuid
+        )
+        if (!isPlayerAlreadyInRoom) {
           rooms[gameID].players.push(player)
-        } catch (e) {
-          console.log(e)
-          console.log('room', rooms[gameID])
         }
         console.log(
           '[REQUEST_JOIN_GAME] Emitting GAME_CONFIG',
