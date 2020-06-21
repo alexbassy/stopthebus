@@ -1,7 +1,7 @@
 export interface GameConfig {
   id: string
   categories: string[]
-  letters?: string
+  letters?: string[]
   created: number
   lastAuthor?: string
 }

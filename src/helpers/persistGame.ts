@@ -1,4 +1,5 @@
 import { GameConfig } from '../typings/game'
+import getLetters from './getLetters'
 
 const KEY = 'newGame'
 
@@ -9,14 +10,14 @@ export const persistGameConfig = (
   const gameConfig = JSON.stringify({
     id: gameID,
     categories: Array.from(categories),
+    letters: getLetters(),
     created: Date.now(),
-    version: 1,
   })
 
   window.sessionStorage.setItem(KEY, gameConfig)
 }
 
-export const clearGameConfig = (): void => {
+export const clearPersistedGameConfig = (): void => {
   window.sessionStorage.removeItem(KEY)
 }
 

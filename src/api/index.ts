@@ -42,10 +42,6 @@ IO.use((socket, next) => {
 })
 
 IO.on('connection', (socket) => {
-  const player = getPlayerByUUID(socket)
-
-  console.log({ player })
-
   socket.on(
     ClientEvent.REQUEST_JOIN_GAME,
     ({ gameID, payload }: Payload<GameConfig>) => {
@@ -65,10 +61,15 @@ IO.on('connection', (socket) => {
 
       socket.join(gameID, () => {
         // Add player from the room
-        rooms[gameID].players.push(player)
-        console.log('Emitting GAME_CONFIG', rooms[gameID].config)
+        try {
+          rooms[gameID].players.push(player)
+        } catch (e) {
+          console.log(e)
+          console.log('room', rooms[gameID])
+        }
         console.log(
-          '[REQUEST_JOIN_GAME] Emitting game config and player joined event to room'
+          '[REQUEST_JOIN_GAME] Emitting GAME_CONFIG',
+          rooms[gameID].config
         )
         IO.in(gameID).emit(ServerEvent.GAME_CONFIG, rooms[gameID].config)
         IO.in(gameID).emit(
@@ -115,26 +116,14 @@ IO.on('connection', (socket) => {
       socket.join(gameID, () => {
         const { players, config } = rooms[gameID]
         console.log(
-          '[REQUEST_START_GAME] Emitting game config and player joined event to room'
+          '[REQUEST_START_GAME] Emitting game config and player joined event to room',
+          config
         )
         IO.in(gameID).emit(ServerEvent.GAME_CONFIG, config)
         IO.in(gameID).emit(ServerEvent.PLAYER_JOINED_GAME, players)
       })
     }
   )
-
-  socket.on(ClientEvent.SELF_IDENTIFY, ({ gameID }: Payload) => {
-    const player = getPlayerByUUID(socket)
-    console.log('[SELF_IDENTIFY]', { gameID, player })
-
-    socket.emit('ping', 'self-identify')
-
-    if (!gameID || !player) {
-      return
-    }
-
-    socket.to(gameID).emit(ServerEvent.PLAYER_IDENTITY, { id: player.id })
-  })
 
   socket.on(ClientEvent.GAME_CONFIG, ({ gameID, payload }: Payload) => {
     const player = getPlayerByUUID(socket)
@@ -143,8 +132,14 @@ IO.on('connection', (socket) => {
       return
     }
 
-    const response = { ...payload, lastAuthor: player.uuid }
-    socket.in(gameID).emit(ServerEvent.GAME_CONFIG, response)
+    if (!rooms[gameID]) {
+      console.log('There is no game with ID', gameID)
+      socket.emit(ServerEvent.GAME_CONFIG, null)
+      return
+    }
+
+    rooms[gameID].config = { ...payload, lastAuthor: player.uuid }
+    socket.in(gameID).emit(ServerEvent.GAME_CONFIG, rooms[gameID].config)
   })
 })
 

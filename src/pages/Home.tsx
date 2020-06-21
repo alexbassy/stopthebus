@@ -6,7 +6,7 @@ import { useHistory } from 'react-router-dom'
 
 export default function Home() {
   const history = useHistory()
-  const [gameID, setGameID] = useState<string | undefined>()
+  const [gameID, setGameID] = useState<string>('')
   const [error, setError] = useState<string | undefined>()
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
 
@@ -24,7 +24,7 @@ export default function Home() {
       setError(undefined)
     }
 
-    persistGameConfig(gameID as string, selectedCategories)
+    persistGameConfig(gameID, selectedCategories)
     history.push(`/game/${gameID}`)
   }
 
