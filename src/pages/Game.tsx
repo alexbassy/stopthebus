@@ -131,7 +131,7 @@ export default function Game() {
     setGameConfig((gameConfig) => {
       const newGameConfig = {
         ...gameConfig,
-        time: value,
+        time: value * 1000,
       }
       emit(ClientEvent.GAME_CONFIG, newGameConfig)
       return newGameConfig as GameConfig
@@ -189,23 +189,30 @@ export default function Game() {
       </section>
       <section>
         <h3>Mode</h3>
-        <label>
-          Play mode{' '}
-          <select value={gameConfig?.mode} onChange={handleModeChange}>
-            <option value={GameMode.RACE}>Race</option>
-            <option value={GameMode.TIMER}>Timer</option>
-          </select>
-        </label>
-        {gameConfig?.mode === GameMode.TIMER && (
+        <p>You can race against each other, or with a time limit</p>
+        <div>
           <label>
-            Time (seconds)
-            <input
-              type='number'
-              value={gameConfig.time || 60}
-              onChange={handleTimeChange}
-            />
+            Play mode{' '}
+            <select value={gameConfig?.mode} onChange={handleModeChange}>
+              <option value={GameMode.RACE}>Race</option>
+              <option value={GameMode.TIMER}>Timer</option>
+            </select>
           </label>
-        )}
+        </div>
+        <div>
+          {gameConfig?.mode === GameMode.TIMER && (
+            <label>
+              Time (seconds){' '}
+              <input
+                type='number'
+                value={Math.round(
+                  gameConfig.time ? gameConfig.time / 1000 : 60
+                )}
+                onChange={handleTimeChange}
+              />
+            </label>
+          )}
+        </div>
       </section>
       <section>
         <h3>Letters</h3>
