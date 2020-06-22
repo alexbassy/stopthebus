@@ -3,7 +3,12 @@ import express from 'express'
 import http from 'http'
 import socketIO from 'socket.io'
 import { getRandomValue } from '../helpers/util'
-import { Payload, ClientEvent, ServerEvent } from '../typings/socket-events'
+import {
+  Payload,
+  PlayerVote,
+  ClientEvent,
+  ServerEvent,
+} from '../typings/socket-events'
 import {
   Room,
   Rooms,
@@ -13,7 +18,15 @@ import {
   GameRound,
   Round,
   RoundResults,
+  Scores,
+  PlayerScores,
 } from '../typings/game'
+import log from '../helpers/log'
+import {
+  scoreAnswer,
+  getInitialScores,
+  getFinalScores,
+} from '../helpers/scores'
 
 const app = express()
 const server = http.createServer(app)
@@ -209,15 +222,33 @@ IO.on('connection', (socket) => {
       const previouslyPlayedLetters = room.state.rounds.length
         ? room.state.rounds.map((round) => round.letter || '')
         : []
+
       const availableLetters = room.config.letters.filter(
         (letter) => !previouslyPlayedLetters.includes(letter)
       )
+
+      const playerVotes = room.config.categories.reduce<PlayerScores>(
+        (categories, category) => {
+          categories[category] = 0
+          return categories
+        },
+        {}
+      )
+
+      const newScores = room.players.reduce<Scores>((players, player) => {
+        if (players[player.uuid]) players[player.uuid] = playerVotes
+        return players
+      }, {})
+
       const newRound: GameRound = {
         timeStarted: Date.now(),
         letter: getRandomValue(availableLetters),
         answers: answersTemplate,
+        scores: newScores,
       }
       room.state.currentRound = newRound
+    } else {
+      room.state.finalScores = getFinalScores(room.state.rounds)
     }
 
     // maybe this is not necessary but idk
@@ -242,9 +273,14 @@ IO.on('connection', (socket) => {
 
     room.state.stage = GameStage.REVIEW
 
-    if (room.state?.currentRound) {
-      room.state.currentRound.endedByPlayer = player.uuid
+    if (!room.state?.currentRound) {
+      return log.e('Cannot end round that it not in progress')
     }
+
+    room.state.currentRound.endedByPlayer = player.uuid
+
+    const votes = getInitialScores(room)
+    if (votes) room.state.currentRound.scores = votes
 
     IO.in(gameID).emit(ServerEvent.ROUND_ENDED, room.state)
   })
@@ -257,17 +293,40 @@ IO.on('connection', (socket) => {
         return
       }
 
-      console.log('[FILLED_ANSWER]', payload)
       // fucking typescript
       const game = rooms[gameID]
       if (game.state.currentRound && payload) {
-        console.log('has payload', payload)
         game.state.currentRound.answers[player.uuid] = payload
         rooms[gameID] = game
-      } else {
-        debugger
-        console.log('something was false', payload)
       }
+    }
+  )
+
+  socket.on(
+    ClientEvent.VOTE_ANSWER,
+    ({ gameID, payload }: Payload<PlayerVote>) => {
+      const player = getPlayerByUUID(socket)
+      if (!gameID || !player || !rooms[gameID] || !payload) {
+        return
+      }
+
+      const game = rooms[gameID]
+
+      if (!game.state.currentRound) {
+        console.log('Cannot vote while round in progress')
+        return
+      }
+      const { playerID, category, value } = payload
+      const answer = game.state.currentRound.answers[playerID][category]
+      const letter = game.state.currentRound.letter as string
+
+      game.state.currentRound.scores[playerID][category] =
+        value === false ? 0 : scoreAnswer(game.config, letter, answer, false)
+
+      IO.in(gameID).emit(
+        ServerEvent.UPDATE_VOTES,
+        game.state.currentRound.scores
+      )
     }
   )
 })

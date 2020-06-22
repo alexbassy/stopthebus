@@ -7,8 +7,8 @@ import React, {
   ChangeEvent,
 } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import ActiveGame from '../components/ActiveGame'
-import ReviewGame from '../components/ReviewGame'
+import ActiveRound from '../components/ActiveRound'
+import ReviewRound from '../components/ReviewRound'
 import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
@@ -26,6 +26,7 @@ import {
   GameState,
   GameStage,
   Room,
+  Scores,
 } from '../typings/game'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
@@ -108,6 +109,19 @@ export default function Game() {
       [ServerEvent.ROUND_ENDED]: (socket, newGameState: GameState) => {
         setGameState(newGameState)
       },
+
+      [ServerEvent.UPDATE_VOTES]: (socket, newVotes: Scores) => {
+        setGameState((currentGameState) => {
+          const newGameState: GameState = { ...currentGameState }
+
+          if (!newGameState.currentRound) {
+            return currentGameState
+          }
+
+          newGameState.currentRound.scores = newVotes
+          return newGameState
+        })
+      },
     }),
     [hasGameConfig]
   )
@@ -187,6 +201,19 @@ export default function Game() {
     })
   }
 
+  const handleAlliterationChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const isChecked = event.target.checked
+    setGameConfig((gameConfig) => {
+      if (!gameConfig) return gameConfig
+      const newGameConfig: GameConfig = {
+        ...gameConfig,
+        scoreWithAlliteration: isChecked,
+      }
+      emit(ClientEvent.GAME_CONFIG, newGameConfig)
+      return newGameConfig
+    })
+  }
+
   const handleReconnectButtonClick = (
     event: SyntheticEvent<HTMLButtonElement>
   ) => {}
@@ -237,7 +264,7 @@ export default function Game() {
     return (
       <EmitterContext.Provider value={emit}>
         <GameContext.Provider value={game}>
-          <ActiveGame />
+          <ActiveRound />
         </GameContext.Provider>
       </EmitterContext.Provider>
     )
@@ -252,7 +279,7 @@ export default function Game() {
     return (
       <EmitterContext.Provider value={emit}>
         <GameContext.Provider value={game}>
-          <ReviewGame />
+          <ReviewRound />
         </GameContext.Provider>
       </EmitterContext.Provider>
     )
@@ -309,6 +336,16 @@ export default function Game() {
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label>
+            <input
+              type='checkbox'
+              checked={gameConfig?.scoreWithAlliteration}
+              onChange={handleAlliterationChange}
+            />{' '}
+            Points for alliteration
+          </label>
         </div>
       </section>
       <section>

@@ -11,7 +11,13 @@ interface Player {
 
 export interface Payload<T = any> {
   gameID?: string
-  payload?: T | undefined
+  payload?: T
+}
+
+export interface PlayerVote {
+  playerID: string
+  category: string
+  value: boolean
 }
 
 // These events are only emitted from the client but are read by the server.
@@ -39,6 +45,9 @@ export enum ClientEvent {
   // Implies the round has finished, presumably when the player clicks the
   // "end round" button, but could also be with timer? Not sure how to handle this
   END_ROUND = 'END_ROUND',
+
+  // Sent when a player votes for validity of one of the other players answers
+  VOTE_ANSWER = 'VOTE_ANSWER',
 }
 
 // These events are only emitted the server, but are read by both
@@ -71,6 +80,9 @@ export enum ServerEvent {
 
   // When the round has ended and we should go to the review screen
   ROUND_ENDED = 'ROUND_ENDED',
+
+  // Emit an updated vote for the given player and answer when in review screen
+  UPDATE_VOTES = 'UPDATE_VOTES',
 }
 
 export default Events

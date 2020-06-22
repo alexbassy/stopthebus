@@ -4,7 +4,7 @@ import EmitterContext from '../contexts/EmitterContext'
 import { RoundResults } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
 
-export default function ActiveGame() {
+export default function ActiveRound() {
   const emit = useContext(EmitterContext)
   const game = useContext(GameContext)
   const [values, setValues] = useState<RoundResults>({})

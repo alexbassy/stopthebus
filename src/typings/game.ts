@@ -16,6 +16,7 @@ export interface GameConfig {
   letters: string[]
   created: number
   lastAuthor?: string
+  scoreWithAlliteration: boolean
 }
 
 /**
@@ -45,10 +46,15 @@ export enum GameStage {
   END = 'end',
 }
 
+export interface FinalScores {
+  [player: string]: number
+}
+
 export interface GameState {
   stage: GameStage
   rounds: GameRound[]
   currentRound?: GameRound
+  finalScores?: FinalScores
 }
 
 export interface RoundResults {
@@ -59,12 +65,21 @@ export interface Round {
   [player: string]: RoundResults
 }
 
+export interface PlayerScores {
+  [category: string]: number
+}
+
+export interface Scores {
+  [player: string]: PlayerScores
+}
+
 export interface GameRound {
   letter?: string
   timeStarted: number // Time the round started
   timeEnded?: number // The time the round ended, more applicable for races
   endedByPlayer?: string // The player who ended the round
   answers: Round
+  scores: Scores
 }
 
 /**

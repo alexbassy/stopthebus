@@ -14,6 +14,7 @@ export const persistGameConfig = (
     mode: GameMode.RACE,
     letters: getLetters(),
     created: Date.now(),
+    scoreWithAlliteration: false,
   })
 
   window.sessionStorage.setItem(KEY, gameConfig)
@@ -39,5 +40,6 @@ export const readGameConfig = (): GameConfig | undefined => {
     time: parsed.time,
     created: parsed.created,
     lastAuthor: parsed.lastAuthor,
+    scoreWithAlliteration: parsed.scoreWithAlliteration,
   }
 }

@@ -1,9 +1,9 @@
 import React, { useContext, useState, ChangeEvent, SyntheticEvent } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
-import { ClientEvent } from '../typings/socket-events'
+import { ClientEvent, Payload, PlayerVote } from '../typings/socket-events'
 
-export default function ReviewGame() {
+export default function ReviewRound() {
   const emit = useContext(EmitterContext)
   const game = useContext(GameContext)
 
@@ -14,6 +14,17 @@ export default function ReviewGame() {
 
   const handleNextRoundClick = (event: SyntheticEvent<HTMLButtonElement>) => {
     emit(ClientEvent.START_ROUND)
+  }
+
+  const handleVote = (playerID: string, category: string) => (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const payload: PlayerVote = {
+      playerID,
+      category,
+      value: event.target.checked,
+    }
+    emit(ClientEvent.VOTE_ANSWER, payload)
   }
 
   if (!round) return null
@@ -33,9 +44,17 @@ export default function ReviewGame() {
               {Object.keys(round.answers).map((player) => {
                 const answersForPlayer = round.answers[player]
                 if (!answersForPlayer) return null
+                const score = round.scores[player][category]
                 return (
                   <div key={`result-${player}`}>
                     <strong>{player}</strong>: {answersForPlayer[category]}
+                    <input
+                      type='checkbox'
+                      title='Vote'
+                      checked={Boolean(score)}
+                      onChange={handleVote(player, category)}
+                    />{' '}
+                    {score} point{score === 1 ? '' : 's'}
                   </div>
                 )
               })}
