@@ -41,7 +41,7 @@ describe('scoreAnswer()', () => {
   })
 })
 
-describe.only('getFinalScores()', () => {
+describe('getFinalScores()', () => {
   it('sums up total scores', () => {
     expect(getFinalScores(rounds)).toEqual({
       '8c86d893-9b55-4019-b8bf-a1c92daa4c64': 7,
