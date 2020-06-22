@@ -1,7 +1,6 @@
 import React, { useContext, useState, ChangeEvent, SyntheticEvent } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
-import { RoundResults } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
 
 export default function ReviewGame() {
@@ -10,7 +9,7 @@ export default function ReviewGame() {
 
   if (!game || !emit) return null
 
-  const { config, state, players } = game
+  const { config, state } = game
   const round = state.currentRound
 
   const handleNextRoundClick = (event: SyntheticEvent<HTMLButtonElement>) => {
@@ -33,9 +32,9 @@ export default function ReviewGame() {
               <h3>{category}</h3>
               {Object.keys(round.answers).map((player) => {
                 const answersForPlayer = round.answers[player]
-                if (!answersForPlayer) return
+                if (!answersForPlayer) return null
                 return (
-                  <div>
+                  <div key={`result-${player}`}>
                     <strong>{player}</strong>: {answersForPlayer[category]}
                   </div>
                 )

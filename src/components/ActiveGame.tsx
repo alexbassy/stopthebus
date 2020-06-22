@@ -11,7 +11,7 @@ export default function ActiveGame() {
 
   if (!game || !emit) return null
 
-  const { config, state, players } = game
+  const { config } = game
 
   const handleChange = (category: string) => (
     event: ChangeEvent<HTMLInputElement>
@@ -34,6 +34,10 @@ export default function ActiveGame() {
   return (
     <div>
       <h1>Game {config.id}</h1>
+      <p>
+        The letter is{' '}
+        <strong>{game.state.currentRound?.letter?.toUpperCase()}</strong>
+      </p>
       <ul>
         {config.categories.map((category) => {
           const stripped = category.replace(/\W/g, '')

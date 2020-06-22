@@ -2,6 +2,7 @@ import path from 'path'
 import express from 'express'
 import http from 'http'
 import socketIO from 'socket.io'
+import { getRandomValue } from '../helpers/util'
 import { Payload, ClientEvent, ServerEvent } from '../typings/socket-events'
 import {
   Room,
@@ -201,8 +202,15 @@ IO.on('connection', (socket) => {
 
     // If on the start screen or review screen, we can go ahead
     room.state.stage = GameStage.ACTIVE
+    const previouslyPlayedLetters = room.state.rounds.length
+      ? room.state.rounds.map((round) => round.letter || '')
+      : []
+    const availableLetters = room.config.letters.filter(
+      (letter) => !previouslyPlayedLetters.includes(letter)
+    )
     const newRound: GameRound = {
       timeStarted: Date.now(),
+      letter: getRandomValue(availableLetters),
       answers: answersTemplate,
     }
     room.state.currentRound = newRound
@@ -230,6 +238,10 @@ IO.on('connection', (socket) => {
     const numRoundsPlayed = room.state.rounds.length + 1
     const hasPlayedAllRounds = room.config.rounds === numRoundsPlayed
     room.state.stage = hasPlayedAllRounds ? GameStage.END : GameStage.REVIEW
+
+    if (room.state?.currentRound) {
+      room.state.currentRound.endedByPlayer = player.uuid
+    }
 
     IO.in(gameID).emit(ServerEvent.ROUND_ENDED, room.state)
   })

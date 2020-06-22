@@ -60,6 +60,7 @@ export interface Round {
 }
 
 export interface GameRound {
+  letter?: string
   timeStarted: number // Time the round started
   timeEnded?: number // The time the round ended, more applicable for races
   endedByPlayer?: string // The player who ended the round
