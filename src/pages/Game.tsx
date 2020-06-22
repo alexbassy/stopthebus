@@ -8,6 +8,7 @@ import React, {
 } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import ActiveGame from '../components/ActiveGame'
+import ReviewGame from '../components/ReviewGame'
 import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
@@ -222,6 +223,21 @@ export default function Game() {
       <EmitterContext.Provider value={emit}>
         <GameContext.Provider value={game}>
           <ActiveGame />
+        </GameContext.Provider>
+      </EmitterContext.Provider>
+    )
+  }
+
+  if (gameConfig && gameState?.stage === GameStage.REVIEW) {
+    const game = {
+      config: gameConfig,
+      state: gameState,
+      players: players || [],
+    }
+    return (
+      <EmitterContext.Provider value={emit}>
+        <GameContext.Provider value={game}>
+          <ReviewGame />
         </GameContext.Provider>
       </EmitterContext.Provider>
     )
