@@ -9,6 +9,7 @@ import React, {
 import { useParams, Link } from 'react-router-dom'
 import ActiveRound from '../components/ActiveRound'
 import ReviewRound from '../components/ReviewRound'
+import GameEnd from '../components/GameEnd'
 import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
@@ -280,6 +281,21 @@ export default function Game() {
       <EmitterContext.Provider value={emit}>
         <GameContext.Provider value={game}>
           <ReviewRound />
+        </GameContext.Provider>
+      </EmitterContext.Provider>
+    )
+  }
+
+  if (gameConfig && gameState?.stage === GameStage.END) {
+    const game = {
+      config: gameConfig,
+      state: gameState,
+      players: players || [],
+    }
+    return (
+      <EmitterContext.Provider value={emit}>
+        <GameContext.Provider value={game}>
+          <GameEnd />
         </GameContext.Provider>
       </EmitterContext.Provider>
     )
