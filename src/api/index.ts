@@ -200,20 +200,25 @@ IO.on('connection', (socket) => {
       delete room.state.currentRound
     }
 
+    const numRoundsPlayed = room.state.rounds.length
+    const hasPlayedAllRounds = room.config.rounds === numRoundsPlayed
+    room.state.stage = hasPlayedAllRounds ? GameStage.END : GameStage.ACTIVE
+
     // If on the start screen or review screen, we can go ahead
-    room.state.stage = GameStage.ACTIVE
-    const previouslyPlayedLetters = room.state.rounds.length
-      ? room.state.rounds.map((round) => round.letter || '')
-      : []
-    const availableLetters = room.config.letters.filter(
-      (letter) => !previouslyPlayedLetters.includes(letter)
-    )
-    const newRound: GameRound = {
-      timeStarted: Date.now(),
-      letter: getRandomValue(availableLetters),
-      answers: answersTemplate,
+    if (!hasPlayedAllRounds) {
+      const previouslyPlayedLetters = room.state.rounds.length
+        ? room.state.rounds.map((round) => round.letter || '')
+        : []
+      const availableLetters = room.config.letters.filter(
+        (letter) => !previouslyPlayedLetters.includes(letter)
+      )
+      const newRound: GameRound = {
+        timeStarted: Date.now(),
+        letter: getRandomValue(availableLetters),
+        answers: answersTemplate,
+      }
+      room.state.currentRound = newRound
     }
-    room.state.currentRound = newRound
 
     // maybe this is not necessary but idk
     rooms[gameID].state = room.state
@@ -235,9 +240,7 @@ IO.on('connection', (socket) => {
       return
     }
 
-    const numRoundsPlayed = room.state.rounds.length + 1
-    const hasPlayedAllRounds = room.config.rounds === numRoundsPlayed
-    room.state.stage = hasPlayedAllRounds ? GameStage.END : GameStage.REVIEW
+    room.state.stage = GameStage.REVIEW
 
     if (room.state?.currentRound) {
       room.state.currentRound.endedByPlayer = player.uuid

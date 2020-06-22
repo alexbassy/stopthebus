@@ -17,7 +17,7 @@ export default function Home() {
   const handleSubmit = (ev: SyntheticEvent<HTMLFormElement>) => {
     ev.preventDefault()
 
-    if (selectedCategories.length < 2) {
+    if (selectedCategories.length < 3) {
       setError('You must select at least three categories')
       return
     } else {
