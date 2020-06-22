@@ -15,6 +15,7 @@ import {
   clearPersistedGameConfig,
 } from '../helpers/persistGame'
 import { getUserSessionID } from '../helpers/getUserSession'
+import { range } from '../helpers/util'
 import log from '../helpers/log'
 import { ENGLISH_LETTERS } from '../constants/letters'
 import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
@@ -163,12 +164,26 @@ export default function Game() {
   const handleTimeChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value)
     setGameConfig((gameConfig) => {
+      if (!gameConfig) return gameConfig
       const newGameConfig = {
         ...gameConfig,
         time: value * 1000,
       }
       emit(ClientEvent.GAME_CONFIG, newGameConfig)
-      return newGameConfig as GameConfig
+      return newGameConfig
+    })
+  }
+
+  const handleRoundCountChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value
+    setGameConfig((gameConfig) => {
+      if (!gameConfig) return gameConfig
+      const newGameConfig: GameConfig = {
+        ...gameConfig,
+        rounds: Number(value),
+      }
+      emit(ClientEvent.GAME_CONFIG, newGameConfig)
+      return newGameConfig
     })
   }
 
@@ -284,6 +299,16 @@ export default function Game() {
               />
             </label>
           )}
+        </div>
+        <div>
+          Number of rounds{' '}
+          <select value={gameConfig?.rounds} onChange={handleRoundCountChange}>
+            {range(1, 10).map((val) => (
+              <option key={val} value={val}>
+                {val}
+              </option>
+            ))}
+          </select>
         </div>
       </section>
       <section>

@@ -178,6 +178,7 @@ IO.on('connection', (socket) => {
     const isGameActiveOrEnded =
       room.state.stage === GameStage.ACTIVE ||
       room.state.stage === GameStage.END
+    const isGameInReview = room.state.stage === GameStage.REVIEW
 
     if (isGameActiveOrEnded) {
       console.log('Cannot start a round that is in progress or has ended')
@@ -191,6 +192,12 @@ IO.on('connection', (socket) => {
       },
       {}
     )
+
+    if (isGameInReview) {
+      const roundResults = room.state.currentRound
+      if (roundResults) room.state.rounds.push(roundResults)
+      delete room.state.currentRound
+    }
 
     // If on the start screen or review screen, we can go ahead
     room.state.stage = GameStage.ACTIVE
@@ -220,12 +227,8 @@ IO.on('connection', (socket) => {
       return
     }
 
-    const roundResults = room.state.currentRound
-    if (roundResults) room.state.rounds.push(roundResults)
-    delete room.state.currentRound
-    const numRoundsPlayed = room.state.rounds.length
-    const hasPlayedAllRounds = room.config.rounds + 1 === numRoundsPlayed
-
+    const numRoundsPlayed = room.state.rounds.length + 1
+    const hasPlayedAllRounds = room.config.rounds === numRoundsPlayed
     room.state.stage = hasPlayedAllRounds ? GameStage.END : GameStage.REVIEW
 
     IO.in(gameID).emit(ServerEvent.ROUND_ENDED, room.state)

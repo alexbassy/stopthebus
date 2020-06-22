@@ -41,13 +41,15 @@ export default function ActiveGame() {
           return (
             <li key={category}>
               <label htmlFor={id}>{category}</label>
-              <input
-                type='text'
-                id={id}
-                onBlur={handleBlur}
-                onChange={handleChange(category)}
-                value={values[category] ?? ''}
-              />
+              <div>
+                <input
+                  type='text'
+                  id={id}
+                  onBlur={handleBlur}
+                  onChange={handleChange(category)}
+                  value={values[category] ?? ''}
+                />
+              </div>
             </li>
           )
         })}

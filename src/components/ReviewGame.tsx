@@ -11,24 +11,28 @@ export default function ReviewGame() {
   if (!game || !emit) return null
 
   const { config, state, players } = game
-  const lastRound = state.rounds[state.rounds.length - 1]
+  const round = state.currentRound
 
-  if (!lastRound) return null
+  const handleNextRoundClick = (event: SyntheticEvent<HTMLButtonElement>) => {
+    emit(ClientEvent.START_ROUND)
+  }
+
+  if (!round) return null
 
   return (
     <div>
       <h1>Game {config.id}</h1>
-      <h2>Review</h2>
+      <h2>Review of round {state.rounds.length + 1}</h2>
       <p>
-        Round finished by <strong>{lastRound.endedByPlayer}</strong>
+        Round finished by <strong>{round.endedByPlayer}</strong>
       </p>
       <ul>
         {config.categories.map((category) => {
           return (
             <li key={category}>
               <h3>{category}</h3>
-              {Object.keys(lastRound.answers).map((player) => {
-                const answersForPlayer = lastRound.answers[player]
+              {Object.keys(round.answers).map((player) => {
+                const answersForPlayer = round.answers[player]
                 if (!answersForPlayer) return
                 return (
                   <div>
@@ -40,6 +44,7 @@ export default function ReviewGame() {
           )
         })}
       </ul>
+      <button onClick={handleNextRoundClick}>Next round</button>
     </div>
   )
 }
