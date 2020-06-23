@@ -76,6 +76,16 @@ IO.on('connection', (socket) => {
     }
   })
 
+  // Clean up any stale rooms
+  Object.entries(rooms).forEach(([gameID, room]) => {
+    const { created } = room.config
+    const twoHours = 7200
+    const isStale = created < Date.now() - twoHours
+    if (isStale) {
+      delete rooms[gameID]
+    }
+  })
+
   socket.on(
     ClientEvent.REQUEST_JOIN_GAME,
     ({ gameID, payload }: Payload<GameConfig>) => {
