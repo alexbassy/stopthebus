@@ -68,12 +68,9 @@ export default function useSocket({
     )
 
     return () => {
-      if (!socketRef.current?.connected) {
-        console.log('[useSocket] removing listeners')
-        boundCallbacks.forEach(([name, callback]: [string, Function]) => {
-          socketRef.current?.off(name, callback)
-        })
-      }
+      boundCallbacks.forEach(([name, callback]: [string, Function]) => {
+        socketRef.current?.off(name, callback)
+      })
     }
   }, [socket, callbacks])
 

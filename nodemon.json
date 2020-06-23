@@ -1,6 +1,12 @@
 {
   "restartable": "rs",
-  "ignore": [".git", "node_modules/**/node_modules"],
+  "ignore": [
+    ".git",
+    "node_modules/**/node_modules",
+    "src/components",
+    "src/pages",
+    "src/hooks"
+  ],
   "verbose": true,
   "execMap": {
     "ts": "node --inspect=9229 ./node_modules/.bin/ts-node --project tsconfig.node.json"

@@ -101,10 +101,7 @@ IO.on('connection', (socket) => {
         if (!isPlayerAlreadyInRoom) {
           rooms[gameID].players.push(player)
         }
-        console.log(
-          '[REQUEST_JOIN_GAME] Emitting GAME_CONFIG',
-          rooms[gameID].config
-        )
+        console.log('[REQUEST_JOIN_GAME] Emitting room')
         socket.emit(ServerEvent.JOINED_GAME, rooms[gameID])
         socket
           .in(gameID)
