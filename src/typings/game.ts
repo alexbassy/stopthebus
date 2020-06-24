@@ -9,6 +9,7 @@ export enum GameMode {
 
 export interface GameConfig {
   id: string
+  name: string
   categories: string[]
   rounds: number
   mode: GameMode

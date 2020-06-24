@@ -30,7 +30,8 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Create a game</h1>
+      <h1>Stop The Bus</h1>
+      <h2>Create a game</h2>
       <form onSubmit={handleSubmit}>
         <label htmlFor='game-id'>
           <span>Game ID: </span>
@@ -38,7 +39,7 @@ export default function Home() {
         </label>
         <button onClick={() => setGameID(hri.random())}>Change game ID</button>
 
-        <h2>Game categories</h2>
+        <h3>Game categories</h3>
         <span>{selectedCategories.length} selected</span>
         <ul>
           {categories.map((category, index) => {

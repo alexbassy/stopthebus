@@ -7,6 +7,7 @@ import React, {
   ChangeEvent,
 } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import NewGame from '../components/NewGame'
 import ActiveRound from '../components/ActiveRound'
 import ReviewRound from '../components/ReviewRound'
 import GameEnd from '../components/GameEnd'
@@ -16,9 +17,7 @@ import {
   clearPersistedGameConfig,
 } from '../helpers/persistGame'
 import { getUserSessionID } from '../helpers/getUserSession'
-import { range } from '../helpers/util'
 import log from '../helpers/log'
-import { ENGLISH_LETTERS } from '../constants/letters'
 import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
 import {
   Player,
@@ -146,83 +145,6 @@ export default function Game() {
     if (socket && isConnected) createOrJoinGame()
   }, [socket, isConnected, createOrJoinGame])
 
-  const handleLetterChange = (letter: string) => () => {
-    setGameConfig((gameConfig) => {
-      const newLetters = new Set(gameConfig?.letters)
-      newLetters.has(letter)
-        ? newLetters.delete(letter)
-        : newLetters.add(letter)
-
-      const newGameConfig = {
-        ...gameConfig,
-        letters: [...newLetters],
-      }
-
-      emit(ClientEvent.GAME_CONFIG, newGameConfig)
-
-      return newGameConfig as GameConfig
-    })
-  }
-
-  const handleModeChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value
-    setGameConfig((gameConfig) => {
-      const newGameConfig = {
-        ...gameConfig,
-        mode: value as GameMode,
-      }
-      emit(ClientEvent.GAME_CONFIG, newGameConfig)
-      return newGameConfig as GameConfig
-    })
-  }
-
-  const handleTimeChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(event.target.value)
-    setGameConfig((gameConfig) => {
-      if (!gameConfig) return gameConfig
-      const newGameConfig = {
-        ...gameConfig,
-        time: value * 1000,
-      }
-      emit(ClientEvent.GAME_CONFIG, newGameConfig)
-      return newGameConfig
-    })
-  }
-
-  const handleRoundCountChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value
-    setGameConfig((gameConfig) => {
-      if (!gameConfig) return gameConfig
-      const newGameConfig: GameConfig = {
-        ...gameConfig,
-        rounds: Number(value),
-      }
-      emit(ClientEvent.GAME_CONFIG, newGameConfig)
-      return newGameConfig
-    })
-  }
-
-  const handleAlliterationChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const isChecked = event.target.checked
-    setGameConfig((gameConfig) => {
-      if (!gameConfig) return gameConfig
-      const newGameConfig: GameConfig = {
-        ...gameConfig,
-        scoreWithAlliteration: isChecked,
-      }
-      emit(ClientEvent.GAME_CONFIG, newGameConfig)
-      return newGameConfig
-    })
-  }
-
-  const handleReconnectButtonClick = (
-    event: SyntheticEvent<HTMLButtonElement>
-  ) => {}
-
-  const handleStartGameClick = (event: SyntheticEvent<HTMLButtonElement>) => {
-    emit(ClientEvent.START_ROUND)
-  }
-
   if (!isConnected) {
     return (
       <>
@@ -236,10 +158,7 @@ export default function Game() {
     return (
       <>
         <h1>Game {gameID}</h1>
-        <p>
-          Sorry! You disconnected from the server.{' '}
-          <button onClick={handleReconnectButtonClick}>Reconnect</button>
-        </p>
+        <p>Sorry! You disconnected from the server. Please refresh the page.</p>
       </>
     )
   }
@@ -256,143 +175,39 @@ export default function Game() {
     )
   }
 
-  if (gameConfig && gameState?.stage === GameStage.ACTIVE) {
-    const game = {
-      config: gameConfig,
-      state: gameState,
-      players: players || [],
-    }
-    return (
-      <EmitterContext.Provider value={emit}>
-        <GameContext.Provider value={game}>
-          <ActiveRound />
-        </GameContext.Provider>
-      </EmitterContext.Provider>
-    )
+  if (!gameConfig || !gameState) {
+    return <div>Loading...</div>
   }
 
-  if (gameConfig && gameState?.stage === GameStage.REVIEW) {
-    const game = {
-      config: gameConfig,
-      state: gameState,
-      players: players || [],
-    }
-    return (
-      <EmitterContext.Provider value={emit}>
-        <GameContext.Provider value={game}>
-          <ReviewRound />
-        </GameContext.Provider>
-      </EmitterContext.Provider>
-    )
+  const gameContextValue = {
+    config: gameConfig,
+    state: gameState,
+    players: players || [],
   }
 
-  if (gameConfig && gameState?.stage === GameStage.END) {
-    const game = {
-      config: gameConfig,
-      state: gameState,
-      players: players || [],
-    }
-    return (
-      <EmitterContext.Provider value={emit}>
-        <GameContext.Provider value={game}>
-          <GameEnd />
-        </GameContext.Provider>
-      </EmitterContext.Provider>
-    )
+  let Component
+
+  switch (gameState.stage) {
+    case GameStage.ACTIVE:
+      Component = ActiveRound
+      break
+    case GameStage.REVIEW:
+      Component = ReviewRound
+      break
+    case GameStage.END:
+      Component = GameEnd
+      break
+    case GameStage.PRE:
+    default:
+      Component = () => <NewGame onChange={setGameConfig} />
   }
 
   return (
-    <>
-      <h1>Game {gameID}</h1>
-      <p>Welcome, {sessionID}!</p>
-      <p>
-        Game state: {gameState?.stage}{' '}
-        <button onClick={() => console.log(gameState)}>log to console</button>
-      </p>
-      <h2>Game settings</h2>
-      <section>
-        <h3>Categories</h3>
-        <ul>
-          {gameConfig?.categories &&
-            gameConfig?.categories.map((cat) => <li key={cat}>{cat}</li>)}
-        </ul>
-      </section>
-      <section>
-        <h3>Mode</h3>
-        <p>You can race against each other, or with a time limit</p>
-        <div>
-          <label>
-            Play mode{' '}
-            <select value={gameConfig?.mode} onChange={handleModeChange}>
-              <option value={GameMode.RACE}>Race</option>
-              <option value={GameMode.TIMER}>Timer</option>
-            </select>
-          </label>
-        </div>
-        <div>
-          {gameConfig?.mode === GameMode.TIMER && (
-            <label>
-              Time (seconds){' '}
-              <input
-                type='number'
-                value={Math.round(
-                  gameConfig.time ? gameConfig.time / 1000 : 60
-                )}
-                onChange={handleTimeChange}
-              />
-            </label>
-          )}
-        </div>
-        <div>
-          Number of rounds{' '}
-          <select value={gameConfig?.rounds} onChange={handleRoundCountChange}>
-            {range(1, 10).map((val) => (
-              <option key={val} value={val}>
-                {val}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>
-            <input
-              type='checkbox'
-              checked={gameConfig?.scoreWithAlliteration}
-              onChange={handleAlliterationChange}
-            />{' '}
-            Points for alliteration
-          </label>
-        </div>
-      </section>
-      <section>
-        <h3>Letters</h3>
-        <ul>
-          {gameConfig &&
-            ENGLISH_LETTERS.map((letter) => {
-              return (
-                <li key={letter}>
-                  <label>
-                    <input
-                      type='checkbox'
-                      value={letter}
-                      checked={gameConfig?.letters?.includes(letter)}
-                      onChange={handleLetterChange(letter)}
-                    />
-                    {letter}
-                  </label>
-                </li>
-              )
-            })}
-        </ul>
-      </section>
-      <section>
-        <h3>Players</h3>
-        <ul>
-          {players &&
-            players.map((player) => <li key={player.uuid}>{player.uuid}</li>)}
-        </ul>
-      </section>
-      <button onClick={handleStartGameClick}>Start game</button>
-    </>
+    <EmitterContext.Provider value={emit}>
+      <GameContext.Provider value={gameContextValue}>
+        <h1>Stop The Bus</h1>
+        <Component />
+      </GameContext.Provider>
+    </EmitterContext.Provider>
   )
 }

@@ -33,6 +33,7 @@ export const readGameConfig = (): GameConfig | undefined => {
 
   return {
     id: parsed.id,
+    name: parsed.id,
     categories: parsed.categories,
     letters: parsed.letters,
     rounds: parsed.rounds,
