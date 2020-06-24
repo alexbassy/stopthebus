@@ -7,7 +7,7 @@
     "dev:server": "nodemon src/api/index.ts",
     "dev": "react-scripts start",
     "start": "node src/api/index.js",
-    "heroku-postbuild": "yarn build && ./build.sh",
+    "heroku-postbuild": "yarn build && tsc --esModuleInterop src/api/index.ts",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
