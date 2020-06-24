@@ -30,7 +30,7 @@ import {
 
 const app = express()
 const server = http.createServer(app)
-const port = 4000
+const port = process.env.PORT || 4000
 
 const IO = socketIO(server)
 const rooms: Rooms = {}
