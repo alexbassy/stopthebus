@@ -182,7 +182,11 @@ export default function ReviewRound(props: NewGameProps) {
         <h3>Players</h3>
         <ul>
           {players &&
-            players.map((player) => <li key={player.uuid}>{player.uuid}</li>)}
+            players.map((player) => (
+              <li key={player.uuid}>
+                {player.uuid} {player.uuid === sessionID && ' (me)'}
+              </li>
+            ))}
         </ul>
       </section>
       <button onClick={handleStartGameClick}>Start game</button>
