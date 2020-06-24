@@ -6,8 +6,8 @@
   "scripts": {
     "dev:server": "nodemon src/api/index.ts",
     "dev": "react-scripts start",
-    "start": "nodemon src/api/index.ts",
-    "heroku-postbuild": "yarn build",
+    "start": "node src/api/index.js",
+    "heroku-postbuild": "yarn build && ./build.sh",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
