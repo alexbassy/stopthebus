@@ -9,6 +9,7 @@ import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
   clearPersistedGameConfig,
+  persistGameConfig,
 } from '../helpers/persistGame'
 import { getUserSessionID } from '../helpers/getUserSession'
 import log from '../helpers/log'
@@ -125,14 +126,15 @@ export default function Game() {
     if (!isInitialised) return
 
     const persistedGameConfig = readGameConfig()
+    const isCorrect = persistedGameConfig?.id === gameID
 
-    if (persistedGameConfig && !gameConfig) {
+    if (persistedGameConfig && isCorrect && !gameConfig) {
       setGameConfig(persistedGameConfig)
       emit(ClientEvent.REQUEST_CREATE_GAME, persistedGameConfig)
     } else if (!gameConfig) {
       emit(ClientEvent.REQUEST_JOIN_GAME)
     }
-  }, [emit, isInitialised, gameConfig])
+  }, [emit, gameID, isInitialised, gameConfig])
 
   useEffect(() => {
     if (socket && isConnected) createOrJoinGame()
