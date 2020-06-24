@@ -3,6 +3,7 @@ import { persistGameConfig } from '../helpers/persistGame'
 import { categories } from '../constants/categories'
 import { hri } from 'human-readable-ids'
 import { useHistory } from 'react-router-dom'
+import { Title } from '../components/visual'
 
 export default function Home() {
   const history = useHistory()
@@ -30,7 +31,7 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Stop The Bus</h1>
+      <Title>Stop The Bus</Title>
       <h2>Create a game</h2>
       <form onSubmit={handleSubmit}>
         <label htmlFor='game-id'>

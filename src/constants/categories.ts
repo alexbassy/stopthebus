@@ -5,7 +5,7 @@ export const categories = [
 
   `women’s names`,
   `men’s names`,
-  `genderless names`,
+  `non-gendered names`,
   `brands`,
 
   `food`,

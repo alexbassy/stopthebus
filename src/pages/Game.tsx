@@ -1,16 +1,10 @@
-import React, {
-  useEffect,
-  useState,
-  useMemo,
-  useCallback,
-  SyntheticEvent,
-  ChangeEvent,
-} from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import NewGame from '../components/NewGame'
 import ActiveRound from '../components/ActiveRound'
 import ReviewRound from '../components/ReviewRound'
 import GameEnd from '../components/GameEnd'
+import { Title } from '../components/visual'
 import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
@@ -22,7 +16,6 @@ import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
 import {
   Player,
   GameConfig,
-  GameMode,
   GameState,
   GameStage,
   Room,
@@ -205,7 +198,7 @@ export default function Game() {
   return (
     <EmitterContext.Provider value={emit}>
       <GameContext.Provider value={gameContextValue}>
-        <h1>Stop The Bus</h1>
+        <Title>Stop The Bus</Title>
         <Component />
       </GameContext.Provider>
     </EmitterContext.Provider>

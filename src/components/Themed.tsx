@@ -1,12 +1,28 @@
 import React, { ReactChild } from 'react'
-import Helmet from 'react-helmet'
+import { Helmet } from 'react-helmet'
+import { Global } from '@emotion/core'
 import { ThemeProvider } from 'emotion-theming'
+import { globalStyles } from './visual'
 
-const pastel = {
+interface Typeface {
+  name: string
+  href: string
+}
+
+export interface Theme {
+  fonts: { [typeface: string]: Typeface }
+  colours: { [color: string]: string }
+}
+
+const pastel: Theme = {
   fonts: {
     title: {
       name: 'Faster One',
-      url: 'https://fonts.googleapis.com/css2?family=Faster+One&display=swap',
+      href: 'https://fonts.googleapis.com/css2?family=Faster+One&display=swap',
+    },
+    body: {
+      name: '',
+      href: '',
     },
   },
   colours: {
@@ -29,10 +45,9 @@ export default function Themed({ theme = 'pastel', children }: ThemedProps) {
   return (
     <ThemeProvider theme={themes[theme]}>
       <Helmet>
-        <head>
-          <link href={themes[theme].fonts.url} rel='stylesheet' />
-        </head>
+        <link href={themes[theme].fonts.title.href} rel='stylesheet' />
       </Helmet>
+      <Global styles={globalStyles} />
       {children}
     </ThemeProvider>
   )
