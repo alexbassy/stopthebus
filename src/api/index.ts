@@ -41,13 +41,20 @@ client.on('error', (error) => {
 })
 
 const IO = socketIO(server)
-const rooms: Rooms = {}
-const players: { [uuid: string]: Player } = {}
 
 const setAsync = promisify(client.set).bind(client)
 const getAsync = promisify(client.get).bind(client)
 
-const setRoom = (gameID: string, game: Room) => {
+const setPlayer = (uuid: string, player: Player | string) => {
+  return setAsync(`player:${uuid}`, JSON.stringify(player))
+}
+
+const getPlayer = async (uuid: string): Promise<Player> => {
+  const result = await getAsync(`player:${uuid}`)
+  return JSON.parse(result)
+}
+
+const setRoom = (gameID: string, game: Room | string) => {
   return setAsync(`game:${gameID}`, JSON.stringify(game))
 }
 
@@ -60,12 +67,20 @@ app.set('json spaces', 2)
 
 app.use(express.static(path.resolve('build')))
 
-app.get('/_debug/rooms', (req, res) => {
-  res.json(rooms)
+app.get('/_debug/rooms', async (req, res) => {
+  client.keys('game:*', function (err, keys) {
+    if (err) return console.log(err)
+
+    res.json(keys)
+  })
 })
 
 app.get('/_debug/players', (req, res) => {
-  res.json(players)
+  client.keys('player:*', function (err, keys) {
+    if (err) return console.log(err)
+
+    res.json(keys)
+  })
 })
 
 app.get('*', (req, res) => {
@@ -76,40 +91,42 @@ const getUUID = (socket: SocketIO.Socket) => {
   return socket.handshake.query.sessionID
 }
 
-const getPlayerByUUID = (socket: SocketIO.Socket): Player | undefined => {
+const getPlayerByUUID = async (socket: SocketIO.Socket): Promise<Player> => {
   const uuid = getUUID(socket)
-  return players[uuid]
+  return getPlayer(uuid)
 }
 
-IO.on('connection', (socket) => {
+IO.on('connection', async (socket) => {
   const uuid = getUUID(socket)
 
   // Add player to global players list
-  if (!players[uuid]) {
-    players[uuid] = { uuid, id: socket.id }
+  if (!(await getPlayerByUUID(socket))) {
+    await setPlayer(uuid, { uuid, id: socket.id })
   }
 
   // Remove player from global players list upon disconnection
-  socket.on(ClientEvent.DISCONNECT, () => {
-    if (players[uuid]) {
-      delete players[uuid]
+  socket.on(ClientEvent.DISCONNECT, async () => {
+    const player = await getPlayer(uuid)
+
+    if (player) {
+      setPlayer(uuid, '')
     }
   })
 
   // Clean up any stale rooms
-  Object.entries(rooms).forEach(([gameID, room]) => {
-    const { created } = room.config
-    const twoHours = 7200
-    const isStale = created < Date.now() - twoHours
-    if (isStale) {
-      delete rooms[gameID]
-    }
-  })
+  // Object.entries(rooms).forEach(([gameID, room]) => {
+  //   const { created } = room.config
+  //   const twoHours = 7200
+  //   const isStale = created < Date.now() - twoHours
+  //   if (isStale) {
+  //     delete rooms[gameID]
+  //   }
+  // })
 
   socket.on(
     ClientEvent.REQUEST_JOIN_GAME,
     async ({ gameID, payload }: Payload<GameConfig>) => {
-      const player = getPlayerByUUID(socket)
+      const player = await getPlayerByUUID(socket)
       console.log('[REQUEST_JOIN_GAME]', { gameID, player, payload })
 
       // If the game doesn’t exist yet, we should ask the user if they want
@@ -135,10 +152,8 @@ IO.on('connection', (socket) => {
           await setRoom(gameID, room)
         }
         console.log('[REQUEST_JOIN_GAME] Emitting room')
-        socket.emit(ServerEvent.JOINED_GAME, rooms[gameID])
-        socket
-          .in(gameID)
-          .emit(ServerEvent.PLAYER_JOINED_GAME, rooms[gameID].players)
+        socket.emit(ServerEvent.JOINED_GAME, room)
+        socket.in(gameID).emit(ServerEvent.PLAYER_JOINED_GAME, room.players)
       })
 
       socket.on(ClientEvent.DISCONNECT, async () => {
@@ -150,7 +165,7 @@ IO.on('connection', (socket) => {
           await setRoom(gameID, room)
           console.log(`Removed ${player.uuid} from the room`)
         }
-        socket.in(gameID).emit(ServerEvent.PLAYER_LEFT, rooms[gameID].players)
+        socket.in(gameID).emit(ServerEvent.PLAYER_LEFT, room.players)
       })
     }
   )
@@ -158,7 +173,7 @@ IO.on('connection', (socket) => {
   socket.on(
     ClientEvent.REQUEST_CREATE_GAME,
     async ({ gameID, payload }: Payload<GameConfig>) => {
-      const player = getPlayerByUUID(socket)
+      const player = await getPlayerByUUID(socket)
       console.log('[REQUEST_CREATE_GAME]', { gameID, player, payload })
 
       if (!gameID || !payload || !player) {
@@ -194,7 +209,7 @@ IO.on('connection', (socket) => {
   )
 
   socket.on(ClientEvent.GAME_CONFIG, async ({ gameID, payload }: Payload) => {
-    const player = getPlayerByUUID(socket)
+    const player = await getPlayerByUUID(socket)
     console.log('[GAME_CONFIG]', { gameID, player, payload })
     if (!gameID || !player) {
       return
@@ -208,14 +223,14 @@ IO.on('connection', (socket) => {
       return
     }
 
-    rooms.config = { ...payload, lastAuthor: player.uuid }
+    room.config = { ...payload, lastAuthor: player.uuid }
     await setRoom(gameID, room)
-    socket.in(gameID).emit(ServerEvent.GAME_CONFIG, rooms[gameID].config)
+    socket.in(gameID).emit(ServerEvent.GAME_CONFIG, room.config)
   })
 
   socket.on(ClientEvent.START_ROUND, async ({ gameID }: Payload) => {
-    const player = getPlayerByUUID(socket)
-    if (!gameID || !player || !rooms[gameID]) {
+    const player = await getPlayerByUUID(socket)
+    if (!gameID || !player) {
       return
     }
 
@@ -294,8 +309,8 @@ IO.on('connection', (socket) => {
   })
 
   socket.on(ClientEvent.END_ROUND, async ({ gameID }: Payload) => {
-    const player = getPlayerByUUID(socket)
-    if (!gameID || !player || !rooms[gameID]) {
+    const player = await getPlayerByUUID(socket)
+    if (!gameID || !player || gameID) {
       return
     }
 
@@ -329,7 +344,7 @@ IO.on('connection', (socket) => {
   socket.on(
     ClientEvent.FILLED_ANSWER,
     async ({ gameID, payload }: Payload<RoundResults>) => {
-      const player = getPlayerByUUID(socket)
+      const player = await getPlayerByUUID(socket)
       if (!gameID || !player) {
         return
       }
@@ -347,7 +362,7 @@ IO.on('connection', (socket) => {
   socket.on(
     ClientEvent.VOTE_ANSWER,
     async ({ gameID, payload }: Payload<PlayerVote>) => {
-      const player = getPlayerByUUID(socket)
+      const player = await getPlayerByUUID(socket)
       if (!gameID || !player || !payload) {
         return
       }
