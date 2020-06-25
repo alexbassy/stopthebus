@@ -1,5 +1,5 @@
 import path from 'path'
-import express, { json } from 'express'
+import express from 'express'
 import http from 'http'
 import socketIO from 'socket.io'
 import { getRandomValue } from '../helpers/util'
@@ -11,9 +11,7 @@ import {
 } from '../typings/socket-events'
 import {
   Room,
-  Rooms,
   Player,
-  GameConfig,
   GameStage,
   GameRound,
   Round,

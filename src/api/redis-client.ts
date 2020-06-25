@@ -3,6 +3,8 @@ import { promisify } from 'util'
 import { Player, GameConfig, GameState, Rooms } from '../typings/game'
 import { RequestHandler } from 'express'
 
+const ONE_HOUR = 60 * 60
+
 const playerPrefix = 'player'
 const gameConfigPrefix = 'gameConfig'
 const gameStatePrefix = 'gameState'
@@ -20,10 +22,11 @@ client.on('error', (error) => {
   console.error(error)
 })
 
+type SetFn = { <T>(key: string, val: T, ex: 'EX', time: number): Promise<T> }
 type DelFn = { (key: string | string[]): Promise<number> }
 
-export const setAsync = promisify(client.set).bind(client)
 export const getAsync = promisify(client.get).bind(client)
+export const setAsync = promisify(client.set).bind(client) as SetFn
 export const delAsync = promisify(client.del).bind(client) as DelFn
 
 export const players = {
@@ -32,7 +35,12 @@ export const players = {
     return JSON.parse(result)
   },
   set: async (id: string, newVal: Player): Promise<Player> => {
-    await setAsync(getKey(id, playerPrefix), JSON.stringify(newVal))
+    await setAsync(
+      getKey(id, playerPrefix),
+      JSON.stringify(newVal),
+      'EX',
+      ONE_HOUR
+    )
     return newVal
   },
   del: (id: string) => delAsync(getKey(id, playerPrefix)),
@@ -44,7 +52,12 @@ export const gameConfigs = {
     return JSON.parse(result)
   },
   set: async (id: string, newVal: GameConfig): Promise<GameConfig> => {
-    await setAsync(getKey(id, gameConfigPrefix), JSON.stringify(newVal))
+    await setAsync(
+      getKey(id, gameConfigPrefix),
+      JSON.stringify(newVal),
+      'EX',
+      ONE_HOUR
+    )
     return newVal
   },
   del: (id: string) => delAsync(getKey(id, gameConfigPrefix)),
@@ -56,7 +69,12 @@ export const gameStates = {
     return JSON.parse(result)
   },
   set: async (id: string, newVal: GameState): Promise<GameState> => {
-    await setAsync(getKey(id, gameStatePrefix), JSON.stringify(newVal))
+    await setAsync(
+      getKey(id, gameStatePrefix),
+      JSON.stringify(newVal),
+      'EX',
+      ONE_HOUR
+    )
     return newVal
   },
   del: (id: string) => delAsync(getKey(id, gameStatePrefix)),
@@ -68,7 +86,12 @@ export const gamePlayers = {
     return JSON.parse(result)
   },
   set: async (id: string, newVal: Player[]): Promise<Player[]> => {
-    await setAsync(getKey(id, gamePlayersPrefix), JSON.stringify(newVal))
+    await setAsync(
+      getKey(id, gamePlayersPrefix),
+      JSON.stringify(newVal),
+      'EX',
+      ONE_HOUR
+    )
     return newVal
   },
   del: (id: string) => delAsync(getKey(id, gamePlayersPrefix)),
