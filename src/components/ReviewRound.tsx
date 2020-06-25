@@ -29,12 +29,16 @@ export default function ReviewRound() {
 
   if (!round) return null
 
+  const playerWhoEndedRound =
+    players.find(({ uuid }) => uuid === round.endedByPlayer)?.name ||
+    round.endedByPlayer
+
   return (
     <div>
       <h1>Game {config.id}</h1>
       <h2>Review of round {state.rounds.length + 1}</h2>
       <p>
-        Round finished by <strong>{round.endedByPlayer}</strong>
+        Round finished by <strong>{playerWhoEndedRound}</strong>
       </p>
       <ul>
         {config.categories.map((category) => {
