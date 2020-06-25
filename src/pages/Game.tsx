@@ -130,6 +130,7 @@ export default function Game() {
     if (persistedGameConfig && isCorrect && !gameConfig) {
       setGameConfig(persistedGameConfig)
       emit(ClientEvent.REQUEST_CREATE_GAME, persistedGameConfig)
+      clearPersistedGameConfig()
     } else if (!gameConfig) {
       emit(ClientEvent.REQUEST_JOIN_GAME)
     }

@@ -38,7 +38,9 @@ export default function Home() {
           <span>Game ID: </span>
           <input id='game-id' value={gameID} readOnly />
         </label>
-        <button onClick={() => setGameID(hri.random())}>Change game ID</button>
+        <button type='button' onClick={() => setGameID(hri.random())}>
+          Change game ID
+        </button>
 
         <h3>Game categories</h3>
         <span>{selectedCategories.length} selected</span>

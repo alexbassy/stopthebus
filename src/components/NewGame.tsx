@@ -12,6 +12,7 @@ import { ENGLISH_LETTERS } from '../constants/letters'
 import { GameConfig, GameMode } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
 import { getUserSessionID } from '../helpers/getUserSession'
+import CategoriesList from '../components/CategoriesList'
 
 const sessionID = getUserSessionID()
 
@@ -19,11 +20,22 @@ interface NewGameProps {
   onChange: Dispatch<SetStateAction<GameConfig | null>>
 }
 
-export default function ReviewRound(props: NewGameProps) {
+export default function NewGame(props: NewGameProps) {
   const emit = useContext(EmitterContext)
   const game = useContext(GameContext)
 
   if (!game || !emit) return null
+
+  const handleCategoryChange = (categories: string[]) => {
+    props.onChange((gameConfig) => {
+      const newGameConfig = {
+        ...gameConfig,
+        categories,
+      }
+      emit(ClientEvent.GAME_CONFIG, newGameConfig)
+      return newGameConfig as GameConfig
+    })
+  }
 
   const handleLetterChange = (letter: string) => () => {
     props.onChange((gameConfig) => {
@@ -107,10 +119,10 @@ export default function ReviewRound(props: NewGameProps) {
       <h2>Game settings</h2>
       <section>
         <h3>Categories</h3>
-        <ul>
-          {config?.categories &&
-            config?.categories.map((cat) => <li key={cat}>{cat}</li>)}
-        </ul>
+        <CategoriesList
+          selectedCategories={config?.categories || []}
+          onChange={handleCategoryChange}
+        />
       </section>
       <section>
         <h3>Mode</h3>

@@ -243,6 +243,9 @@ IO.on('connection', async (socket) => {
     IO.in(gameID).emit(ServerEvent.ROUND_ENDED, state)
   })
 
+  // This could end up rewriting other people’s answers,
+  // but with any luck the state would update to the final
+  // state when a user clicks the ”End game’ button.
   socket.on(
     ClientEvent.FILLED_ANSWER,
     async ({ gameID, payload }: Payload<RoundResults>) => {

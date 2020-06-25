@@ -64,10 +64,10 @@ export const joinGame = (
     let players = await gamePlayers.get(gameID)
 
     if (players) {
-      // Remove player from the room
+      // Update the client state to reflect the user’s disconnection
+      // but do not update the store so that they can rejoin.
       players = players.filter(({ uuid }) => uuid !== player.uuid)
-      await gamePlayers.set(gameID, players)
-      logD(`Removed ${player.uuid} from room "${gameID}"`)
+      logD(`Player ${player.uuid} disconnected`)
     }
     socket.in(gameID).emit(ServerEvent.PLAYER_LEFT, players)
   })

@@ -3,11 +3,19 @@ import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import { RoundResults } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
+import { getUserSessionID } from '../helpers/getUserSession'
 
 export default function ActiveRound() {
+  const uuid = getUserSessionID()
   const emit = useContext(EmitterContext)
   const game = useContext(GameContext)
   const [values, setValues] = useState<RoundResults>({})
+
+  React.useEffect(() => {
+    if (game?.state.currentRound?.answers?.[uuid]) {
+      setValues(game?.state.currentRound?.answers?.[uuid])
+    }
+  }, [game, uuid])
 
   if (!game || !emit) return null
 
