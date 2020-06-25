@@ -9,7 +9,6 @@ import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
   clearPersistedGameConfig,
-  persistGameConfig,
 } from '../helpers/persistGame'
 import { getUserSessionID } from '../helpers/getUserSession'
 import log from '../helpers/log'

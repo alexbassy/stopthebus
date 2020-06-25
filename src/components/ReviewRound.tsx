@@ -44,6 +44,8 @@ export default function ReviewRound() {
               {Object.keys(round.answers).map((player) => {
                 const answersForPlayer = round.answers[player]
                 if (!answersForPlayer) return null
+                console.log({ round, player, scores: round.scores })
+                debugger
                 const score = round.scores[player][category]
                 return (
                   <div key={`result-${player}`}>

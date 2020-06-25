@@ -1,9 +1,7 @@
 import path from 'path'
-import express from 'express'
+import express, { json } from 'express'
 import http from 'http'
 import socketIO from 'socket.io'
-import { promisify } from 'util'
-import redis from 'redis'
 import { getRandomValue } from '../helpers/util'
 import {
   Payload,
@@ -29,53 +27,29 @@ import {
   getInitialScores,
   getFinalScores,
 } from '../helpers/scores'
+import client, {
+  players,
+  gameConfigs,
+  gameStates,
+  gamePlayers,
+  routeGetRooms,
+} from './redis-client'
+import { joinGame, createGame } from './actions'
 
 const app = express()
 const server = http.createServer(app)
 const port = process.env.PORT || 80
 
-const client = redis.createClient(process.env.REDIS_URL as string)
-
-client.on('error', (error) => {
-  console.error(error)
-})
-
 const IO = socketIO(server)
-
-const setAsync = promisify(client.set).bind(client)
-const getAsync = promisify(client.get).bind(client)
-
-const setPlayer = (uuid: string, player: Player | string) => {
-  return setAsync(`player:${uuid}`, JSON.stringify(player))
-}
-
-const getPlayer = async (uuid: string): Promise<Player> => {
-  const result = await getAsync(`player:${uuid}`)
-  return JSON.parse(result)
-}
-
-const setRoom = (gameID: string, game: Room | string) => {
-  return setAsync(`game:${gameID}`, JSON.stringify(game))
-}
-
-const getRoom = async (gameID: string): Promise<Room> => {
-  const result = await getAsync(`game:${gameID}`)
-  return JSON.parse(result)
-}
 
 app.set('json spaces', 2)
 
 app.use(express.static(path.resolve('build')))
 
-app.get('/_debug/rooms', async (req, res) => {
-  client.keys('game:*', async (err, games) => {
-    if (err) return console.log(err)
-    const rooms = await Promise.all(
-      games.map((game) => getAsync(game).then(JSON.parse))
-    )
-    return res.json(rooms)
-  })
-})
+// Add debugging route. Should figure out a way to make this secure,
+// but for the meantime there is no sensitive data. Revealing the
+// structure of the schema does make the app vulnerable though.
+app.get('/__debug/rooms', routeGetRooms)
 
 app.get('/_debug/players', (req, res) => {
   client.keys('player:*', function (err, keys) {
@@ -94,16 +68,16 @@ const getUUID = (socket: SocketIO.Socket) => {
 }
 
 const getPlayerByUUID = (uuid: string): Promise<Player> => {
-  return getPlayer(uuid)
+  return players.get(uuid)
 }
 
 IO.on('connection', async (socket) => {
   const uuid = getUUID(socket)
-  const player = await getPlayerByUUID(uuid)
+  let player = await getPlayerByUUID(uuid)
 
   // Add player to global players list
   if (!player) {
-    await setPlayer(uuid, { uuid, id: socket.id })
+    player = await players.set(uuid, { uuid, id: socket.id })
   }
 
   // Remove player from global players list upon disconnection
@@ -125,100 +99,9 @@ IO.on('connection', async (socket) => {
   //   }
   // })
 
-  socket.on(
-    ClientEvent.REQUEST_JOIN_GAME,
-    async ({ gameID, payload }: Payload<GameConfig>) => {
-      console.log('[REQUEST_JOIN_GAME]', { gameID, player, payload })
+  socket.on(ClientEvent.REQUEST_JOIN_GAME, joinGame(IO, socket))
 
-      // If the game doesn’t exist yet, we should ask the user if they want
-      // to create it
-      if (!gameID || !player) {
-        return
-      }
-
-      const room = await getRoom(gameID)
-
-      if (!room) {
-        console.log('There is no room with this name')
-        return
-      }
-
-      socket.join(gameID, async () => {
-        // Add player from the room
-        const isPlayerAlreadyInRoom = room.players.find(
-          (player) => player.uuid === uuid
-        )
-        if (!isPlayerAlreadyInRoom) {
-          room.players.push(player)
-          await setRoom(gameID, room)
-        }
-        console.log('[REQUEST_JOIN_GAME] Emitting room')
-        socket.emit(ServerEvent.JOINED_GAME, room)
-        socket.in(gameID).emit(ServerEvent.PLAYER_JOINED_GAME, room.players)
-      })
-
-      socket.on(ClientEvent.DISCONNECT, async () => {
-        const room = await getRoom(gameID)
-
-        if (room && player) {
-          // Remove player from the room
-          room.players = room.players.filter(({ uuid }) => uuid !== player.uuid)
-          await setRoom(gameID, room)
-          console.log(`Removed ${player.uuid} from the room`)
-        }
-        socket.in(gameID).emit(ServerEvent.PLAYER_LEFT, room.players)
-      })
-    }
-  )
-
-  socket.on(
-    ClientEvent.REQUEST_CREATE_GAME,
-    async ({ gameID, payload }: Payload<GameConfig>) => {
-      console.log('[REQUEST_CREATE_GAME]', { gameID, player, payload })
-
-      if (!gameID || !payload || !player) {
-        console.log({ gameID, payload, player })
-        console.log('no gameid, payload or player')
-        return
-      }
-
-      const room = await getRoom(gameID)
-
-      if (!room) {
-        console.log('no room')
-      }
-
-      if (room && room.players.find(({ uuid }) => uuid === player.uuid)) {
-        console.log('host rejoined')
-      }
-
-      const newRoom: Room = {
-        config: { ...payload, lastAuthor: player.uuid },
-        players: [player],
-        state: {
-          stage: GameStage.PRE,
-          rounds: [],
-        },
-      }
-
-      console.log('pre set room')
-
-      await setRoom(gameID, newRoom)
-
-      console.log('post set room')
-
-      socket.join(gameID, () => {
-        const { players, config } = newRoom
-        console.log(
-          '[REQUEST_CREATE_GAME] Emitting game config and player joined event to room',
-          config
-        )
-        console.log('emit')
-        IO.in(gameID).emit(ServerEvent.GAME_CONFIG, config)
-        IO.in(gameID).emit(ServerEvent.PLAYER_JOINED_GAME, players)
-      })
-    }
-  )
+  socket.on(ClientEvent.REQUEST_CREATE_GAME, createGame(IO, socket))
 
   socket.on(ClientEvent.GAME_CONFIG, async ({ gameID, payload }: Payload) => {
     console.log('[GAME_CONFIG]', { gameID, player, payload })
@@ -226,17 +109,17 @@ IO.on('connection', async (socket) => {
       return
     }
 
-    const room = await getRoom(gameID)
+    let config = await gameConfigs.get(gameID)
 
-    if (!room) {
+    if (!config) {
       console.log('There is no game with ID', gameID)
       socket.emit(ServerEvent.GAME_CONFIG, null)
       return
     }
 
-    room.config = { ...payload, lastAuthor: player.uuid }
-    await setRoom(gameID, room)
-    socket.in(gameID).emit(ServerEvent.GAME_CONFIG, room.config)
+    config = { ...payload, lastAuthor: player.uuid }
+    await gameConfigs.set(gameID, config)
+    socket.in(gameID).emit(ServerEvent.GAME_CONFIG, config)
   })
 
   socket.on(ClientEvent.START_ROUND, async ({ gameID }: Payload) => {
@@ -244,51 +127,52 @@ IO.on('connection', async (socket) => {
       return
     }
 
-    const room = await getRoom(gameID)
+    let [config, players, state] = await Promise.all([
+      gameConfigs.get(gameID),
+      gamePlayers.get(gameID),
+      gameStates.get(gameID),
+    ])
 
-    if (!room) {
+    if (!config) {
+      log.e('START_ROUND', 'No game config found for room', gameID)
       return
     }
 
     const isGameActiveOrEnded =
-      room.state.stage === GameStage.ACTIVE ||
-      room.state.stage === GameStage.END
-    const isGameInReview = room.state.stage === GameStage.REVIEW
+      state.stage === GameStage.ACTIVE || state.stage === GameStage.END
+    const isGameInReview = state.stage === GameStage.REVIEW
 
     if (isGameActiveOrEnded) {
       console.log('Cannot start a round that is in progress or has ended')
       return
     }
 
-    const answersTemplate: Round = room.players.reduce(
-      (round: Round, player) => {
-        round[player.uuid] = {}
-        return round
-      },
-      {}
-    )
+    const answersTemplate: Round = players.reduce((round: Round, player) => {
+      round[player.uuid] = {}
+      return round
+    }, {})
 
     if (isGameInReview) {
-      const roundResults = room.state.currentRound
-      if (roundResults) room.state.rounds.push(roundResults)
-      delete room.state.currentRound
+      const roundResults = state.currentRound
+      if (roundResults) state.rounds.push(roundResults)
+      delete state.currentRound
     }
 
-    const numRoundsPlayed = room.state.rounds.length
-    const hasPlayedAllRounds = room.config.rounds === numRoundsPlayed
-    room.state.stage = hasPlayedAllRounds ? GameStage.END : GameStage.ACTIVE
+    const numRoundsPlayed = state.rounds.length
+    const hasPlayedAllRounds = config.rounds === numRoundsPlayed
+    state.stage = hasPlayedAllRounds ? GameStage.END : GameStage.ACTIVE
 
     // If on the start screen or review screen, we can go ahead
     if (!hasPlayedAllRounds) {
-      const previouslyPlayedLetters = room.state.rounds.length
-        ? room.state.rounds.map((round) => round.letter || '')
+      const previouslyPlayedLetters = state.rounds.length
+        ? state.rounds.map((round) => round.letter || '')
         : []
 
-      const availableLetters = room.config.letters.filter(
+      const availableLetters = config.letters.filter(
         (letter) => !previouslyPlayedLetters.includes(letter)
       )
 
-      const playerVotes = room.config.categories.reduce<PlayerScores>(
+      const playerVotes = config.categories.reduce<PlayerScores>(
         (categories, category) => {
           categories[category] = 0
           return categories
@@ -296,7 +180,7 @@ IO.on('connection', async (socket) => {
         {}
       )
 
-      const newScores = room.players.reduce<Scores>((players, player) => {
+      const newScores = players.reduce<Scores>((players, player) => {
         if (players[player.uuid]) players[player.uuid] = playerVotes
         return players
       }, {})
@@ -307,14 +191,19 @@ IO.on('connection', async (socket) => {
         answers: answersTemplate,
         scores: newScores,
       }
-      room.state.currentRound = newRound
+      state.currentRound = newRound
     } else {
-      room.state.finalScores = getFinalScores(room.state.rounds)
+      state.finalScores = getFinalScores(state.rounds)
     }
 
-    await setRoom(gameID, room)
+    // Save everything
+    await Promise.all([
+      gameConfigs.set(gameID, config),
+      gamePlayers.set(gameID, players),
+      gameStates.set(gameID, state),
+    ])
 
-    IO.in(gameID).emit(ServerEvent.ROUND_STARTED, room.state)
+    IO.in(gameID).emit(ServerEvent.ROUND_STARTED, state)
   })
 
   socket.on(ClientEvent.END_ROUND, async ({ gameID }: Payload) => {
@@ -322,33 +211,38 @@ IO.on('connection', async (socket) => {
       return
     }
 
-    const room = await getRoom(gameID)
+    let [config, players, state] = await Promise.all([
+      gameConfigs.get(gameID),
+      gamePlayers.get(gameID),
+      gameStates.get(gameID),
+    ])
 
-    if (!room) {
+    const room: Room = { config, players, state }
+
+    if (!state) {
       return
     }
 
-    const isGameActive = room.state.stage === GameStage.ACTIVE
+    const isGameActive = state.stage === GameStage.ACTIVE
 
     if (!isGameActive) {
       console.log('Cannot end a round for a game not in progress')
       return
     }
 
-    room.state.stage = GameStage.REVIEW
+    state.stage = GameStage.REVIEW
 
-    if (!room.state?.currentRound) {
+    if (!state?.currentRound) {
       return log.e('Cannot end round that it not in progress')
     }
 
-    room.state.currentRound.endedByPlayer = player.uuid
+    state.currentRound.endedByPlayer = player.uuid
 
     const votes = getInitialScores(room)
-    if (votes) room.state.currentRound.scores = votes
+    if (votes) state.currentRound.scores = votes
 
-    await setRoom(gameID, room)
-
-    IO.in(gameID).emit(ServerEvent.ROUND_ENDED, room.state)
+    await gameStates.set(gameID, state)
+    IO.in(gameID).emit(ServerEvent.ROUND_ENDED, state)
   })
 
   socket.on(
@@ -358,12 +252,12 @@ IO.on('connection', async (socket) => {
         return
       }
 
-      const room = await getRoom(gameID)
+      const state = await gameStates.get(gameID)
 
       // fucking typescript
-      if (room.state.currentRound && payload) {
-        room.state.currentRound.answers[player.uuid] = payload
-        await setRoom(gameID, room)
+      if (state.currentRound && payload) {
+        state.currentRound.answers[player.uuid] = payload
+        await gameStates.set(gameID, state)
       }
     }
   )
@@ -375,30 +269,30 @@ IO.on('connection', async (socket) => {
         return
       }
 
-      const room = await getRoom(gameID)
+      let [config, state] = await Promise.all([
+        gameConfigs.get(gameID),
+        gameStates.get(gameID),
+      ])
 
-      if (!room) {
+      if (!config) {
         return
       }
 
-      if (!room.state.currentRound) {
+      if (!state.currentRound) {
         console.log('Cannot vote while round in progress')
         return
       }
 
       const { playerID, category, value } = payload
-      const answer = room.state.currentRound.answers[playerID][category]
-      const letter = room.state.currentRound.letter as string
+      const answer = state.currentRound.answers[playerID][category]
+      const letter = state.currentRound.letter as string
 
-      room.state.currentRound.scores[playerID][category] =
-        value === false ? 0 : scoreAnswer(room.config, letter, answer, false)
+      state.currentRound.scores[playerID][category] =
+        value === false ? 0 : scoreAnswer(config, letter, answer, false)
 
-      await setRoom(gameID, room)
+      await gameStates.set(gameID, state)
 
-      IO.in(gameID).emit(
-        ServerEvent.UPDATE_VOTES,
-        room.state.currentRound.scores
-      )
+      IO.in(gameID).emit(ServerEvent.UPDATE_VOTES, state.currentRound.scores)
     }
   )
 })
