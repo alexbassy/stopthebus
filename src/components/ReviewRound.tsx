@@ -9,7 +9,7 @@ export default function ReviewRound() {
 
   if (!game || !emit) return null
 
-  const { config, state } = game
+  const { config, state, players } = game
   const round = state.currentRound
 
   const handleNextRoundClick = (event: SyntheticEvent<HTMLButtonElement>) => {
@@ -42,12 +42,14 @@ export default function ReviewRound() {
             <li key={category}>
               <h3>{category}</h3>
               {Object.keys(round.answers).map((player) => {
+                const playerData = players.find(({ uuid }) => uuid === player)
+                const displayName = playerData?.name ?? player
                 const answersForPlayer = round.answers[player]
                 if (!answersForPlayer) return null
                 const score = round.scores[player][category]
                 return (
                   <div key={`result-${player}`}>
-                    <strong>{player}</strong>: {answersForPlayer[category]}
+                    <strong>{displayName}</strong>: {answersForPlayer[category]}
                     <input
                       type='checkbox'
                       title='Vote'

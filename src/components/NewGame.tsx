@@ -4,6 +4,7 @@ import React, {
   Dispatch,
   SetStateAction,
   SyntheticEvent,
+  useState,
 } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
@@ -21,6 +22,7 @@ interface NewGameProps {
 }
 
 export default function NewGame(props: NewGameProps) {
+  const [nickname, setNickname] = useState<string>('')
   const emit = useContext(EmitterContext)
   const game = useContext(GameContext)
 
@@ -110,12 +112,30 @@ export default function NewGame(props: NewGameProps) {
     emit(ClientEvent.START_ROUND)
   }
 
+  const handleNicknameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setNickname(event.target.value)
+  }
+
+  const handleNickNameUpdate = (event: SyntheticEvent<HTMLButtonElement>) => {
+    emit(ClientEvent.UPDATE_NICKNAME, nickname)
+  }
+
   const { config, players } = game
+  const currentPlayer = players.find((player) => player.uuid === sessionID)
+
+  if (!currentPlayer) return null
 
   return (
     <div>
       <h1>Game {config.id}</h1>
-      <p>Welcome, {sessionID}!</p>
+      <p>Welcome, {currentPlayer.name || currentPlayer.uuid}!</p>
+      <p>
+        Set a nickname{' '}
+        <input type='text' value={nickname} onChange={handleNicknameChange} />{' '}
+        <button type='button' onClick={handleNickNameUpdate}>
+          Change
+        </button>
+      </p>
       <h2>Game settings</h2>
       <section>
         <h3>Categories</h3>
@@ -196,7 +216,8 @@ export default function NewGame(props: NewGameProps) {
           {players &&
             players.map((player) => (
               <li key={player.uuid}>
-                {player.uuid} {player.uuid === sessionID && ' (me)'}
+                {player.name || player.uuid}{' '}
+                {player.uuid === sessionID && ' (me)'}
               </li>
             ))}
         </ul>

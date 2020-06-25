@@ -32,6 +32,9 @@ export enum ClientEvent {
   // the `PLAYER_JOINED_GAME` event.
   REQUEST_JOIN_GAME = 'REQUEST_JOIN_GAME',
 
+  // When the user sets a nickname for themselves
+  UPDATE_NICKNAME = 'UPDATE_NICKNAME',
+
   // Sent when the game config is modified or when a new player joins the game
   // Payload: gameConfig
   GAME_CONFIG = 'GAME_CONFIG',

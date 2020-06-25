@@ -33,6 +33,7 @@ import client, {
   routeGetRooms,
 } from './redis-client'
 import { joinGame, createGame } from './actions'
+import { logDOM } from '@testing-library/react'
 
 const app = express()
 const server = http.createServer(app)
@@ -100,6 +101,44 @@ IO.on('connection', async (socket) => {
   socket.on(ClientEvent.REQUEST_JOIN_GAME, joinGame(IO, socket))
 
   socket.on(ClientEvent.REQUEST_CREATE_GAME, createGame(IO, socket))
+
+  socket.on(
+    ClientEvent.UPDATE_NICKNAME,
+    async ({ gameID, payload }: Payload<string>) => {
+      const { r: logR, e: logE, d: logD } = log.n('UPDATE_NICKNAME')
+      logR('UPDATE_NICKNAME')
+
+      const uuid = getUUID(socket)
+      let player = await getPlayerByUUID(uuid)
+
+      if (!gameID || !player) {
+        logE('No gameID or Player provided')
+        return
+      }
+
+      if (!payload || payload.trim().length < 1) {
+        logE('Nickname is too short')
+        return
+      }
+
+      logD(`Updating player nickname to "${payload}"`)
+
+      player.name = payload
+
+      const playersInGame = await gamePlayers.get(gameID)
+      const newPlayers = playersInGame.map((currentPlayer) => {
+        if (currentPlayer.uuid === uuid) return player
+        return currentPlayer
+      })
+
+      debugger
+
+      await players.set(uuid, player)
+      await gamePlayers.set(gameID, newPlayers)
+
+      IO.in(gameID).emit(ServerEvent.PLAYER_JOINED_GAME, newPlayers)
+    }
+  )
 
   socket.on(ClientEvent.GAME_CONFIG, async ({ gameID, payload }: Payload) => {
     console.log('[GAME_CONFIG]', { gameID, player, payload })

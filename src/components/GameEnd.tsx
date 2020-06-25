@@ -8,7 +8,7 @@ export default function ReviewRound() {
 
   if (!game || !emit) return null
 
-  const { config, state } = game
+  const { config, state, players } = game
 
   if (!state.finalScores) return null
 
@@ -17,9 +17,12 @@ export default function ReviewRound() {
       <h2>Game {config.id} finished</h2>
       <ul>
         {Object.entries(state.finalScores).map(([playerID, score]) => {
+          const playerData = players.find(({ uuid }) => uuid === playerID)
+          const displayName = playerData?.name ?? playerID
+
           return (
             <li key={playerID}>
-              {playerID} scored {score}
+              {displayName} scored {score}
             </li>
           )
         })}
