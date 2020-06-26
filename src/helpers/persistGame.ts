@@ -3,13 +3,10 @@ import getLetters from './getLetters'
 
 const KEY = 'newGame'
 
-export const persistGameConfig = (
-  gameID: string,
-  categories: string[]
-): void => {
+export const persistGameConfig = (gameID: string): void => {
   const gameConfig = JSON.stringify({
     id: gameID,
-    categories: Array.from(categories),
+    categories: [],
     rounds: 3,
     mode: GameMode.RACE,
     letters: getLetters(),
