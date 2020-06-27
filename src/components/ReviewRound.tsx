@@ -46,6 +46,11 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
 
   return (
     <Table key={categoryName}>
+      <colgroup>
+        <col span={1} style={{ width: '20%' }} />
+        <col span={1} style={{ width: '60%' }} />
+        <col span={1} style={{ width: '20%' }} />
+      </colgroup>
       <thead>
         <tr>
           <th>{/* Player */}</th>
@@ -68,7 +73,7 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
                   checked={Boolean(score)}
                   onChange={handleVote(playerID, categoryName)}
                 />{' '}
-                {score} point{score === 1 ? '' : 's'}
+                {score}
               </td>
             </tr>
           )

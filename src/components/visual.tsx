@@ -69,20 +69,24 @@ export const Input = styled<'input'>('input')`
   border: 1px solid;
 `
 
+// 1. Hack for making checkboxes not broken on iOS
 export const Checkbox = styled<'input'>('input')`
-  font-size: 1.2rem;
-  padding: 0 0.25rem;
-  -webkit-appearance: none;
-  border: 1px solid;
-  background: white;
+  /* 1 */
+  @media screen and (min-width: 460px) {
+    font-size: 1.2rem;
+    padding: 0 0.25rem;
+    -webkit-appearance: none;
+    border: 1px solid;
+    background: white;
 
-  ::before {
-    content: '✔';
-    color: white;
-  }
+    ::before {
+      content: '✔';
+      color: white;
+    }
 
-  &[checked]::before {
-    color: black;
+    &[checked]::before {
+      color: black;
+    }
   }
 `
 
@@ -90,6 +94,10 @@ export const Button = styled<'button'>('button')`
   font-size: 1.2rem;
   padding: 0.5rem;
   -webkit-appearance: none;
+  background: white;
+  border: none;
+  box-shadow: 2px 2px ${(props) => props.theme.colours.pink};
+  border-radius: 4px;
 `
 
 export const List = styled<'ul'>('ul')`

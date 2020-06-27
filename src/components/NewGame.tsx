@@ -166,7 +166,7 @@ export default function NewGame(props: NewGameProps) {
             })}
         </List>
       </section>
-      <Distribute columns={[1, 1]}>
+      <Distribute columns={[1, 1]} stackOnMobile>
         <section>
           <H3>Categories</H3>
           <CategoriesList
