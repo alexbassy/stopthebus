@@ -33,7 +33,6 @@ import client, {
   routeGetRooms,
 } from './redis-client'
 import { joinGame, createGame } from './actions'
-import { logDOM } from '@testing-library/react'
 
 const app = express()
 const server = http.createServer(app)
@@ -130,8 +129,6 @@ IO.on('connection', async (socket) => {
         if (currentPlayer.uuid === uuid) return player
         return currentPlayer
       })
-
-      debugger
 
       await players.set(uuid, player)
       await gamePlayers.set(gameID, newPlayers)

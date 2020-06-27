@@ -14,6 +14,8 @@ import { GameConfig, GameMode } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
 import { getUserSessionID } from '../helpers/getUserSession'
 import CategoriesList from '../components/CategoriesList'
+import { Input, Button, H2, H3, List, Item, Checkbox, Spacing } from './visual'
+import { Distribute } from './layout'
 
 const sessionID = getUserSessionID()
 
@@ -127,102 +129,106 @@ export default function NewGame(props: NewGameProps) {
 
   return (
     <div>
-      <h1>Game {config.id}</h1>
+      <H2>Game {config.id}</H2>
       <p>Welcome, {currentPlayer.name || currentPlayer.uuid}!</p>
       <p>
         Set a nickname{' '}
-        <input type='text' value={nickname} onChange={handleNicknameChange} />{' '}
-        <button type='button' onClick={handleNickNameUpdate}>
+        <Input type='text' value={nickname} onChange={handleNicknameChange} />{' '}
+        <Button type='button' onClick={handleNickNameUpdate}>
           Change
-        </button>
+        </Button>
       </p>
-      <h2>Game settings</h2>
+      <H2>Game settings</H2>
       <section>
-        <h3>Categories</h3>
-        <CategoriesList
-          selectedCategories={config?.categories || []}
-          onChange={handleCategoryChange}
-        />
-      </section>
-      <section>
-        <h3>Mode</h3>
-        <p>You can race against each other, or with a time limit</p>
-        <div>
-          <label>
-            Play mode{' '}
-            <select value={config?.mode} onChange={handleModeChange}>
-              <option value={GameMode.RACE}>Race</option>
-              <option value={GameMode.TIMER}>Timer</option>
-            </select>
-          </label>
-        </div>
-        <div>
-          {config?.mode === GameMode.TIMER && (
-            <label>
-              Time (seconds){' '}
-              <input
-                type='number'
-                value={Math.round(config.time ? config.time / 1000 : 60)}
-                onChange={handleTimeChange}
-              />
-            </label>
-          )}
-        </div>
-        <div>
-          Number of rounds{' '}
-          <select value={config?.rounds} onChange={handleRoundCountChange}>
-            {range(1, 10).map((val) => (
-              <option key={val} value={val}>
-                {val}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>
-            <input
-              type='checkbox'
-              checked={config?.scoreWithAlliteration}
-              onChange={handleAlliterationChange}
-            />{' '}
-            Points for alliteration
-          </label>
-        </div>
-      </section>
-      <section>
-        <h3>Letters</h3>
-        <ul>
+        <H3>Letters</H3>
+        <List>
           {config &&
             ENGLISH_LETTERS.map((letter) => {
               return (
-                <li key={letter}>
-                  <label>
-                    <input
-                      type='checkbox'
-                      value={letter}
-                      checked={config?.letters?.includes(letter)}
-                      onChange={handleLetterChange(letter)}
-                    />
-                    {letter}
-                  </label>
-                </li>
+                <Item key={letter} inline>
+                  <Spacing r={0.75} b={0.75}>
+                    <label>
+                      <Checkbox
+                        type='checkbox'
+                        value={letter}
+                        checked={config?.letters?.includes(letter)}
+                        onChange={handleLetterChange(letter)}
+                      />
+                      {letter.toUpperCase()}
+                    </label>
+                  </Spacing>
+                </Item>
               )
             })}
-        </ul>
+        </List>
       </section>
+      <Distribute columns={[1, 1]}>
+        <section>
+          <H3>Categories</H3>
+          <CategoriesList
+            selectedCategories={config?.categories || []}
+            onChange={handleCategoryChange}
+          />
+        </section>
+        <section>
+          <H3>Mode</H3>
+          <p>You can race against each other, or with a time limit</p>
+          <div>
+            <label>
+              Play mode{' '}
+              <select value={config?.mode} onChange={handleModeChange}>
+                <option value={GameMode.RACE}>Race</option>
+                <option value={GameMode.TIMER}>Timer</option>
+              </select>
+            </label>
+          </div>
+          <div>
+            {config?.mode === GameMode.TIMER && (
+              <label>
+                Time (seconds){' '}
+                <Input
+                  type='number'
+                  value={Math.round(config.time ? config.time / 1000 : 60)}
+                  onChange={handleTimeChange}
+                />
+              </label>
+            )}
+          </div>
+          <div>
+            Number of rounds{' '}
+            <select value={config?.rounds} onChange={handleRoundCountChange}>
+              {range(1, 10).map((val) => (
+                <option key={val} value={val}>
+                  {val}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label>
+              <Checkbox
+                type='checkbox'
+                checked={config?.scoreWithAlliteration}
+                onChange={handleAlliterationChange}
+              />{' '}
+              Points for alliteration
+            </label>
+          </div>
+        </section>
+      </Distribute>
       <section>
-        <h3>Players</h3>
-        <ul>
+        <H3>Players</H3>
+        <List>
           {players &&
             players.map((player) => (
-              <li key={player.uuid}>
+              <Item key={player.uuid}>
                 {player.name || player.uuid}{' '}
                 {player.uuid === sessionID && ' (me)'}
-              </li>
+              </Item>
             ))}
-        </ul>
+        </List>
       </section>
-      <button onClick={handleStartGameClick}>Start game</button>
+      <Button onClick={handleStartGameClick}>Start game</Button>
     </div>
   )
 }

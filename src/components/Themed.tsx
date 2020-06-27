@@ -2,7 +2,7 @@ import React, { ReactChild } from 'react'
 import { Helmet } from 'react-helmet'
 import { Global } from '@emotion/core'
 import { ThemeProvider } from 'emotion-theming'
-import { globalStyles } from './visual'
+import { globalStyles, Background, Wrapper } from './visual'
 
 interface Typeface {
   name: string
@@ -17,19 +17,22 @@ export interface Theme {
 const pastel: Theme = {
   fonts: {
     title: {
-      name: 'Faster One',
-      href: 'https://fonts.googleapis.com/css2?family=Faster+One&display=swap',
+      name: 'Raleway',
+      href:
+        'https://fonts.googleapis.com/css2?family=Noto+Sans&family=Raleway:wght@700&display=swap',
     },
     body: {
-      name: '',
+      name: 'Noto Sans',
       href: '',
     },
   },
   colours: {
-    purple: '#A91ADD',
-    pink: '#F38099',
-    yellow: '#FFE07B',
-    blue: '#7ADEC6',
+    orange: '#FF9770',
+    pink: '#FF70A6',
+    yellow: '#FFD670',
+    lemon: '#E9FF70',
+    blue: '#1FBFFF',
+    purple: '#b523da',
     green: '#35EF9E',
   },
 }
@@ -48,7 +51,9 @@ export default function Themed({ theme = 'pastel', children }: ThemedProps) {
         <link href={themes[theme].fonts.title.href} rel='stylesheet' />
       </Helmet>
       <Global styles={globalStyles} />
-      {children}
+      <Background>
+        <Wrapper>{children}</Wrapper>
+      </Background>
     </ThemeProvider>
   )
 }

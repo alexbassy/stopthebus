@@ -1,9 +1,8 @@
 import React, { useState, SyntheticEvent, useEffect } from 'react'
 import { persistGameConfig } from '../helpers/persistGame'
-import { categories } from '../constants/categories'
 import { hri } from 'human-readable-ids'
 import { useHistory } from 'react-router-dom'
-import { Title } from '../components/visual'
+import { Title, Input, Button, H2 } from '../components/visual'
 
 export default function Home() {
   const history = useHistory()
@@ -28,28 +27,30 @@ export default function Home() {
   return (
     <div>
       <Title>Stop The Bus</Title>
-      <h2>Join a game</h2>
+      <H2>Join a game</H2>
       <form onSubmit={handleJoinGame}>
         <label>
           Game ID:{' '}
-          <input
+          <Input
+            type='text'
             id='game-id'
             value={gameID}
             onChange={(ev) => setGameID(ev.target.value)}
           />
         </label>
-        <button>Join</button>
+        <Button>Join</Button>
       </form>
-      <h2>Create a game</h2>
+      <H2>Create a game</H2>
       <form onSubmit={handleCreateGame}>
         <label htmlFor='new-game-id'>
-          <span>New game ID: </span>
-          <input id='new-game-id' value={newGameID} readOnly />
+          <Input type='text' id='new-game-id' value={newGameID} readOnly />
         </label>
-        <button type='button' onClick={() => setNewGameID(hri.random())}>
+        <Button type='button' onClick={() => setNewGameID(hri.random())}>
           Change game ID
-        </button>
-        <button>Create game</button>
+        </Button>
+        <br />
+        <br />
+        <Button>Create game</Button>
       </form>
     </div>
   )

@@ -1,5 +1,15 @@
-import React from 'react'
+import React, {
+  useState,
+  useContext,
+  SyntheticEvent,
+  ChangeEvent,
+  useEffect,
+} from 'react'
+import GameContext from '../contexts/GameContext'
+import EmitterContext from '../contexts/EmitterContext'
 import { categories } from '../constants/categories'
+import { ClientEvent } from '../typings/socket-events'
+import { List, Item, Button, Input, Checkbox } from './visual'
 
 interface CategoriesListProps {
   selectedCategories: string[]
@@ -7,15 +17,35 @@ interface CategoriesListProps {
 }
 
 export default function CategoriesList(props: CategoriesListProps) {
+  const emit = useContext(EmitterContext)
+  const game = useContext(GameContext)
   const { selectedCategories, onChange } = props
+  const [customCategory, setCustomCategory] = useState<string>('')
+  const customCategories = selectedCategories.filter(
+    (cat) => !categories.includes(cat)
+  )
+
+  const handleNewCustomCategory = (event: SyntheticEvent<HTMLFormElement>) => {
+    onChange([...new Set([...selectedCategories, customCategory])])
+    setCustomCategory('')
+  }
+
+  const handleCustomCategoryChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setCustomCategory(event.target.value)
+  }
+
+  if (!game || !emit) {
+    return null
+  }
+
   return (
     <div>
-      <ul>
-        {categories.map((category, index) => {
+      <List>
+        {[...categories, ...customCategories].map((category, index) => {
           return (
-            <li key={index}>
+            <Item key={index}>
               <label>
-                <input
+                <Checkbox
                   type='checkbox'
                   onChange={() => {
                     const newState = new Set(selectedCategories)
@@ -28,10 +58,20 @@ export default function CategoriesList(props: CategoriesListProps) {
                 />
                 <span>{category}</span>
               </label>
-            </li>
+            </Item>
           )
         })}
-      </ul>
+      </List>
+      <div>
+        <form onSubmit={handleNewCustomCategory}>
+          <Input
+            type='text'
+            value={customCategory}
+            onChange={handleCustomCategoryChange}
+          />{' '}
+          <Button>Add new category</Button>
+        </form>
+      </div>
     </div>
   )
 }

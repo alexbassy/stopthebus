@@ -5,7 +5,7 @@ export interface User {
 }
 
 export function getUserSession(): User {
-  const persisted = sessionStorage.getItem('session')
+  const persisted = localStorage.getItem('session')
 
   if (persisted) {
     return JSON.parse(persisted)
@@ -15,7 +15,7 @@ export function getUserSession(): User {
     uuid: v4(),
   }
 
-  sessionStorage.setItem('session', JSON.stringify(user))
+  localStorage.setItem('session', JSON.stringify(user))
 
   return user
 }

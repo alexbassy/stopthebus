@@ -1,6 +1,8 @@
 import React, { useContext } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
+import { List, Item } from './visual'
+import { Link } from 'react-router-dom'
 
 export default function ReviewRound() {
   const emit = useContext(EmitterContext)
@@ -15,18 +17,27 @@ export default function ReviewRound() {
   return (
     <div>
       <h2>Game {config.id} finished</h2>
-      <ul>
-        {Object.entries(state.finalScores).map(([playerID, score]) => {
+      <List>
+        {Object.entries(state.finalScores).map(([playerID, score], index) => {
           const playerData = players.find(({ uuid }) => uuid === playerID)
           const displayName = playerData?.name ?? playerID
 
+          if (index === 0) {
+            return (
+              <Item key={playerID}>
+                {displayName} won with a score of {score}
+              </Item>
+            )
+          }
+
           return (
-            <li key={playerID}>
+            <Item key={playerID}>
               {displayName} scored {score}
-            </li>
+            </Item>
           )
         })}
-      </ul>
+      </List>
+      <Link to='/'>Play another game</Link>
     </div>
   )
 }

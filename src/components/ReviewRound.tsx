@@ -2,6 +2,17 @@ import React, { useContext, ChangeEvent, SyntheticEvent } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
+import { Button, List, Item } from './visual'
+import styled from './styled'
+import { categories } from '../constants/categories'
+
+const Table = styled('table')`
+  width: 100%;
+
+  thead {
+    text-align: left;
+  }
+`
 
 export default function ReviewRound() {
   const emit = useContext(EmitterContext)
@@ -40,20 +51,28 @@ export default function ReviewRound() {
       <p>
         Round finished by <strong>{playerWhoEndedRound}</strong>
       </p>
-      <ul>
-        {config.categories.map((category) => {
-          return (
-            <li key={category}>
-              <h3>{category}</h3>
-              {Object.keys(round.answers).map((player) => {
-                const playerData = players.find(({ uuid }) => uuid === player)
-                const displayName = playerData?.name ?? player
-                const answersForPlayer = round.answers[player]
-                if (!answersForPlayer) return null
-                const score = round.scores[player][category]
-                return (
-                  <div key={`result-${player}`}>
-                    <strong>{displayName}</strong>: {answersForPlayer[category]}
+      <Table>
+        <thead>
+          <th></th>
+          {config.categories.map((category, index) => {
+            return <th key={category}>{category}</th>
+          })}
+          <th>Points</th>
+        </thead>
+        <tbody>
+          {config.categories.map((category, index) => {
+            return Object.keys(round.answers).map((player) => {
+              const answersForPlayer = round.answers[player]
+              const playerData = players.find(({ uuid }) => uuid === player)
+              const displayName = playerData?.name ?? player
+              if (!answersForPlayer) return null
+              const score = round.scores[player][category]
+
+              return (
+                <tr key={category}>
+                  <td>{displayName}</td>
+                  <td>{answersForPlayer[category]}</td>
+                  <td>
                     <input
                       type='checkbox'
                       title='Vote'
@@ -61,14 +80,15 @@ export default function ReviewRound() {
                       onChange={handleVote(player, category)}
                     />{' '}
                     {score} point{score === 1 ? '' : 's'}
-                  </div>
-                )
-              })}
-            </li>
-          )
-        })}
-      </ul>
-      <button onClick={handleNextRoundClick}>Next round</button>
+                  </td>
+                </tr>
+              )
+            })
+          })}
+        </tbody>
+      </Table>
+
+      <Button onClick={handleNextRoundClick}>Next round</Button>
     </div>
   )
 }

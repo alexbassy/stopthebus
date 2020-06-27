@@ -4,6 +4,7 @@ import EmitterContext from '../contexts/EmitterContext'
 import { RoundResults } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
 import { getUserSessionID } from '../helpers/getUserSession'
+import { Input, Button, List, Item, Spacing } from './visual'
 
 export default function ActiveRound() {
   const uuid = getUserSessionID()
@@ -46,27 +47,29 @@ export default function ActiveRound() {
         The letter is{' '}
         <strong>{game.state.currentRound?.letter?.toUpperCase()}</strong>
       </p>
-      <ul>
+      <List>
         {config.categories.map((category) => {
           const stripped = category.replace(/\W/g, '')
           const id = `input-${stripped}`
           return (
-            <li key={category}>
-              <label htmlFor={id}>{category}</label>
-              <div>
-                <input
-                  type='text'
-                  id={id}
-                  onBlur={handleBlur}
-                  onChange={handleChange(category)}
-                  value={values[category] ?? ''}
-                />
-              </div>
-            </li>
+            <Item key={category}>
+              <Spacing b={1}>
+                <label htmlFor={id}>{category}</label>
+                <div>
+                  <Input
+                    type='text'
+                    id={id}
+                    onBlur={handleBlur}
+                    onChange={handleChange(category)}
+                    value={values[category] ?? ''}
+                  />
+                </div>
+              </Spacing>
+            </Item>
           )
         })}
-      </ul>
-      <button onClick={handleEndRoundClick}>Finished</button>
+      </List>
+      <Button onClick={handleEndRoundClick}>Finished</Button>
     </div>
   )
 }
