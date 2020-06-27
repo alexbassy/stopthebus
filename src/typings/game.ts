@@ -25,7 +25,7 @@ export interface GameConfig {
  */
 
 export interface Player {
-  id: string
+  id?: string
   uuid: string
   name?: string
 }

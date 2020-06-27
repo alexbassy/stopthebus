@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react'
 import io from 'socket.io-client'
 import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
-import { getUserSessionID } from '../helpers/getUserSession'
+import { getUserSessionID, getUserSession } from '../helpers/getUserSession'
 import log from '../helpers/log'
 
 export type SocketCallback = {
@@ -28,7 +28,7 @@ interface SocketHook {
 }
 
 const logEvents = true
-const sessionID = getUserSessionID()
+const session = getUserSession()
 
 export default function useSocket({
   callbacks,
@@ -40,7 +40,7 @@ export default function useSocket({
   useEffect(() => {
     if (!socketRef.current) {
       console.log('[useSocket] initialising')
-      const soc = io({ query: { sessionID } })
+      const soc = io({ query: { sessionID: session.uuid } })
       socketRef.current = soc
     }
 
@@ -51,7 +51,10 @@ export default function useSocket({
 
     const socket = socketRef.current
 
-    console.log('[useSocket] adding listeners')
+    socket.once(ClientEvent.CONNECT, () => {
+      socket.emit(ClientEvent.UPDATE_NICKNAME, getPayload(session.name))
+    })
+
     const boundCallbacks: [string, Function][] = Object.entries(callbacks).map(
       ([name, callback]) => {
         if (!callback) return [name, () => {}]

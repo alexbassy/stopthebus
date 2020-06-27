@@ -12,7 +12,10 @@ import { range } from '../helpers/util'
 import { ENGLISH_LETTERS } from '../constants/letters'
 import { GameConfig, GameMode } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
-import { getUserSessionID } from '../helpers/getUserSession'
+import {
+  getUserSessionID,
+  updatePersistedUserName,
+} from '../helpers/getUserSession'
 import CategoriesList from '../components/CategoriesList'
 import { Input, Button, H2, H3, List, Item, Checkbox, Spacing } from './visual'
 import { Distribute } from './layout'
@@ -119,6 +122,7 @@ export default function NewGame(props: NewGameProps) {
   }
 
   const handleNickNameUpdate = (event: SyntheticEvent<HTMLButtonElement>) => {
+    updatePersistedUserName(nickname)
     emit(ClientEvent.UPDATE_NICKNAME, nickname)
   }
 
