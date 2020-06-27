@@ -174,64 +174,67 @@ export default function NewGame(props: NewGameProps) {
             onChange={handleCategoryChange}
           />
         </section>
-        <section>
-          <H3>Mode</H3>
-          <p>You can race against each other, or with a time limit</p>
-          <div>
-            <label>
-              Play mode{' '}
-              <select value={config?.mode} onChange={handleModeChange}>
-                <option value={GameMode.RACE}>Race</option>
-                <option value={GameMode.TIMER}>Timer</option>
-              </select>
-            </label>
-          </div>
-          <div>
-            {config?.mode === GameMode.TIMER && (
+        <div>
+          <section>
+            <H3>Mode</H3>
+            <p>You can race against each other, or with a time limit</p>
+            <div>
               <label>
-                Time (seconds){' '}
-                <Input
-                  type='number'
-                  value={Math.round(config.time ? config.time / 1000 : 60)}
-                  onChange={handleTimeChange}
-                />
+                Play mode{' '}
+                <select value={config?.mode} onChange={handleModeChange}>
+                  <option value={GameMode.RACE}>Race</option>
+                  <option value={GameMode.TIMER}>Timer</option>
+                </select>
               </label>
-            )}
-          </div>
-          <div>
-            Number of rounds{' '}
-            <select value={config?.rounds} onChange={handleRoundCountChange}>
-              {range(1, 10).map((val) => (
-                <option key={val} value={val}>
-                  {val}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>
-              <Checkbox
-                type='checkbox'
-                checked={config?.scoreWithAlliteration}
-                onChange={handleAlliterationChange}
-              />{' '}
-              Points for alliteration
-            </label>
-          </div>
-        </section>
+            </div>
+            <div>
+              {config?.mode === GameMode.TIMER && (
+                <label>
+                  Time (seconds){' '}
+                  <Input
+                    type='number'
+                    value={Math.round(config.time ? config.time / 1000 : 60)}
+                    onChange={handleTimeChange}
+                  />
+                </label>
+              )}
+            </div>
+            <div>
+              Number of rounds{' '}
+              <select value={config?.rounds} onChange={handleRoundCountChange}>
+                {range(1, 10).map((val) => (
+                  <option key={val} value={val}>
+                    {val}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label>
+                <Checkbox
+                  type='checkbox'
+                  checked={config?.scoreWithAlliteration}
+                  onChange={handleAlliterationChange}
+                />{' '}
+                Points for alliteration
+              </label>
+            </div>
+          </section>
+          <section>
+            <H3>Players</H3>
+            <List>
+              {players &&
+                players.map((player) => (
+                  <Item key={player.uuid}>
+                    {player.name || player.uuid}{' '}
+                    {player.uuid === sessionID && ' (me)'}
+                  </Item>
+                ))}
+            </List>
+          </section>
+        </div>
       </Distribute>
-      <section>
-        <H3>Players</H3>
-        <List>
-          {players &&
-            players.map((player) => (
-              <Item key={player.uuid}>
-                {player.name || player.uuid}{' '}
-                {player.uuid === sessionID && ' (me)'}
-              </Item>
-            ))}
-        </List>
-      </section>
+
       <Button onClick={handleStartGameClick}>Start game</Button>
     </div>
   )

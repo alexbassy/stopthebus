@@ -26,6 +26,13 @@ export default function CategoriesList(props: CategoriesListProps) {
   )
 
   const handleNewCustomCategory = (event: SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (customCategory.trim().length < 2) {
+      // Should show an error here
+      return
+    }
+
     onChange([...new Set([...selectedCategories, customCategory])])
     setCustomCategory('')
   }
@@ -68,8 +75,9 @@ export default function CategoriesList(props: CategoriesListProps) {
             type='text'
             value={customCategory}
             onChange={handleCustomCategoryChange}
+            placeholder='Custom category'
           />{' '}
-          <Button>Add new category</Button>
+          <Button>Add</Button>
         </form>
       </div>
     </div>

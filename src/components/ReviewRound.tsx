@@ -4,15 +4,79 @@ import EmitterContext from '../contexts/EmitterContext'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
 import { Button, List, Item } from './visual'
 import styled from './styled'
-import { categories } from '../constants/categories'
+import { Round, Scores } from '../typings/game'
 
 const Table = styled('table')`
   width: 100%;
+  table-layout: fixed;
+  margin-bottom: 2rem;
 
   thead {
     text-align: left;
   }
 `
+
+interface ResultsTableProps {
+  categoryName: string
+  answers: Round
+  scores: Scores
+}
+
+const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
+  const game = useContext(GameContext)
+  const emit = useContext(EmitterContext)
+
+  if (!game || !emit) {
+    return null
+  }
+
+  const handleVote = (playerID: string, category: string) => (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const payload: PlayerVote = {
+      playerID,
+      category,
+      value: event.target.checked,
+    }
+    emit(ClientEvent.VOTE_ANSWER, payload)
+  }
+
+  const getPlayerName = (uuid: string) =>
+    game.players.find((player) => uuid === player.uuid)?.name || uuid
+
+  return (
+    <Table key={categoryName}>
+      <thead>
+        <tr>
+          <th>{/* Player */}</th>
+          <th>{categoryName}</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {Object.keys(answers).map((playerID) => {
+          const answer = answers[playerID][categoryName]
+          const score = scores[playerID][categoryName]
+          return (
+            <tr key={`${categoryName}-${playerID}`}>
+              <td>{getPlayerName(playerID)}</td>
+              <td>{answer}</td>
+              <td>
+                <input
+                  type='checkbox'
+                  title='Vote'
+                  checked={Boolean(score)}
+                  onChange={handleVote(playerID, categoryName)}
+                />{' '}
+                {score} point{score === 1 ? '' : 's'}
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </Table>
+  )
+}
 
 export default function ReviewRound() {
   const emit = useContext(EmitterContext)
@@ -25,17 +89,6 @@ export default function ReviewRound() {
 
   const handleNextRoundClick = (event: SyntheticEvent<HTMLButtonElement>) => {
     emit(ClientEvent.START_ROUND)
-  }
-
-  const handleVote = (playerID: string, category: string) => (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
-    const payload: PlayerVote = {
-      playerID,
-      category,
-      value: event.target.checked,
-    }
-    emit(ClientEvent.VOTE_ANSWER, payload)
   }
 
   if (!round) return null
@@ -51,42 +104,16 @@ export default function ReviewRound() {
       <p>
         Round finished by <strong>{playerWhoEndedRound}</strong>
       </p>
-      <Table>
-        <thead>
-          <th></th>
-          {config.categories.map((category, index) => {
-            return <th key={category}>{category}</th>
-          })}
-          <th>Points</th>
-        </thead>
-        <tbody>
-          {config.categories.map((category, index) => {
-            return Object.keys(round.answers).map((player) => {
-              const answersForPlayer = round.answers[player]
-              const playerData = players.find(({ uuid }) => uuid === player)
-              const displayName = playerData?.name ?? player
-              if (!answersForPlayer) return null
-              const score = round.scores[player][category]
 
-              return (
-                <tr key={category}>
-                  <td>{displayName}</td>
-                  <td>{answersForPlayer[category]}</td>
-                  <td>
-                    <input
-                      type='checkbox'
-                      title='Vote'
-                      checked={Boolean(score)}
-                      onChange={handleVote(player, category)}
-                    />{' '}
-                    {score} point{score === 1 ? '' : 's'}
-                  </td>
-                </tr>
-              )
-            })
-          })}
-        </tbody>
-      </Table>
+      {config.categories.map((category) => {
+        return (
+          <ResultsTable
+            categoryName={category}
+            answers={round.answers}
+            scores={round.scores}
+          />
+        )
+      })}
 
       <Button onClick={handleNextRoundClick}>Next round</Button>
     </div>

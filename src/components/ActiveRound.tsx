@@ -36,8 +36,19 @@ export default function ActiveRound() {
     emit(ClientEvent.FILLED_ANSWER, values)
   }
 
-  const handleEndRoundClick = (event: SyntheticEvent<HTMLButtonElement>) => {
-    emit(ClientEvent.END_ROUND)
+  const handleEndRoundClick = (event: SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const hasAnswerForAllCategories = config.categories.every((category) => {
+      const playerAnswer = values[category]
+      return playerAnswer && playerAnswer.length > 1
+    })
+    let shouldEndRound = true
+    if (!hasAnswerForAllCategories) {
+      shouldEndRound = window.confirm(
+        `You haven’t filled in all answers. Are you sure you want to end the round?`
+      )
+    }
+    if (shouldEndRound) emit(ClientEvent.END_ROUND)
   }
 
   return (
@@ -47,29 +58,31 @@ export default function ActiveRound() {
         The letter is{' '}
         <strong>{game.state.currentRound?.letter?.toUpperCase()}</strong>
       </p>
-      <List>
-        {config.categories.map((category) => {
-          const stripped = category.replace(/\W/g, '')
-          const id = `input-${stripped}`
-          return (
-            <Item key={category}>
-              <Spacing b={1}>
-                <label htmlFor={id}>{category}</label>
-                <div>
-                  <Input
-                    type='text'
-                    id={id}
-                    onBlur={handleBlur}
-                    onChange={handleChange(category)}
-                    value={values[category] ?? ''}
-                  />
-                </div>
-              </Spacing>
-            </Item>
-          )
-        })}
-      </List>
-      <Button onClick={handleEndRoundClick}>Finished</Button>
+      <form onSubmit={handleEndRoundClick}>
+        <List>
+          {config.categories.map((category) => {
+            const stripped = category.replace(/\W/g, '')
+            const id = `input-${stripped}`
+            return (
+              <Item key={category}>
+                <Spacing b={1}>
+                  <label htmlFor={id}>{category}</label>
+                  <div>
+                    <Input
+                      type='text'
+                      id={id}
+                      onBlur={handleBlur}
+                      onChange={handleChange(category)}
+                      value={values[category] ?? ''}
+                    />
+                  </div>
+                </Spacing>
+              </Item>
+            )
+          })}
+        </List>
+        <Button>Finished</Button>
+      </form>
     </div>
   )
 }
