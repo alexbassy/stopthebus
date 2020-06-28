@@ -15,7 +15,10 @@ export default function Home() {
 
   const handleJoinGame = (ev: SyntheticEvent<HTMLFormElement>) => {
     ev.preventDefault()
-    history.push(`/game/${gameID}`)
+    const sanitised = gameID.trim().toLowerCase()
+    if (sanitised.length) {
+      history.push(`/game/${gameID}`)
+    }
   }
 
   const handleCreateGame = (ev: SyntheticEvent<HTMLFormElement>) => {
