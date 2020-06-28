@@ -15,12 +15,11 @@ import { getPlayerUUID } from '../../helpers/socket'
 export const joinGame = (
   IO: SocketIO.Server,
   socket: SocketIO.Socket
-) => async ({ gameID, payload }: Payload<GameConfig>) => {
+) => async ({ gameID }: Payload) => {
   const uuid = getPlayerUUID(socket)
   const player = await playerClient.get(getPlayerUUID(socket))
 
-  const { d: logD, e: logE, r: logR } = log.n('REQUEST_JOIN_GAME')
-  logR({ gameID, player, payload })
+  const { d: logD, e: logE } = log.n('REQUEST_JOIN_GAME')
 
   // If the game doesn’t exist yet, we should ask the
   // user if they want to create it
@@ -152,6 +151,9 @@ export const updateGameConfig = (
     socket.emit(ServerEvent.GAME_CONFIG, null)
     return
   }
+
+  // Sanitise
+  payload.categories = payload.categories.filter(Boolean)
 
   config = { ...payload, lastAuthor: player.uuid }
   await gameConfigs.set(gameID, config)

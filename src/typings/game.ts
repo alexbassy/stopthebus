@@ -14,7 +14,7 @@ export interface GameConfig {
   rounds: number
   mode: GameMode
   time?: number
-  letters: string[]
+  letters: string
   created: number
   lastAuthor?: string
   scoreWithAlliteration: boolean

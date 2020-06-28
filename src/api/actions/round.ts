@@ -78,9 +78,9 @@ export const startRound = (
       ? state.rounds.map((round) => round.letter || '')
       : []
 
-    const availableLetters = config.letters.filter(
-      (letter) => !previouslyPlayedLetters.includes(letter)
-    )
+    const availableLetters = config.letters
+      .split('')
+      .filter((letter) => !previouslyPlayedLetters.includes(letter))
 
     const playerVotes = config.categories.reduce<PlayerScores>(
       (categories, category) => {

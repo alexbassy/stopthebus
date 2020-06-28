@@ -47,13 +47,14 @@ export default function NewGame(props: NewGameProps) {
   const handleLetterChange = (letter: string) => () => {
     props.onChange((gameConfig) => {
       const newLetters = new Set(gameConfig?.letters)
+
       newLetters.has(letter)
         ? newLetters.delete(letter)
         : newLetters.add(letter)
 
       const newGameConfig = {
         ...gameConfig,
-        letters: [...newLetters],
+        letters: [...newLetters].join(''),
       }
 
       emit(ClientEvent.GAME_CONFIG, newGameConfig)
