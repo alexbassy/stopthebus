@@ -30,6 +30,6 @@ interface FlexProps {
 
 export const Flex = styled.div<FlexProps>`
   display: flex;
-  ${(props) => props.xCentre && `justify-items: center;`};
+  ${(props) => props.xCentre && `justify-content: center;`};
   ${(props) => props.yCentre && `align-items: center;`};
 `

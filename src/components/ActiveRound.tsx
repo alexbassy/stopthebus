@@ -5,7 +5,7 @@ import EmitterContext from '../contexts/EmitterContext'
 import { RoundResults } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
 import { getUserSessionID } from '../helpers/getUserSession'
-import { Input, Button, List, Item, Spacing } from './visual'
+import { GameName, Input, Button, List, Item, Spacing } from './visual'
 
 export default function ActiveRound() {
   const uuid = getUserSessionID()
@@ -56,7 +56,7 @@ export default function ActiveRound() {
 
   return (
     <div>
-      <h1>Game {config.id}</h1>
+      <GameName>Game {config.id}</GameName>
       <p>
         The letter is{' '}
         <strong style={{ fontSize: '2rem' }}>

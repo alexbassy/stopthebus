@@ -76,6 +76,10 @@ export const Title = styled<'h1'>('h1')`
   }
 `
 
+export const GameName = styled<'h2'>('h2')`
+  font-size: 1.75rem;
+`
+
 export const H2 = styled<'h2'>('h2')`
   text-shadow: 1px 1px rgb(0 0 0 / 40%);
 `

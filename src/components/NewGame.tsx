@@ -17,7 +17,17 @@ import {
   updatePersistedUserName,
 } from '../helpers/getUserSession'
 import CategoriesList from '../components/CategoriesList'
-import { Input, Button, H2, H3, List, Item, Checkbox, Spacing } from './visual'
+import {
+  GameName,
+  Input,
+  Button,
+  H2,
+  H3,
+  List,
+  Item,
+  Checkbox,
+  Spacing,
+} from './visual'
 import { Grid, Flex } from './layout'
 
 const sessionID = getUserSessionID()
@@ -134,7 +144,7 @@ export default function NewGame(props: NewGameProps) {
 
   return (
     <div>
-      <H2>Game {config.id}</H2>
+      <GameName>Game {config.id}</GameName>
       <p>Welcome, {currentPlayer.name || currentPlayer.uuid}!</p>
       <p>
         <Input

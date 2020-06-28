@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
-import { List, Item, Link } from './visual'
+import { GameName, List, Item, Link } from './visual'
 
 export default function ReviewRound() {
   const emit = useContext(EmitterContext)
@@ -15,7 +15,7 @@ export default function ReviewRound() {
 
   return (
     <div>
-      <h2>Game {config.id} finished</h2>
+      <GameName>Game {config.id} finished</GameName>
       <List>
         {Object.entries(state.finalScores).map(([playerID, score], index) => {
           const playerData = players.find(({ uuid }) => uuid === playerID)

@@ -3,7 +3,7 @@ import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import useScrollToTop from '../hooks/useScrollToTop'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
-import { Button, Checkbox } from './visual'
+import { GameName, Button, Checkbox } from './visual'
 import styled from './styled'
 import { Round, Scores } from '../typings/game'
 
@@ -112,7 +112,7 @@ export default function ReviewRound() {
 
   return (
     <div>
-      <h1>Game {config.id}</h1>
+      <GameName>Game {config.id}</GameName>
       <h2>Review of round {state.rounds.length + 1}</h2>
       <p>
         Round finished by <strong>{playerWhoEndedRound}</strong>
