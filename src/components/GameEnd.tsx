@@ -22,13 +22,13 @@ export default function ReviewRound() {
           const playerData = players.find(({ uuid }) => uuid === playerID)
           const displayName = playerData?.name ?? playerID
 
-          if (index === 0) {
-            return (
-              <Item key={playerID}>
-                {displayName} won with a score of {score}
-              </Item>
-            )
-          }
+          // if (index === 0) {
+          //   return (
+          //     <Item key={playerID}>
+          //       {displayName} won with a score of {score}
+          //     </Item>
+          //   )
+          // }
 
           return (
             <Item key={playerID}>
