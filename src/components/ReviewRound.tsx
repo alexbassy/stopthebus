@@ -1,8 +1,9 @@
 import React, { useContext, ChangeEvent, SyntheticEvent } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
+import useScrollToTop from '../hooks/useScrollToTop'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
-import { Button } from './visual'
+import { Button, Checkbox } from './visual'
 import styled from './styled'
 import { Round, Scores } from '../typings/game'
 
@@ -26,6 +27,8 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
   const game = useContext(GameContext)
   const emit = useContext(EmitterContext)
 
+  useScrollToTop()
+
   if (!game || !emit) {
     return null
   }
@@ -45,7 +48,7 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
     game.players.find((player) => uuid === player.uuid)?.name || uuid
 
   return (
-    <Table key={categoryName}>
+    <Table>
       <colgroup>
         <col span={1} style={{ width: '20%' }} />
         <col span={1} style={{ width: '60%' }} />
@@ -62,15 +65,18 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
         {Object.keys(answers).map((playerID) => {
           const answer = answers[playerID][categoryName]
           const score = scores[playerID][categoryName]
+
+          if (score > 0) console.log({ score, bool: Boolean(score) })
+
           return (
             <tr key={`${categoryName}-${playerID}`}>
               <td>{getPlayerName(playerID)}</td>
               <td>{answer}</td>
               <td>
-                <input
+                <Checkbox
                   type='checkbox'
                   title='Vote'
-                  checked={Boolean(score)}
+                  checked={score > 0}
                   onChange={handleVote(playerID, categoryName)}
                 />{' '}
                 {score}
@@ -92,11 +98,13 @@ export default function ReviewRound() {
   const { config, state, players } = game
   const round = state.currentRound
 
+  if (!round) return null
+
   const handleNextRoundClick = (event: SyntheticEvent<HTMLButtonElement>) => {
     emit(ClientEvent.START_ROUND)
   }
 
-  if (!round) return null
+  const isLastRound = state.rounds.length + 1 === config.rounds
 
   const playerWhoEndedRound =
     players.find(({ uuid }) => uuid === round.endedByPlayer)?.name ||
@@ -113,6 +121,7 @@ export default function ReviewRound() {
       {config.categories.map((category) => {
         return (
           <ResultsTable
+            key={category}
             categoryName={category}
             answers={round.answers}
             scores={round.scores}
@@ -120,7 +129,9 @@ export default function ReviewRound() {
         )
       })}
 
-      <Button onClick={handleNextRoundClick}>Next round</Button>
+      <Button onClick={handleNextRoundClick}>
+        {isLastRound ? 'Finish game' : 'Next round'}
+      </Button>
     </div>
   )
 }

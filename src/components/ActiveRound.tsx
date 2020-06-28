@@ -1,5 +1,6 @@
 import React, { useContext, useState, ChangeEvent, SyntheticEvent } from 'react'
 import GameContext from '../contexts/GameContext'
+import useScrollToTop from '../hooks/useScrollToTop'
 import EmitterContext from '../contexts/EmitterContext'
 import { RoundResults } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
@@ -11,6 +12,8 @@ export default function ActiveRound() {
   const emit = useContext(EmitterContext)
   const game = useContext(GameContext)
   const [values, setValues] = useState<RoundResults>({})
+
+  useScrollToTop()
 
   React.useEffect(() => {
     if (game?.state.currentRound?.answers?.[uuid]) {
@@ -56,7 +59,9 @@ export default function ActiveRound() {
       <h1>Game {config.id}</h1>
       <p>
         The letter is{' '}
-        <strong>{game.state.currentRound?.letter?.toUpperCase()}</strong>
+        <strong style={{ fontSize: '2rem' }}>
+          {game.state.currentRound?.letter?.toUpperCase()}
+        </strong>
       </p>
       <form onSubmit={handleEndRoundClick}>
         <List>
@@ -67,15 +72,14 @@ export default function ActiveRound() {
               <Item key={category}>
                 <Spacing b={1}>
                   <label htmlFor={id}>{category}</label>
-                  <div>
-                    <Input
-                      type='text'
-                      id={id}
-                      onBlur={handleBlur}
-                      onChange={handleChange(category)}
-                      value={values[category] ?? ''}
-                    />
-                  </div>
+                  <Spacing b={0.5} />
+                  <Input
+                    type='text'
+                    id={id}
+                    onBlur={handleBlur}
+                    onChange={handleChange(category)}
+                    value={values[category] ?? ''}
+                  />
                 </Spacing>
               </Item>
             )

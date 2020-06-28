@@ -2,7 +2,7 @@ import React, { useState, SyntheticEvent, useEffect } from 'react'
 import { persistGameConfig } from '../helpers/persistGame'
 import { hri } from 'human-readable-ids'
 import { useHistory } from 'react-router-dom'
-import { Title, Input, Button, H2 } from '../components/visual'
+import { Title, Input, Button, H2, Spacing } from '../components/visual'
 
 export default function Home() {
   const history = useHistory()
@@ -32,24 +32,29 @@ export default function Home() {
       <Title>Stop The Bus</Title>
       <H2>Join a game</H2>
       <form onSubmit={handleJoinGame}>
-        <label>
-          Game ID:{' '}
-          <Input
-            type='text'
-            id='game-id'
-            value={gameID}
-            onChange={(ev) => setGameID(ev.target.value)}
-          />
-        </label>
+        <Input
+          type='text'
+          id='game-id'
+          aria-label='Enter a game ID, words separated with hyphens'
+          value={gameID}
+          onChange={(ev) => setGameID(ev.target.value)}
+          placeholder='Type in game name'
+        />
+        <Spacing r={0.5} inline />
         <Button>Join</Button>
       </form>
       <H2>Create a game</H2>
       <form onSubmit={handleCreateGame}>
-        <label htmlFor='new-game-id'>
-          <Input type='text' id='new-game-id' value={newGameID} readOnly />
-        </label>
+        <Input
+          type='text'
+          id='new-game-id'
+          value={newGameID}
+          aria-label='New game name'
+          readOnly
+        />
+        <Spacing r={0.5} inline />
         <Button type='button' onClick={() => setNewGameID(hri.random())}>
-          Change game ID
+          Shuffle
         </Button>
         <br />
         <br />

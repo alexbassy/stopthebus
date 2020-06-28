@@ -1,8 +1,7 @@
 import React, { useContext } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
-import { List, Item } from './visual'
-import { Link } from 'react-router-dom'
+import { List, Item, Link } from './visual'
 
 export default function ReviewRound() {
   const emit = useContext(EmitterContext)

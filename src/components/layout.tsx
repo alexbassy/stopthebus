@@ -1,12 +1,12 @@
 import styled from './styled'
 import { css } from '@emotion/core'
 
-interface DistributeProps {
+interface GridProps {
   columns: number[]
   stackOnMobile: boolean
 }
 
-export const Distribute = styled.div<DistributeProps>`
+export const Grid = styled.div<GridProps>`
   display: grid;
   grid-template-columns: ${(props) =>
     props.columns
@@ -21,4 +21,15 @@ export const Distribute = styled.div<DistributeProps>`
         grid-template-columns: 1fr;
       }
     `}
+`
+
+interface FlexProps {
+  xCentre?: boolean
+  yCentre?: boolean
+}
+
+export const Flex = styled.div<FlexProps>`
+  display: flex;
+  ${(props) => props.xCentre && `justify-items: center;`};
+  ${(props) => props.yCentre && `align-items: center;`};
 `

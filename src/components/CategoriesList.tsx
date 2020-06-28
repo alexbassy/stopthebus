@@ -3,6 +3,7 @@ import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import { categories } from '../constants/categories'
 import { List, Item, Button, Input, Checkbox } from './visual'
+import { Flex } from './layout'
 
 interface CategoriesListProps {
   selectedCategories: string[]
@@ -40,23 +41,25 @@ export default function CategoriesList(props: CategoriesListProps) {
 
   return (
     <div>
-      <List>
+      <List columns={[1, 1, 1]} stackOnMobile>
         {[...categories, ...customCategories].map((category, index) => {
           return (
             <Item key={index}>
               <label>
-                <Checkbox
-                  type='checkbox'
-                  onChange={() => {
-                    const newState = new Set(selectedCategories)
-                    newState.has(category)
-                      ? newState.delete(category)
-                      : newState.add(category)
-                    onChange(Array.from(newState))
-                  }}
-                  checked={selectedCategories.includes(category)}
-                />
-                <span>{category}</span>
+                <Flex yCentre>
+                  <Checkbox
+                    type='checkbox'
+                    onChange={() => {
+                      const newState = new Set(selectedCategories)
+                      newState.has(category)
+                        ? newState.delete(category)
+                        : newState.add(category)
+                      onChange(Array.from(newState))
+                    }}
+                    checked={selectedCategories.includes(category)}
+                  />
+                  <span>{category}</span>
+                </Flex>
               </label>
             </Item>
           )

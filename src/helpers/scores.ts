@@ -12,30 +12,29 @@ export const getWords = (string: string) => string.trim().split(' ')
 export const scoreAnswer = (
   gameConfig: GameConfig,
   letter: string,
-  answer: string | undefined,
+  input: string | undefined,
   shouldValidate: boolean = true
 ) => {
-  if (!answer) return 0
-  answer = answer.trim().toLowerCase()
+  if (!input) return 0
+  const answer = input.trim().toLowerCase()
   const { scoreWithAlliteration } = gameConfig
   const isValidFirstCharacter = answer.startsWith(letter)
   const isOnlyLetter = answer === letter
   const words = getWords(answer)
   const isValid = !isValidFirstCharacter || isOnlyLetter
+  const alliteratedWords = scoreWithAlliteration
+    ? words.filter((word) => word.startsWith(letter))
+    : []
 
+  // `shouldValidate` can be passed to override the
+  // default score on the round review screen
   if (!shouldValidate && isValid) {
-    return scoreWithAlliteration
-      ? words.filter((word) => word.startsWith(letter)).length
-      : 1
+    return scoreWithAlliteration ? alliteratedWords.length : 1
   }
 
-  return isValid
-    ? 0
-    : scoreWithAlliteration
-    ? words.every((word) => word.startsWith(letter))
-      ? words.length
-      : words.filter((word) => word.startsWith(letter)).length
-    : 1
+  // If scoring with alliteration, score all individual
+  // words beginning with that letter
+  return isValid ? 0 : scoreWithAlliteration ? alliteratedWords.length : 1
 }
 
 export const getInitialScores = (room: Room): Scores | undefined => {

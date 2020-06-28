@@ -19,10 +19,10 @@ const pastel: Theme = {
     title: {
       name: 'Raleway',
       href:
-        'https://fonts.googleapis.com/css2?family=Noto+Sans&family=Raleway:wght@700&display=swap',
+        'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Raleway:wght@700&display=swap',
     },
     body: {
-      name: 'Noto Sans',
+      name: '"Roboto"',
       href: '',
     },
   },
@@ -31,9 +31,13 @@ const pastel: Theme = {
     pink: '#FF70A6',
     yellow: '#FFD670',
     lemon: '#E9FF70',
-    blue: '#1FBFFF',
+    blue: '#1d3557',
     purple: '#b523da',
     green: '#35EF9E',
+    interactiveButton: 'rgb(80 80 80)',
+    pageBackground: '#132339',
+    inputBackground: '#2e5286',
+    buttonBackground: '#2866bd',
   },
 }
 

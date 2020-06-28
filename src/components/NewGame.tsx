@@ -18,7 +18,7 @@ import {
 } from '../helpers/getUserSession'
 import CategoriesList from '../components/CategoriesList'
 import { Input, Button, H2, H3, List, Item, Checkbox, Spacing } from './visual'
-import { Distribute } from './layout'
+import { Grid, Flex } from './layout'
 
 const sessionID = getUserSessionID()
 
@@ -137,106 +137,119 @@ export default function NewGame(props: NewGameProps) {
       <H2>Game {config.id}</H2>
       <p>Welcome, {currentPlayer.name || currentPlayer.uuid}!</p>
       <p>
-        Set a nickname{' '}
-        <Input type='text' value={nickname} onChange={handleNicknameChange} />{' '}
+        <Input
+          type='text'
+          value={nickname}
+          onChange={handleNicknameChange}
+          placeholder='Enter your nickname'
+          aria-label='Nickname'
+          aria-describedby='nickname-description'
+        />
+        <Spacing r={0.5} inline />
         <Button type='button' onClick={handleNickNameUpdate}>
-          Change
+          Update
         </Button>
+        <p id='nickname-description'>
+          Enter a nickname for other players to see you by.
+        </p>
       </p>
       <H2>Game settings</H2>
-      <section>
-        <H3>Letters</H3>
-        <List>
-          {config &&
-            ENGLISH_LETTERS.map((letter) => {
-              return (
-                <Item key={letter} inline>
-                  <Spacing r={0.75} b={0.75}>
-                    <label>
-                      <Checkbox
-                        type='checkbox'
-                        value={letter}
-                        checked={config?.letters?.includes(letter)}
-                        onChange={handleLetterChange(letter)}
-                      />
-                      {letter.toUpperCase()}
-                    </label>
-                  </Spacing>
-                </Item>
-              )
-            })}
-        </List>
-      </section>
-      <Distribute columns={[1, 1]} stackOnMobile>
+      <Grid columns={[2, 1]} stackOnMobile>
         <section>
-          <H3>Categories</H3>
-          <CategoriesList
-            selectedCategories={config?.categories || []}
-            onChange={handleCategoryChange}
-          />
-        </section>
-        <div>
-          <section>
-            <H3>Mode</H3>
-            <p>You can race against each other, or with a time limit</p>
-            <div>
-              <label>
-                Play mode{' '}
-                <select value={config?.mode} onChange={handleModeChange}>
-                  <option value={GameMode.RACE}>Race</option>
-                  <option value={GameMode.TIMER}>Timer</option>
-                </select>
-              </label>
-            </div>
-            <div>
-              {config?.mode === GameMode.TIMER && (
-                <label>
-                  Time (seconds){' '}
-                  <Input
-                    type='number'
-                    value={Math.round(config.time ? config.time / 1000 : 60)}
-                    onChange={handleTimeChange}
-                  />
-                </label>
-              )}
-            </div>
-            <div>
-              Number of rounds{' '}
-              <select value={config?.rounds} onChange={handleRoundCountChange}>
-                {range(1, 10).map((val) => (
-                  <option key={val} value={val}>
-                    {val}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label>
-                <Checkbox
-                  type='checkbox'
-                  checked={config?.scoreWithAlliteration}
-                  onChange={handleAlliterationChange}
-                />{' '}
-                Points for alliteration
-              </label>
-            </div>
-          </section>
-          <section>
-            <H3>Players</H3>
-            <List>
-              {players &&
-                players.map((player) => (
-                  <Item key={player.uuid}>
-                    {player.name || player.uuid}{' '}
-                    {player.uuid === sessionID && ' (me)'}
+          <H3>Letters</H3>
+          <List>
+            {config &&
+              ENGLISH_LETTERS.map((letter) => {
+                return (
+                  <Item key={letter} inline>
+                    <Spacing r={0.75} b={0.75}>
+                      <label>
+                        <Flex yCentre style={{ width: '3.15rem' }}>
+                          <Checkbox
+                            type='checkbox'
+                            value={letter}
+                            checked={config?.letters?.includes(letter)}
+                            onChange={handleLetterChange(letter)}
+                          />
+                          {letter.toUpperCase()}
+                        </Flex>
+                      </label>
+                    </Spacing>
                   </Item>
-                ))}
-            </List>
-          </section>
+                )
+              })}
+          </List>
+        </section>
+        <section>
+          <H3>Players</H3>
+          <List>
+            {players &&
+              players.map((player) => (
+                <Item key={player.uuid}>
+                  {player.name || player.uuid}{' '}
+                  {player.uuid === sessionID && ' (me)'}
+                </Item>
+              ))}
+          </List>
+        </section>
+      </Grid>
+      <section>
+        <H3>Categories</H3>
+        <CategoriesList
+          selectedCategories={config?.categories || []}
+          onChange={handleCategoryChange}
+        />
+      </section>
+      <section aria-hidden style={{ display: 'none' }}>
+        <H3>Mode</H3>
+        <p>You can race against each other, or with a time limit</p>
+        <div>
+          <label>
+            Play mode{' '}
+            <select value={config?.mode} onChange={handleModeChange}>
+              <option value={GameMode.RACE}>Race</option>
+              <option value={GameMode.TIMER}>Timer</option>
+            </select>
+          </label>
         </div>
-      </Distribute>
+        <div>
+          {config?.mode === GameMode.TIMER && (
+            <label>
+              Time (seconds){' '}
+              <Input
+                type='number'
+                value={Math.round(config.time ? config.time / 1000 : 60)}
+                onChange={handleTimeChange}
+              />
+            </label>
+          )}
+        </div>
+        <div>
+          Number of rounds{' '}
+          <select value={config?.rounds} onChange={handleRoundCountChange}>
+            {range(1, 10).map((val) => (
+              <option key={val} value={val}>
+                {val}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>
+            <Checkbox
+              type='checkbox'
+              checked={config?.scoreWithAlliteration}
+              onChange={handleAlliterationChange}
+            />{' '}
+            Points for alliteration
+          </label>
+        </div>
+      </section>
+      <Spacing b={2} />
 
-      <Button onClick={handleStartGameClick}>Start game</Button>
+      <Button large onClick={handleStartGameClick}>
+        Start game
+      </Button>
     </div>
   )
 }
