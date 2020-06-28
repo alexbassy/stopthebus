@@ -1,14 +1,7 @@
-import React, {
-  useState,
-  useContext,
-  SyntheticEvent,
-  ChangeEvent,
-  useEffect,
-} from 'react'
+import React, { useState, useContext, SyntheticEvent, ChangeEvent } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import { categories } from '../constants/categories'
-import { ClientEvent } from '../typings/socket-events'
 import { List, Item, Button, Input, Checkbox } from './visual'
 
 interface CategoriesListProps {

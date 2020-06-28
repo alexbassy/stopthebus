@@ -2,7 +2,7 @@ import React, { useContext, ChangeEvent, SyntheticEvent } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
-import { Button, List, Item } from './visual'
+import { Button } from './visual'
 import styled from './styled'
 import { Round, Scores } from '../typings/game'
 

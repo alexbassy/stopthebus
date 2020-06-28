@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react'
 import io from 'socket.io-client'
 import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
-import { getUserSessionID, getUserSession } from '../helpers/getUserSession'
+import { getUserSession } from '../helpers/getUserSession'
 import log from '../helpers/log'
 
 export type SocketCallback = {
@@ -75,7 +75,7 @@ export default function useSocket({
         socketRef.current?.off(name, callback)
       })
     }
-  }, [socket, callbacks])
+  }, [socket, callbacks, getPayload])
 
   return {
     socket,
