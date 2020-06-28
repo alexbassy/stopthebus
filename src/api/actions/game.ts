@@ -3,11 +3,11 @@ import {
   gameConfigs,
   gamePlayers,
   gameStates,
-} from './redis-client'
-import { Payload, ServerEvent, ClientEvent } from '../typings/socket-events'
-import { GameConfig, GameStage, Room } from '../typings/game'
-import log from '../helpers/log'
-import { getPlayerUUID } from '../helpers/socket'
+} from '../redis-client'
+import { Payload, ServerEvent, ClientEvent } from '../../typings/socket-events'
+import { GameConfig, GameStage, Room } from '../../typings/game'
+import log from '../../helpers/log'
+import { getPlayerUUID } from '../../helpers/socket'
 
 /**
  * ServerEvents.REQUEST_JOIN_GAME
@@ -128,4 +128,32 @@ export const createGame = (
     IO.in(gameID).emit(ServerEvent.GAME_CONFIG, room.config)
     IO.in(gameID).emit(ServerEvent.PLAYER_JOINED_GAME, room.players)
   })
+}
+
+export const updateGameConfig = (
+  IO: SocketIO.Server,
+  socket: SocketIO.Socket
+) => async ({ gameID, payload }: Payload<GameConfig>) => {
+  const uuid = getPlayerUUID(socket)
+  const player = await playerClient.get(uuid)
+  const { d: logD, e: logE } = log.n('GAME_CONFIG')
+  logD({ gameID, player, payload })
+
+  if (!gameID || !payload || !player) {
+    console.log({ gameID, payload, player })
+    logE('No gameID, payload or player')
+    return
+  }
+
+  let config = await gameConfigs.get(gameID)
+
+  if (!config) {
+    logE('There is no game with ID', gameID)
+    socket.emit(ServerEvent.GAME_CONFIG, null)
+    return
+  }
+
+  config = { ...payload, lastAuthor: player.uuid }
+  await gameConfigs.set(gameID, config)
+  socket.in(gameID).emit(ServerEvent.GAME_CONFIG, config)
 }
