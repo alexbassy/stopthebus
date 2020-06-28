@@ -16,6 +16,7 @@ export const scoreAnswer = (
   shouldValidate: boolean = true
 ) => {
   if (!answer) return 0
+  answer = answer.trim().toLowerCase()
   const { scoreWithAlliteration } = gameConfig
   const isValidFirstCharacter = answer.startsWith(letter)
   const isOnlyLetter = answer === letter
