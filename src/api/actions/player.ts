@@ -28,6 +28,13 @@ export const updateNickname = (
   player.name = payload
 
   const playersInGame = await gamePlayers.get(gameID)
+
+  // If there are no players in the game, this is probably
+  // an expired room. There is nothing to do.
+  if (!playersInGame) {
+    return
+  }
+
   const newPlayers = playersInGame.map((currentPlayer) => {
     if (currentPlayer.uuid === uuid) return player
     return currentPlayer
