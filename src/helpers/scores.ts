@@ -7,7 +7,7 @@ import {
 } from '../typings/game'
 import log from '../helpers/log'
 
-export const getWords = (string: string) => string.split(' ')
+export const getWords = (string: string) => string.trim().split(' ')
 
 export const scoreAnswer = (
   gameConfig: GameConfig,
@@ -33,7 +33,7 @@ export const scoreAnswer = (
     : scoreWithAlliteration
     ? words.every((word) => word.startsWith(letter))
       ? words.length
-      : 0
+      : words.filter((word) => word.startsWith(letter)).length
     : 1
 }
 
