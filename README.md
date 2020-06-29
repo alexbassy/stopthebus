@@ -30,8 +30,11 @@ Choose some categories and think of a word for each one, with the given letter.
 
 ## Project usage
 
+Redis is required. [Check here](https://redis.io/topics/quickstart) for Redis installation instructions and then run the server with `$ redis-server`.
+
 ```
 git clone https://github.com/alexbassy/stopthebus.git
 cd stopthebus
 yarn start
 ```
+
