@@ -19,7 +19,7 @@ export interface Theme {
 const pastel: Theme = {
   fonts: {
     title: {
-      name: 'Raleway',
+      name: 'Raleway, sans-serif',
       href:
         'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Raleway:wght@700&display=swap',
     },

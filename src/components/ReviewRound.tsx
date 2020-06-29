@@ -6,6 +6,7 @@ import { ClientEvent, PlayerVote } from '../typings/socket-events'
 import { GameName, Button, Checkbox } from './visual'
 import styled from './styled'
 import { Round, Scores } from '../typings/game'
+import { Helmet } from 'react-helmet'
 
 const Table = styled('table')`
   width: 100%;
@@ -112,6 +113,9 @@ export default function ReviewRound() {
 
   return (
     <div>
+      <Helmet>
+        <title>Review - Stop The Bus</title>
+      </Helmet>
       <GameName>Game {config.id}</GameName>
       <h2>Review of round {state.rounds.length + 1}</h2>
       <p>

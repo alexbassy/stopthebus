@@ -6,6 +6,7 @@ import { RoundResults } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
 import { getUserSessionID } from '../helpers/getUserSession'
 import { GameName, Input, Button, List, Item, Spacing } from './visual'
+import { Helmet } from 'react-helmet'
 
 export default function ActiveRound() {
   const uuid = getUserSessionID()
@@ -56,6 +57,11 @@ export default function ActiveRound() {
 
   return (
     <div>
+      <Helmet>
+        <title>
+          Letter {game.state.currentRound?.letter?.toUpperCase()} - Stop The Bus
+        </title>
+      </Helmet>
       <GameName>Game {config.id}</GameName>
       <p>
         The letter is{' '}

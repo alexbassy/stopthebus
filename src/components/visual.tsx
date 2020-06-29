@@ -54,28 +54,6 @@ export const Wrapper = styled('div')`
   }
 `
 
-export const Title = styled<'h1'>('h1')`
-  font-family: ${(props) => props.theme.fonts.title.name};
-  color: ${(props) => props.theme.colours.yellow};
-  /* text-shadow: 1px 1px ${(props) => props.theme.colours.pink},
-    2px 2px ${(props) => props.theme.colours.pink},
-    3px 3px ${(props) => props.theme.colours.pink},
-    4px 4px ${(props) => props.theme.colours.pink};
-     */
-  background: linear-gradient(#f857a6, #ff5858);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  text-transform: uppercase;
-  font-size: 4.9rem;
-  margin: 0;
-  text-align: center;
-
-  @media screen and (max-width: 460px) {
-    font-size: 10vw;
-  }
-`
-
 export const GameName = styled<'h2'>('h2')`
   font-size: 1.75rem;
 `

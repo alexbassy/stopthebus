@@ -4,7 +4,8 @@ import NewGame from '../components/NewGame'
 import ActiveRound from '../components/ActiveRound'
 import ReviewRound from '../components/ReviewRound'
 import GameEnd from '../components/GameEnd'
-import { Title, GameName } from '../components/visual'
+import PageTitle from '../components/PageTitle'
+import { GameName } from '../components/visual'
 import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
@@ -143,6 +144,7 @@ export default function Game() {
   if (!isConnected) {
     return (
       <>
+        <PageTitle />
         <GameName>Game {gameID}</GameName>
         <p>Connecting…</p>
       </>
@@ -152,6 +154,7 @@ export default function Game() {
   if (!isConnected && gameConfig === null) {
     return (
       <>
+        <PageTitle />
         <GameName>Game {gameID}</GameName>
         <p>Sorry! You disconnected from the server. Please refresh the page.</p>
       </>
@@ -161,6 +164,7 @@ export default function Game() {
   if (isConnected && gameConfig === null) {
     return (
       <>
+        <PageTitle />
         <GameName>Game {gameID}</GameName>
         <p>Sorry, the game does not exist.</p>
         <p>
@@ -200,7 +204,7 @@ export default function Game() {
   return (
     <EmitterContext.Provider value={emit}>
       <GameContext.Provider value={gameContextValue}>
-        <Title>Stop The Bus</Title>
+        <PageTitle />
         <Component />
       </GameContext.Provider>
     </EmitterContext.Provider>

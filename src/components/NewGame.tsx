@@ -29,6 +29,7 @@ import {
   Spacing,
 } from './visual'
 import { Grid, Flex } from './layout'
+import { Helmet } from 'react-helmet'
 
 const sessionID = getUserSessionID()
 
@@ -144,6 +145,9 @@ export default function NewGame(props: NewGameProps) {
 
   return (
     <div>
+      <Helmet>
+        <title>New Game - Stop The Bus</title>
+      </Helmet>
       <GameName>Game {config.id}</GameName>
       <p>Welcome, {currentPlayer.name || currentPlayer.uuid}!</p>
       <p>

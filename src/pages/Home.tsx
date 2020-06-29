@@ -2,7 +2,8 @@ import React, { useState, SyntheticEvent, useEffect } from 'react'
 import { persistGameConfig } from '../helpers/persistGame'
 import { hri } from 'human-readable-ids'
 import { useHistory } from 'react-router-dom'
-import { Title, Input, Button, H2, Spacing } from '../components/visual'
+import { Input, Button, H2, Spacing } from '../components/visual'
+import PageTitle from '../components/PageTitle'
 
 export default function Home() {
   const history = useHistory()
@@ -29,7 +30,7 @@ export default function Home() {
 
   return (
     <div>
-      <Title>Stop The Bus</Title>
+      <PageTitle />
       <H2>Join a game</H2>
       <form onSubmit={handleJoinGame}>
         <Input

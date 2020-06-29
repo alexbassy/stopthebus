@@ -2,6 +2,7 @@ import React, { useContext } from 'react'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import { GameName, List, Item, Link } from './visual'
+import { Helmet } from 'react-helmet'
 
 export default function ReviewRound() {
   const emit = useContext(EmitterContext)
@@ -15,6 +16,9 @@ export default function ReviewRound() {
 
   return (
     <div>
+      <Helmet>
+        <title>Game Finished - Stop The Bus</title>
+      </Helmet>
       <GameName>Game {config.id} finished</GameName>
       <List>
         {Object.entries(state.finalScores).map(([playerID, score], index) => {
