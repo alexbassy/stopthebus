@@ -3,7 +3,7 @@
 
 ![Tests](https://github.com/alexbassy/stopthebus/workflows/Tests/badge.svg)
 
-![image](https://user-images.githubusercontent.com/1243909/85988386-38d49680-b9ef-11ea-98b9-7c3dfac62f1b.png)
+<img src=https://user-images.githubusercontent.com/1243909/85988386-38d49680-b9ef-11ea-98b9-7c3dfac62f1b.png width=400 />
 
 Sort of like Stadt Land Fluss, or Scattergories.
 
