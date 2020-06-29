@@ -13,9 +13,7 @@ describe('scoreAnswer()', () => {
     expect(scoreAnswer(gameConfig, 'z', 'eggs')).toBe(0)
   })
   it('scores invalid answer with alliteration', () => {
-    expect(
-      scoreAnswer(gameConfigWithAlliteration, 'e', 'end of the road')
-    ).toBe(0)
+    expect(scoreAnswer(gameConfigWithAlliteration, 'f', 'frog city')).toBe(1)
     expect(scoreAnswer(gameConfigWithAlliteration, 'c', 'frog city')).toBe(0)
   })
   it('scores valid answer ', () => {
@@ -23,7 +21,10 @@ describe('scoreAnswer()', () => {
     expect(scoreAnswer(gameConfig, 'e', 'end of the game')).toBe(1)
     expect(scoreAnswer(gameConfig, 'a', 'amazing angel')).toBe(1)
   })
-  it('scores invalid answer with alliteration', () => {
+  it('scores valid answer with alliteration', () => {
+    expect(
+      scoreAnswer(gameConfigWithAlliteration, 'e', 'end of the road')
+    ).toBe(1)
     expect(scoreAnswer(gameConfigWithAlliteration, 'l', 'lilies')).toBe(1)
     expect(scoreAnswer(gameConfigWithAlliteration, 't', 'tina turner')).toBe(2)
     expect(
@@ -34,7 +35,7 @@ describe('scoreAnswer()', () => {
     expect(scoreAnswer(gameConfig, 'l', 'poppies', false)).toBe(1)
     expect(
       scoreAnswer(gameConfigWithAlliteration, 'k', 'kylie jenner', false)
-    ).toBe(0)
+    ).toBe(1)
     expect(scoreAnswer(gameConfigWithAlliteration, 'p', 'ru paul', false)).toBe(
       1
     )
