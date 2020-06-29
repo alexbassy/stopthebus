@@ -1,9 +1,9 @@
 import React, { useState, SyntheticEvent, useEffect } from 'react'
 import { persistGameConfig } from '../helpers/persistGame'
-import { hri } from 'human-readable-ids'
 import { useHistory } from 'react-router-dom'
 import { Input, Button, H2, Spacing } from '../components/visual'
 import PageTitle from '../components/PageTitle'
+import * as random from '../helpers/random'
 
 export default function Home() {
   const history = useHistory()
@@ -11,7 +11,7 @@ export default function Home() {
   const [newGameID, setNewGameID] = useState<string>('')
 
   useEffect(() => {
-    setNewGameID(hri.random())
+    setNewGameID(random.getGameName())
   }, [])
 
   const handleJoinGame = (ev: SyntheticEvent<HTMLFormElement>) => {
@@ -38,7 +38,7 @@ export default function Home() {
           id='game-id'
           aria-label='Enter a game ID, words separated with hyphens'
           value={gameID}
-          onChange={(ev) => setGameID(ev.target.value)}
+          onChange={(ev) => setGameID(ev.target.value.toLowerCase())}
           placeholder='Type in game name'
         />
         <Spacing r={0.5} inline />
@@ -54,7 +54,10 @@ export default function Home() {
           readOnly
         />
         <Spacing r={0.5} inline />
-        <Button type='button' onClick={() => setNewGameID(hri.random())}>
+        <Button
+          type='button'
+          onClick={() => setNewGameID(random.getGameName())}
+        >
           Shuffle
         </Button>
         <br />

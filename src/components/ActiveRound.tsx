@@ -85,6 +85,7 @@ export default function ActiveRound() {
                     onBlur={handleBlur}
                     onChange={handleChange(category)}
                     value={values[category] ?? ''}
+                    autoCorrect='off'
                   />
                 </Spacing>
               </Item>

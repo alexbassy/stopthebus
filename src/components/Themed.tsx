@@ -59,7 +59,13 @@ interface ThemedProps {
 const Footer = styled<'footer'>('footer')`
   color: #fff;
   text-align: center;
+  font-weight: 600;
 `.withComponent(Flex)
+
+const FooterLink = styled(ExternalLink)`
+  text-decoration: none;
+  color: rgb(255 255 255 / 90%);
+`
 
 const PrideBanner = styled<'div'>('div')`
   color: #fff;
@@ -118,11 +124,15 @@ export default function Themed({ theme = 'pastel', children }: ThemedProps) {
           </PrideBanner>
         </Wrapper>
         <Footer yCentre xCentre>
-          <ExternalLink href='https://bass.dev/'>
+          <FooterLink href='https://bass.dev/'>
             <Spacing t={0.5} b={0.5}>
-              made with 🤍 in berlin
+              made with{' '}
+              <span role='img' aria-label='pizazz'>
+                ✨
+              </span>
+              in berlin
             </Spacing>
-          </ExternalLink>
+          </FooterLink>
         </Footer>
       </Background>
     </ThemeProvider>

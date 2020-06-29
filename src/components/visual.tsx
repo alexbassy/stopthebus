@@ -38,7 +38,7 @@ export const Background = styled('div')`
 
 export const Wrapper = styled('div')`
   max-width: 760px;
-  margin: 2rem auto;
+  margin: 2rem auto 0;
   background: ${(props) => props.theme.colours.blue};
   font-family: ${(props) => props.theme.fonts.body.name};
   padding: 20px;
@@ -91,37 +91,37 @@ export const Input = styled<'input'>('input')`
 // 1. Hack for making checkboxes not broken on iOS
 export const Checkbox = styled<'input'>('input')`
   /* 1 */
-  @media screen and (min-width: 460px) {
-    font-size: 1.2rem;
-    padding: 0 0.4rem;
-    -webkit-appearance: none;
-    border: none;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
-    border-radius: 2px;
-    background-color: ${(props) => props.theme.colours.inputBackground};
-    width: 1.5rem;
-    height: 1.5rem;
-    vertical-align: middle;
-    color: #fff;
-    margin-right: 0.5rem;
+  /* @media screen and (min-width: 460px) { */
+  font-size: 1.2rem;
+  padding: 0 0.4rem;
+  -webkit-appearance: none;
+  border: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  border-radius: 2px;
+  background-color: ${(props) => props.theme.colours.inputBackground};
+  width: 1.5rem;
+  height: 1.5rem;
+  vertical-align: middle;
+  color: #fff;
+  margin-right: 0.5rem;
 
-    ${(props) =>
-      props.checked &&
-      css`
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 125"><path fill="white" d="M80.47 28.54a4 4 0 00-5.66 0L40.87 62.48 27.19 48.81a4 4 0 00-5.65 5.65l16.5 16.5a3.99 3.99 0 005.66 0L80.47 34.2a4 4 0 000-5.66z" /></svg>');
-        background-size: 110%;
-        background-position: center top;
-      `}
+  ${(props) =>
+    props.checked &&
+    css`
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 125"><path fill="white" d="M80.47 28.54a4 4 0 00-5.66 0L40.87 62.48 27.19 48.81a4 4 0 00-5.65 5.65l16.5 16.5a3.99 3.99 0 005.66 0L80.47 34.2a4 4 0 000-5.66z" /></svg>');
+      background-size: 110%;
+      background-position: center top;
+    `}
 
-    :focus {
-      outline: none;
-      box-shadow: 0 0 0 2px ${(props) => props.theme.colours.pink};
-    }
-
-    :active {
-      background-color: #274672;
-    }
+  :focus {
+    outline: none;
+    box-shadow: 0 0 0 2px ${(props) => props.theme.colours.pink};
   }
+
+  :active {
+    background-color: #274672;
+  }
+  /* } */
 `
 
 interface ButtonProps {

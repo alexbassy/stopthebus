@@ -8,6 +8,7 @@ import { joinGame, createGame, updateGameConfig } from './actions/game'
 import { updateNickname } from './actions/player'
 import { startRound, endRound, filledAnswer, voteAnswer } from './actions/round'
 import { getPlayerUUID } from '../helpers/socket'
+import * as random from '../helpers/random'
 
 const app = express()
 const server = http.createServer(app)
@@ -42,7 +43,11 @@ IO.on('connection', async (socket) => {
 
   // Add player to global players list
   if (!player) {
-    player = await players.set(uuid, { uuid, id: socket.id })
+    player = await players.set(uuid, {
+      uuid,
+      id: socket.id,
+      name: random.getPlayerName(),
+    })
   }
 
   socket.on(ClientEvent.REQUEST_JOIN_GAME, joinGame(IO, socket))

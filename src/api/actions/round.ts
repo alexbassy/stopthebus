@@ -16,7 +16,7 @@ import {
 } from '../../typings/game'
 import log from '../../helpers/log'
 import { getPlayerUUID } from '../../helpers/socket'
-import { getRandomValue } from '../../helpers/util'
+import * as random from '../../helpers/random'
 import {
   getFinalScores,
   getInitialScores,
@@ -97,7 +97,7 @@ export const startRound = (
 
     const newRound: GameRound = {
       timeStarted: Date.now(),
-      letter: getRandomValue(availableLetters),
+      letter: random.getValue(availableLetters),
       answers: answersTemplate,
       scores: newScores,
     }

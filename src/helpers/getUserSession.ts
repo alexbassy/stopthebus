@@ -1,13 +1,8 @@
 import { v4 } from 'uuid'
 import { Player } from '../typings/game'
-import { hri } from 'human-readable-ids'
+import * as random from '../helpers/random'
 
 const LOCAL_STORAGE_KEY = 'session'
-
-const getInitialName = () => {
-  const id = hri.random()
-  return id.split('-')[1]
-}
 
 export function getUserSession(): Player {
   const persisted = localStorage.getItem(LOCAL_STORAGE_KEY)
@@ -18,7 +13,7 @@ export function getUserSession(): Player {
 
   const user: Player = {
     uuid: v4(),
-    name: getInitialName(),
+    name: random.getPlayerName(),
   }
 
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(user))
