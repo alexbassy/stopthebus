@@ -2,7 +2,13 @@ import React, { ReactChild } from 'react'
 import { Helmet } from 'react-helmet'
 import { Global } from '@emotion/core'
 import { ThemeProvider } from 'emotion-theming'
-import { globalStyles, Background, Wrapper, Spacing } from './visual'
+import {
+  globalStyles,
+  Background,
+  Wrapper,
+  Spacing,
+  ExternalLink,
+} from './visual'
 import styled from './styled'
 import { Flex } from './layout'
 
@@ -49,6 +55,11 @@ interface ThemedProps {
   theme?: 'pastel'
   children: ReactChild
 }
+
+const Footer = styled<'footer'>('footer')`
+  color: #fff;
+  text-align: center;
+`.withComponent(Flex)
 
 const PrideBanner = styled<'div'>('div')`
   color: #fff;
@@ -106,6 +117,13 @@ export default function Themed({ theme = 'pastel', children }: ThemedProps) {
             <strong>Happy Pride</strong>
           </PrideBanner>
         </Wrapper>
+        <Footer yCentre xCentre>
+          <ExternalLink href='https://bass.dev/'>
+            <Spacing t={0.5} b={0.5}>
+              made with 🤍 in berlin
+            </Spacing>
+          </ExternalLink>
+        </Footer>
       </Background>
     </ThemeProvider>
   )

@@ -214,10 +214,10 @@ export default function NewGame(props: NewGameProps) {
           onChange={handleCategoryChange}
         />
       </section>
-      <section aria-hidden style={{ display: 'none' }}>
+      <section>
         <H3>Mode</H3>
         <p>You can race against each other, or with a time limit</p>
-        <div>
+        <div aria-hidden style={{ display: 'none' }}>
           <label>
             Play mode{' '}
             <select value={config?.mode} onChange={handleModeChange}>
