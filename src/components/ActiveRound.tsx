@@ -1,11 +1,17 @@
-import React, { ChangeEvent, SyntheticEvent, useContext, useState } from 'react'
+import React, {
+  ChangeEvent,
+  SyntheticEvent,
+  useContext,
+  useState,
+  useEffect,
+} from 'react'
 import { Helmet } from 'react-helmet'
 import { Button, GameName, Input, Item, List, Spacing } from './visual'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
 import { getUserSessionID } from '../helpers/getUserSession'
 import useScrollToTop from '../hooks/useScrollToTop'
-import { RoundResults } from '../typings/game'
+import { RoundResults, GameStage } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
 
 export default function ActiveRound() {
@@ -14,9 +20,19 @@ export default function ActiveRound() {
   const game = useContext(GameContext)
   const [values, setValues] = useState<RoundResults>({})
 
+  const [hasEnded, setHasEnded] = useState<boolean>(false)
+
+  const gameState = game?.state?.stage ?? null
+  useEffect(() => {
+    if (gameState && gameState === GameStage.ENDING && !!emit && !hasEnded) {
+      setHasEnded(true)
+      emit(ClientEvent.FILLED_ANSWER, values)
+    }
+  }, [gameState, emit, values, hasEnded])
+
   useScrollToTop()
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (game?.state.currentRound?.answers?.[uuid]) {
       setValues(game?.state.currentRound?.answers?.[uuid])
     }
@@ -86,13 +102,16 @@ export default function ActiveRound() {
                     onChange={handleChange(category)}
                     value={values[category] ?? ''}
                     autoCorrect='off'
+                    disabled={hasEnded}
                   />
                 </Spacing>
               </Item>
             )
           })}
         </List>
-        <Button>Finished</Button>
+        <Button disabled={hasEnded}>
+          {hasEnded ? 'Out of time!' : 'Finished'}
+        </Button>
       </form>
     </div>
   )

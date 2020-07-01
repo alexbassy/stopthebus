@@ -77,9 +77,12 @@ export enum ServerEvent {
   // Triggered by the `START_GAME` event - changes game state
   ROUND_STARTED = 'ROUND_STARTED',
 
+  // Triggered when a player has finished the round and all clients must submit final answers
+  ROUND_ENDING = 'ROUND_ENDING',
+
   // Updates players' screens with progress of other players
   // I guess this sends { playerUUID, categoryName }
-  FUTURE_FILLED_ANSWER = 'PLAYER_FILLED_ANSWER',
+  _FUTURE_PLAYER_FILLED_ANSWER = 'PLAYER_FILLED_ANSWER',
 
   // When the round has ended and we should go to the review screen
   ROUND_ENDED = 'ROUND_ENDED',

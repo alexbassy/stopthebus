@@ -5,6 +5,7 @@ import {
   getInitialScores,
   scoreAnswer,
 } from '../../helpers/scores'
+import { FINAL_ANSWERS_WAITING_TIME } from '../../constants/game'
 import { getPlayerUUID } from '../../helpers/socket'
 import {
   GameRound,
@@ -46,7 +47,7 @@ export const startRound = (
   }
 
   const isGameActiveOrEnded =
-    state.stage === GameStage.ACTIVE || state.stage === GameStage.END
+    state.stage === GameStage.ACTIVE || state.stage === GameStage.FINISHED
   const isGameInReview = state.stage === GameStage.REVIEW
 
   if (isGameActiveOrEnded) {
@@ -70,7 +71,7 @@ export const startRound = (
 
   const numRoundsPlayed = state.rounds.length
   const hasPlayedAllRounds = config.rounds === numRoundsPlayed
-  state.stage = hasPlayedAllRounds ? GameStage.END : GameStage.ACTIVE
+  state.stage = hasPlayedAllRounds ? GameStage.FINISHED : GameStage.ACTIVE
 
   // If on the start screen or review screen, we can go ahead
   if (!hasPlayedAllRounds) {
@@ -127,13 +128,7 @@ export const endRound = (
     return
   }
 
-  let [config, players, state] = await Promise.all([
-    gameConfigs.get(gameID),
-    gamePlayers.get(gameID),
-    gameStates.get(gameID),
-  ])
-
-  const room: Room = { config, players, state }
+  const state = await gameStates.get(gameID)
 
   if (!state) {
     return
@@ -146,7 +141,7 @@ export const endRound = (
     return
   }
 
-  state.stage = GameStage.REVIEW
+  state.stage = GameStage.ENDING
 
   if (!state?.currentRound) {
     return log.e('Cannot end round that it not in progress')
@@ -154,11 +149,36 @@ export const endRound = (
 
   state.currentRound.endedByPlayer = player.uuid
 
-  const votes = getInitialScores(room)
-  if (votes) state.currentRound.scores = votes
-
   await gameStates.set(gameID, state)
-  IO.in(gameID).emit(ServerEvent.ROUND_ENDED, state)
+  IO.in(gameID).emit(ServerEvent.ROUND_ENDING, state)
+
+  // Okay, so, if the server crashes and this never gets run, we’re screwed.
+  // It would be useful to add a check for this relating to the ENDING state
+  // paired with the timestamp.
+  // We could also add a "queue" type to the redis store which runs things
+  // like this as a sort of cron job.
+  setTimeout(async () => {
+    let [config, players, state] = await Promise.all([
+      gameConfigs.get(gameID),
+      gamePlayers.get(gameID),
+      gameStates.get(gameID),
+    ])
+
+    const room: Room = { config, players, state }
+
+    if (!state) {
+      // Well, we’re pretty much fucked. Sorry players.
+      return
+    }
+
+    state.stage = GameStage.REVIEW
+
+    const votes = getInitialScores(room)
+    if (votes) state.currentRound!.scores = votes
+
+    await gameStates.set(gameID, state)
+    IO.in(gameID).emit(ServerEvent.ROUND_ENDED, state)
+  }, FINAL_ANSWERS_WAITING_TIME)
 }
 
 export const filledAnswer = (

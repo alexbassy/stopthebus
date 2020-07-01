@@ -41,11 +41,14 @@ export enum GameStage {
   // Game is in progress, players are typing answers
   ACTIVE = 'active',
 
+  // Game is in progress but one player has finished the round
+  ENDING = 'ending',
+
   // Round has finished, players are reviewing/scoring
   REVIEW = 'review',
 
   // Game has finished, scores are revealed
-  END = 'end',
+  FINISHED = 'finished',
 }
 
 export interface FinalScores {

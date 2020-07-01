@@ -1,3 +1,5 @@
+export const FINAL_ANSWERS_WAITING_TIME = 2500
+
 export const categories = [
   `Country`,
   `City`,

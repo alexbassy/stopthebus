@@ -1,7 +1,7 @@
 import React, { ChangeEvent, SyntheticEvent, useContext, useState } from 'react'
 import { Flex } from './layout'
 import { Button, Checkbox, Input, Item, List } from './visual'
-import { categories } from '../constants/categories'
+import { categories } from '../constants/game'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
 

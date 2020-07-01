@@ -100,6 +100,10 @@ export default function Game() {
         setGameState(newGameState)
       },
 
+      [ServerEvent.ROUND_ENDING]: (socket, newGameState: GameState) => {
+        setGameState(newGameState)
+      },
+
       [ServerEvent.ROUND_ENDED]: (socket, newGameState: GameState) => {
         setGameState(newGameState)
       },
@@ -188,12 +192,13 @@ export default function Game() {
 
   switch (gameState.stage) {
     case GameStage.ACTIVE:
+    case GameStage.ENDING:
       Component = ActiveRound
       break
     case GameStage.REVIEW:
       Component = ReviewRound
       break
-    case GameStage.END:
+    case GameStage.FINISHED:
       Component = GameEnd
       break
     case GameStage.PRE:
