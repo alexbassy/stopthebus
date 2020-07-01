@@ -150,7 +150,7 @@ export default function NewGame(props: NewGameProps) {
       </Helmet>
       <GameName>Game {config.id}</GameName>
       <p>Welcome, {currentPlayer.name || currentPlayer.uuid}!</p>
-      <p>
+      <div>
         <Input
           type='text'
           value={nickname}
@@ -166,7 +166,7 @@ export default function NewGame(props: NewGameProps) {
         <p id='nickname-description'>
           Enter a nickname for other players to see you by.
         </p>
-      </p>
+      </div>
       <H2>Game settings</H2>
       <Grid columns={[2, 1]} stackOnMobile>
         <section>
