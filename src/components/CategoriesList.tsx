@@ -1,9 +1,9 @@
-import React, { useState, useContext, SyntheticEvent, ChangeEvent } from 'react'
-import GameContext from '../contexts/GameContext'
-import EmitterContext from '../contexts/EmitterContext'
-import { categories } from '../constants/categories'
-import { List, Item, Button, Input, Checkbox } from './visual'
+import React, { ChangeEvent, SyntheticEvent, useContext, useState } from 'react'
 import { Flex } from './layout'
+import { Button, Checkbox, Input, Item, List } from './visual'
+import { categories } from '../constants/categories'
+import EmitterContext from '../contexts/EmitterContext'
+import GameContext from '../contexts/GameContext'
 
 interface CategoriesListProps {
   selectedCategories: string[]
@@ -43,11 +43,13 @@ export default function CategoriesList(props: CategoriesListProps) {
     <div>
       <List columns={[1, 1, 1]} stackOnMobile>
         {[...categories, ...customCategories].map((category, index) => {
+          const id = category.replace(/\s/g, '').toLowerCase()
           return (
             <Item key={index}>
-              <label>
+              <label htmlFor={id}>
                 <Flex yCentre>
                   <Checkbox
+                    id={id}
                     type='checkbox'
                     onChange={() => {
                       const newState = new Set(selectedCategories)

@@ -1,6 +1,6 @@
 import { css } from '@emotion/core'
-import styled from './styled'
 import { Link as RouterLink } from 'react-router-dom'
+import styled from './styled'
 
 export const globalStyles = css`
   *,

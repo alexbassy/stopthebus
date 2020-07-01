@@ -1,13 +1,13 @@
+import log from '../../helpers/log'
+import { getPlayerUUID } from '../../helpers/socket'
+import { GameConfig, GameStage, Room } from '../../typings/game'
+import { ClientEvent, Payload, ServerEvent } from '../../typings/socket-events'
 import {
-  players as playerClient,
   gameConfigs,
   gamePlayers,
   gameStates,
+  players as playerClient,
 } from '../redis-client'
-import { Payload, ServerEvent, ClientEvent } from '../../typings/socket-events'
-import { GameConfig, GameStage, Room } from '../../typings/game'
-import log from '../../helpers/log'
-import { getPlayerUUID } from '../../helpers/socket'
 
 /**
  * ServerEvents.REQUEST_JOIN_GAME

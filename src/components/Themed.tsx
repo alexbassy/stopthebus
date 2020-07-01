@@ -1,7 +1,7 @@
 import React, { ReactChild } from 'react'
 import { Helmet } from 'react-helmet'
-import { Global } from '@emotion/core'
 import { ThemeProvider } from 'emotion-theming'
+import { Global } from '@emotion/core'
 import {
   globalStyles,
   Background,

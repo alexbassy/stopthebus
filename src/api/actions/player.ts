@@ -1,7 +1,7 @@
-import { Payload, ServerEvent } from '../../typings/socket-events'
 import log from '../../helpers/log'
-import { gamePlayers, players as playerClient } from '../redis-client'
 import { getPlayerUUID } from '../../helpers/socket'
+import { Payload, ServerEvent } from '../../typings/socket-events'
+import { gamePlayers, players as playerClient } from '../redis-client'
 
 export const updateNickname = (
   IO: SocketIO.Server,

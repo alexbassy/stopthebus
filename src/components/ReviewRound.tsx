@@ -1,12 +1,12 @@
 import React, { useContext, ChangeEvent, SyntheticEvent } from 'react'
+import { Helmet } from 'react-helmet'
+import { GameName, Button, Checkbox } from './visual'
+import styled from './styled'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import useScrollToTop from '../hooks/useScrollToTop'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
-import { GameName, Button, Checkbox } from './visual'
-import styled from './styled'
 import { Round, Scores } from '../typings/game'
-import { Helmet } from 'react-helmet'
 
 const Table = styled('table')`
   width: 100%;

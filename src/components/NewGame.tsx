@@ -1,35 +1,35 @@
+import { Helmet } from 'react-helmet'
 import React, {
-  useContext,
   ChangeEvent,
   Dispatch,
   SetStateAction,
   SyntheticEvent,
+  useContext,
   useState,
 } from 'react'
-import GameContext from '../contexts/GameContext'
-import EmitterContext from '../contexts/EmitterContext'
-import { range } from '../helpers/util'
+import { Flex, Grid } from './layout'
+import {
+  Button,
+  Checkbox,
+  GameName,
+  H2,
+  H3,
+  Input,
+  Item,
+  List,
+  Spacing,
+} from './visual'
+import CategoriesList from '../components/CategoriesList'
 import { ENGLISH_LETTERS } from '../constants/letters'
-import { GameConfig, GameMode } from '../typings/game'
-import { ClientEvent } from '../typings/socket-events'
+import EmitterContext from '../contexts/EmitterContext'
+import GameContext from '../contexts/GameContext'
 import {
   getUserSessionID,
   updatePersistedUserName,
 } from '../helpers/getUserSession'
-import CategoriesList from '../components/CategoriesList'
-import {
-  GameName,
-  Input,
-  Button,
-  H2,
-  H3,
-  List,
-  Item,
-  Checkbox,
-  Spacing,
-} from './visual'
-import { Grid, Flex } from './layout'
-import { Helmet } from 'react-helmet'
+import { range } from '../helpers/util'
+import { GameConfig, GameMode } from '../typings/game'
+import { ClientEvent } from '../typings/socket-events'
 
 const sessionID = getUserSessionID()
 
@@ -220,7 +220,11 @@ export default function NewGame(props: NewGameProps) {
         <div aria-hidden style={{ display: 'none' }}>
           <label>
             Play mode{' '}
-            <select value={config?.mode} onChange={handleModeChange}>
+            <select
+              value={config?.mode}
+              onBlur={handleModeChange}
+              onChange={handleModeChange}
+            >
               <option value={GameMode.RACE}>Race</option>
               <option value={GameMode.TIMER}>Timer</option>
             </select>
@@ -240,7 +244,11 @@ export default function NewGame(props: NewGameProps) {
         </div>
         <div>
           Number of rounds{' '}
-          <select value={config?.rounds} onChange={handleRoundCountChange}>
+          <select
+            value={config?.rounds}
+            onBlur={handleRoundCountChange}
+            onChange={handleRoundCountChange}
+          >
             {range(1, 10).map((val) => (
               <option key={val} value={val}>
                 {val}

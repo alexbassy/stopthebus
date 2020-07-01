@@ -1,5 +1,6 @@
-import styled from './styled'
 import { css } from '@emotion/core'
+
+import styled from './styled'
 
 interface GridProps {
   columns: number[]

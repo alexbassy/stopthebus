@@ -1,6 +1,6 @@
 import React, { useState, SyntheticEvent, useEffect } from 'react'
-import { persistGameConfig } from '../helpers/persistGame'
 import { useHistory } from 'react-router-dom'
+import { persistGameConfig } from '../helpers/persistGame'
 import { Input, Button, H2, Spacing } from '../components/visual'
 import PageTitle from '../components/PageTitle'
 import * as random from '../helpers/random'

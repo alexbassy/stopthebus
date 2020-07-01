@@ -1,7 +1,8 @@
-import redis from 'redis'
 import { promisify } from 'util'
-import { Player, GameConfig, GameState, Rooms } from '../typings/game'
 import { RequestHandler } from 'express'
+import redis from 'redis'
+
+import { GameConfig, GameState, Player, Rooms } from '../typings/game'
 
 const ONE_HOUR = 60 * 60
 

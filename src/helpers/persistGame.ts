@@ -1,5 +1,5 @@
-import { GameConfig, GameMode } from '../typings/game'
 import getLetters from './getLetters'
+import { GameConfig, GameMode } from '../typings/game'
 
 const KEY = 'newGame'
 

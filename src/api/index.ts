@@ -1,12 +1,13 @@
+import http from 'http'
 import path from 'path'
 import express from 'express'
-import http from 'http'
 import socketIO from 'socket.io'
-import { ClientEvent } from '../typings/socket-events'
-import client, { players, routeGetRooms } from './redis-client'
-import { joinGame, createGame, updateGameConfig } from './actions/game'
+
+import { createGame, joinGame, updateGameConfig } from './actions/game'
 import { updateNickname } from './actions/player'
-import { startRound, endRound, filledAnswer, voteAnswer } from './actions/round'
+import { endRound, filledAnswer, startRound, voteAnswer } from './actions/round'
+import client, { players, routeGetRooms } from './redis-client'
+import { ClientEvent } from '../typings/socket-events'
 import { getPlayerUUID } from '../helpers/socket'
 import * as random from '../helpers/random'
 

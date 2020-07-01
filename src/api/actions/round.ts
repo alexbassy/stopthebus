@@ -1,27 +1,27 @@
-import {
-  players as playerClient,
-  gameConfigs,
-  gamePlayers,
-  gameStates,
-} from '../redis-client'
-import { Payload, ServerEvent } from '../../typings/socket-events'
-import {
-  GameStage,
-  Room,
-  Round,
-  PlayerScores,
-  Scores,
-  GameRound,
-  RoundResults,
-} from '../../typings/game'
 import log from '../../helpers/log'
-import { getPlayerUUID } from '../../helpers/socket'
 import * as random from '../../helpers/random'
 import {
   getFinalScores,
   getInitialScores,
   scoreAnswer,
 } from '../../helpers/scores'
+import { getPlayerUUID } from '../../helpers/socket'
+import {
+  GameRound,
+  GameStage,
+  PlayerScores,
+  Room,
+  Round,
+  RoundResults,
+  Scores,
+} from '../../typings/game'
+import { Payload, ServerEvent } from '../../typings/socket-events'
+import {
+  gameConfigs,
+  gamePlayers,
+  gameStates,
+  players as playerClient,
+} from '../redis-client'
 
 export const startRound = (
   IO: SocketIO.Server,
