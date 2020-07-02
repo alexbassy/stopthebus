@@ -12,7 +12,7 @@ export const Text = styled<'h1'>('h1')`
   margin: 0;
   text-align: center;
 
-  @media screen and (max-width: 460px) {
+  @media screen and (max-width: 760px) {
     font-size: 10vw;
   }
 `
@@ -24,6 +24,11 @@ const Logo = styled<'div'>('div')`
   > svg {
     width: auto;
     height: 100%;
+  }
+
+  @media screen and (max-width: 760px) {
+    height: 9vw;
+    vertical-align: top;
   }
 `
 
