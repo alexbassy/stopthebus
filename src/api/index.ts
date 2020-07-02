@@ -2,7 +2,7 @@ import http from 'http'
 import path from 'path'
 import express from 'express'
 import socketIO from 'socket.io'
-
+import * as dotenv from 'dotenv'
 import { createGame, joinGame, updateGameConfig } from './actions/game'
 import { updateNickname } from './actions/player'
 import { endRound, filledAnswer, startRound, voteAnswer } from './actions/round'
@@ -10,6 +10,8 @@ import client, { players, routeGetRooms } from './redis-client'
 import { ClientEvent } from '../typings/socket-events'
 import { getPlayerUUID } from '../helpers/socket'
 import * as random from '../helpers/random'
+
+dotenv.config()
 
 const app = express()
 const server = http.createServer(app)
