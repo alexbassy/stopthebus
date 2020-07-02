@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { Helmet } from 'react-helmet'
-import { GameName, Item, Link, List } from './visual'
+import { GameName, Item, Link, List, ExternalLink } from './visual'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
 
@@ -40,7 +40,9 @@ export default function ReviewRound() {
           )
         })}
       </List>
-      <Link to='/'>Play another game</Link>
+      <ExternalLink href={`/game/${state.nextGameID}`}>
+        Play another game
+      </ExternalLink>
     </div>
   )
 }

@@ -21,6 +21,7 @@ import {
   gameConfigs,
   gamePlayers,
   gameStates,
+  nextGame,
   players as playerClient,
 } from '../redis-client'
 
@@ -104,7 +105,13 @@ export const startRound = (
     }
     state.currentRound = newRound
   } else {
+    state.nextGameID = random.getGameName()
     state.finalScores = getFinalScores(state.rounds)
+
+    // When a player clicks on the next game link, the game
+    // ID will be searched for in the JOIN_GAME handler, which
+    // will copy the config from the game ID returned.
+    await nextGame.set(state.nextGameID, gameID)
   }
 
   // Save everything

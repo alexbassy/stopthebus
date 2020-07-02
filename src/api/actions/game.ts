@@ -6,6 +6,7 @@ import {
   gameConfigs,
   gamePlayers,
   gameStates,
+  nextGame,
   players as playerClient,
 } from '../redis-client'
 
@@ -25,6 +26,14 @@ export const joinGame = (
   // user if they want to create it
   if (!gameID || !player) {
     return
+  }
+
+  const previousGameID = await nextGame.get(gameID)
+
+  if (previousGameID) {
+    const previousGameConfig = await gameConfigs.get(previousGameID)
+    await createGame(IO, socket)({ gameID, payload: previousGameConfig })
+    await nextGame.del(gameID)
   }
 
   const config = await gameConfigs.get(gameID)
@@ -59,15 +68,24 @@ export const joinGame = (
     socket.in(gameID).emit(ServerEvent.PLAYER_JOINED_GAME, players)
   })
 
+  // When the player disconnects before starting a game, they can be removed
+  // from the game. If the game is in motion, they shouldn’t be removed
+  // as the player nicknames will disappear.
   socket.on(ClientEvent.DISCONNECT, async () => {
+    const gameState = await gameStates.get(gameID)
     let players = await gamePlayers.get(gameID)
 
-    if (players) {
-      // Update the client state to reflect the user’s disconnection
-      // but do not update the store so that they can rejoin.
-      players = players.filter(({ uuid }) => uuid !== player.uuid)
-      logD(`Player ${player.uuid} disconnected`)
+    // If there’s no game, or the game has already started,
+    // then there’s nothing to do.
+    if (!gameState || !players || gameState.stage !== GameStage.PRE) {
+      return
     }
+
+    // If the game hasn’t started, then the players list should
+    // be updated. There are no rounds referring to that user UUID.
+    logD(`Player ${player.uuid} disconnected`)
+    players = players.filter(({ uuid }) => uuid !== player.uuid)
+    await gamePlayers.set(gameID, players)
     socket.in(gameID).emit(ServerEvent.PLAYER_LEFT, players)
   })
 }
@@ -82,7 +100,6 @@ export const createGame = (
   const uuid = getPlayerUUID(socket)
   const player = await playerClient.get(uuid)
   const { d: logD, e: logE } = log.n('REQUEST_CREATE_GAME')
-  logD({ gameID, player, payload })
 
   if (!gameID || !payload || !player) {
     console.log({ gameID, payload, player })

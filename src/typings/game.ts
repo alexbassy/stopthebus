@@ -60,6 +60,7 @@ export interface GameState {
   rounds: GameRound[]
   currentRound?: GameRound
   finalScores?: FinalScores
+  nextGameID?: string
 }
 
 export interface RoundResults {

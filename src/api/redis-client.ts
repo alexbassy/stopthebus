@@ -10,6 +10,7 @@ const playerPrefix = 'player'
 const gameConfigPrefix = 'gameConfig'
 const gameStatePrefix = 'gameState'
 const gamePlayersPrefix = 'gamePlayers'
+const nextGamePrefix = 'nextGame'
 
 const getKey = (key: string, prefix: string) => {
   return key.startsWith(prefix) ? key : `${prefix}:${key}`
@@ -23,38 +24,40 @@ client.on('error', (error) => {
   console.error(error)
 })
 
+type KeysFn = { (key: string): Promise<string[] | null> }
 type SetFn = { <T>(key: string, val: T, ex: 'EX', time: number): Promise<T> }
 type DelFn = { (key: string | string[]): Promise<number> }
 
 export const getAsync = promisify(client.get).bind(client)
+export const keysAsync = promisify(client.keys).bind(client) as KeysFn
 export const setAsync = promisify(client.set).bind(client) as SetFn
 export const delAsync = promisify(client.del).bind(client) as DelFn
 
 export const players = {
-  get: async (id: string): Promise<Player> => {
-    const result = await getAsync(getKey(id, playerPrefix))
+  get: async (gameID: string): Promise<Player> => {
+    const result = await getAsync(getKey(gameID, playerPrefix))
     return JSON.parse(result)
   },
-  set: async (id: string, newVal: Player): Promise<Player> => {
+  set: async (gameID: string, newVal: Player): Promise<Player> => {
     await setAsync(
-      getKey(id, playerPrefix),
+      getKey(gameID, playerPrefix),
       JSON.stringify(newVal),
       'EX',
       ONE_HOUR
     )
     return newVal
   },
-  del: (id: string) => delAsync(getKey(id, playerPrefix)),
+  del: (gameID: string) => delAsync(getKey(gameID, playerPrefix)),
 }
 
 export const gameConfigs = {
-  get: async (id: string): Promise<GameConfig> => {
-    const result = await getAsync(getKey(id, gameConfigPrefix))
+  get: async (gameID: string): Promise<GameConfig> => {
+    const result = await getAsync(getKey(gameID, gameConfigPrefix))
     return JSON.parse(result)
   },
-  set: async (id: string, newVal: GameConfig): Promise<GameConfig> => {
+  set: async (gameID: string, newVal: GameConfig): Promise<GameConfig> => {
     await setAsync(
-      getKey(id, gameConfigPrefix),
+      getKey(gameID, gameConfigPrefix),
       JSON.stringify(newVal),
       'EX',
       ONE_HOUR
@@ -65,13 +68,13 @@ export const gameConfigs = {
 }
 
 export const gameStates = {
-  get: async (id: string): Promise<GameState> => {
-    const result = await getAsync(getKey(id, gameStatePrefix))
+  get: async (gameID: string): Promise<GameState> => {
+    const result = await getAsync(getKey(gameID, gameStatePrefix))
     return JSON.parse(result)
   },
-  set: async (id: string, newVal: GameState): Promise<GameState> => {
+  set: async (gameID: string, newVal: GameState): Promise<GameState> => {
     await setAsync(
-      getKey(id, gameStatePrefix),
+      getKey(gameID, gameStatePrefix),
       JSON.stringify(newVal),
       'EX',
       ONE_HOUR
@@ -82,79 +85,100 @@ export const gameStates = {
 }
 
 export const gamePlayers = {
-  get: async (id: string): Promise<Player[]> => {
-    const result = await getAsync(getKey(id, gamePlayersPrefix))
+  get: async (gameID: string): Promise<Player[]> => {
+    const result = await getAsync(getKey(gameID, gamePlayersPrefix))
     return JSON.parse(result)
   },
-  set: async (id: string, newVal: Player[]): Promise<Player[]> => {
+  set: async (gameID: string, newVal: Player[]): Promise<Player[]> => {
     await setAsync(
-      getKey(id, gamePlayersPrefix),
+      getKey(gameID, gamePlayersPrefix),
       JSON.stringify(newVal),
       'EX',
       ONE_HOUR
     )
     return newVal
   },
-  del: (id: string) => delAsync(getKey(id, gamePlayersPrefix)),
+  del: (gameID: string) => delAsync(getKey(gameID, gamePlayersPrefix)),
+}
+
+export const nextGame = {
+  get: async (gameID: string): Promise<string> => {
+    return getAsync(getKey(gameID, nextGamePrefix))
+  },
+  set: async (gameID: string, nextGameID: string): Promise<string> => {
+    await setAsync(getKey(gameID, nextGamePrefix), nextGameID, 'EX', ONE_HOUR)
+    return nextGameID
+  },
+  del: (gameID: string) => delAsync(getKey(gameID, nextGamePrefix)),
 }
 
 interface GetRoomsRouteResponse {
   state: 'clean' | 'faulty' | 'empty'
   errors: string[]
+  nextGames: { [nextGameID: string]: string }
   count?: number
   rooms?: Rooms
 }
 
 export const routeGetRooms: RequestHandler = async (req, res) => {
-  client.keys('gameConfig:*', async (err, games) => {
-    if (err) return console.log(err)
+  const games = await keysAsync(getKey('*', gameConfigPrefix))
+  const nextGames = await keysAsync(getKey('*', nextGamePrefix))
 
-    let response: GetRoomsRouteResponse = {
-      state: 'clean',
-      errors: [],
-    }
+  let response: GetRoomsRouteResponse = {
+    state: 'clean',
+    errors: [],
+    nextGames: {},
+  }
 
-    if (!games || !games.length) {
-      response.state = 'empty'
-      res.json(response)
-      return
-    }
-
-    // Loop through list of games and retrieve all properties for each one
-    // into an array of `[id, config, state, players]`
-    const gameTuples = await Promise.all(
-      games
-        .map(removePrefix)
-        .map((gameID) =>
-          Promise.all([
-            Promise.resolve(gameID),
-            gameConfigs.get(gameID),
-            gameStates.get(gameID),
-            gamePlayers.get(gameID),
-          ])
-        )
+  if (nextGames && nextGames.length) {
+    const games = await Promise.all(
+      nextGames.map((gameID) => nextGame.get(gameID))
     )
+    nextGames.forEach((key, i) => {
+      response.nextGames[removePrefix(key)] = games[i]
+    })
+  }
 
-    // Transform tuples into an object of {[gameID]: Game}
-    const rooms = gameTuples.reduce<Rooms>(
-      (rooms, [gameID, config, state, players]) => {
-        if (!config) {
-          response.state = 'faulty'
-          response.errors.push(`Missing config for room ${gameID}`)
-          return rooms
-        }
+  if (!games || !games.length) {
+    response.state = 'empty'
+    res.json(response)
+    return
+  }
 
-        rooms[gameID] = { config, state, players }
+  // Loop through list of games and retrieve all properties for each one
+  // into an array of `[id, config, state, players]`
+  const gameTuples = await Promise.all(
+    games
+      .map(removePrefix)
+      .map((gameID) =>
+        Promise.all([
+          Promise.resolve(gameID),
+          gameConfigs.get(gameID),
+          gameStates.get(gameID),
+          gamePlayers.get(gameID),
+        ])
+      )
+  )
+
+  // Transform tuples into an object of {[gameID]: Game}
+  const rooms = gameTuples.reduce<Rooms>(
+    (rooms, [gameID, config, state, players]) => {
+      if (!config) {
+        response.state = 'faulty'
+        response.errors.push(`Missing config for room ${gameID}`)
         return rooms
-      },
-      {}
-    )
+      }
 
-    response.count = Object.keys(rooms).length
-    response.rooms = rooms
+      rooms[gameID] = { config, state, players }
+      return rooms
+    },
+    {}
+  )
 
-    return res.json(response)
-  })
+  response.count = Object.keys(rooms).length
+  response.rooms = rooms
+
+  return res.json(response)
 }
 
 export default client
