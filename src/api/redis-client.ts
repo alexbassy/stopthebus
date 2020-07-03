@@ -24,6 +24,7 @@ const getKey = (key: string, prefix: string) => {
 }
 
 const removePrefix = (key: string) => key.split(':')[1]
+const getPlayerIDFromAnswersRecord = (key: string) => key.split(':')[2]
 
 const client = redis.createClient(process.env.REDIS_URL as string)
 
@@ -103,11 +104,12 @@ export const playerAnswers = {
       getKey(`${gameID}:*`, playerAnswersPrefix)
     )
 
-    if (!answersForGame) return {}
+    if (!answersForGame || !answersForGame.length) return {}
 
     for (const key of answersForGame) {
       const answers = await getAsync(key)
-      round[key] = JSON.parse(answers)
+      const uuid = getPlayerIDFromAnswersRecord(key)
+      round[uuid] = JSON.parse(answers)
     }
 
     return round

@@ -53,7 +53,6 @@ export default function ActiveRound() {
     event: ChangeEvent<HTMLInputElement>
   ) => {
     const inputValue = event.target.value
-    console.log('handleChange', inputValue)
     setValues((currentValues) => ({
       ...currentValues,
       [category]: inputValue,

@@ -163,7 +163,7 @@ export const endRound = (
   // Okay, so, if the server crashes and this never gets run, we’re screwed.
   // It would be useful to add a check for this relating to the ENDING state
   // paired with the timestamp.
-  // We could also add a "queue" type to the redis store which runs things
+  // There could also be a "queue" type to the redis store which runs things
   // like this as a sort of cron job.
   setTimeout(async () => {
     let [config, players, state, roundAnswers] = await Promise.all([
@@ -204,10 +204,15 @@ export const filledAnswer = (
 
   const state = await gameStates.get(gameID)
 
+  const isGameActive =
+    state.stage === GameStage.ACTIVE || state.stage === GameStage.ENDING
+
   // If there’s no active game, then something is amiss
-  if (!state || state.stage !== GameStage.ACTIVE) {
+  if (!state || !isGameActive) {
     return
   }
+
+  log.r('FILLED_ANSWER', payload)
 
   await playerAnswers.set(gameID, uuid, payload)
 }

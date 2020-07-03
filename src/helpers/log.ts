@@ -1,5 +1,5 @@
-// import * as dotenv from 'dotenv'
-// dotenv.config()
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 const LOGGING_ENV =
   process.env.REACT_APP_LOGGING_LEVEL || process.env.LOGGING_LEVEL
@@ -9,13 +9,6 @@ const LOGGING_LEVEL =
 
 const isDebugging = LOGGING_LEVEL === 2
 const isProd = LOGGING_LEVEL === 1
-
-console.log({
-  isDebugging,
-  isProd,
-  LOGGING_LEVEL,
-  env: process.env,
-})
 
 // Logging functions for "received", "sending", "error", and "debug"
 const r = (name: string, ...rest: any) => {
