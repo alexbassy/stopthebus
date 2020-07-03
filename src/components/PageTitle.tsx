@@ -1,7 +1,13 @@
-import React from 'react'
+import React, { SyntheticEvent } from 'react'
+import { Link, useHistory } from 'react-router-dom'
 import styled from './styled'
 
-export const Text = styled<'h1'>('h1')`
+const StyledLink = styled<'a'>('a')`
+  text-decoration: none;
+  --webkit-tap-highlight-color: transparent;
+`.withComponent(Link)
+
+const Text = styled<'h1'>('h1')`
   font-family: ${(props) => props.theme.fonts.title.name};
   color: ${(props) => props.theme.colours.yellow};
   background: linear-gradient(#f857a6, #ff5858);
@@ -49,10 +55,22 @@ const BusIcon = `
     </g>
 </svg>`
 
-export default function PageTitle() {
+interface TitleProps {
+  isInGame?: boolean
+}
+
+export default function PageTitle(props: TitleProps) {
+  const history = useHistory()
+  const handleClick = (event: SyntheticEvent<HTMLAnchorElement>) => {
+    if (!props.isInGame) {
+      history.push('/')
+    }
+  }
   return (
-    <Text>
-      Stop The Bus <Logo dangerouslySetInnerHTML={{ __html: BusIcon }} />
-    </Text>
+    <StyledLink to='/' onClick={handleClick}>
+      <Text>
+        Stop The Bus <Logo dangerouslySetInnerHTML={{ __html: BusIcon }} />
+      </Text>
+    </StyledLink>
   )
 }
