@@ -22,6 +22,7 @@ import {
   gamePlayers,
   gameStates,
   nextGame,
+  playerAnswers,
   players as playerClient,
 } from '../redis-client'
 
@@ -162,27 +163,30 @@ export const endRound = (
   // Okay, so, if the server crashes and this never gets run, we’re screwed.
   // It would be useful to add a check for this relating to the ENDING state
   // paired with the timestamp.
-  // We could also add a "queue" type to the redis store which runs things
+  // There could also be a "queue" type to the redis store which runs things
   // like this as a sort of cron job.
   setTimeout(async () => {
-    let [config, players, state] = await Promise.all([
+    let [config, players, state, roundAnswers] = await Promise.all([
       gameConfigs.get(gameID),
       gamePlayers.get(gameID),
       gameStates.get(gameID),
+      playerAnswers.getByGame(gameID),
     ])
-
-    const room: Room = { config, players, state }
 
     if (!state) {
       // Well, we’re pretty much fucked. Sorry players.
       return
     }
 
+    state.currentRound!.answers = roundAnswers
+
     state.stage = GameStage.REVIEW
 
+    const room: Room = { config, players, state }
     const votes = getInitialScores(room)
     if (votes) state.currentRound!.scores = votes
 
+    await playerAnswers.delByGame(gameID)
     await gameStates.set(gameID, state)
     IO.in(gameID).emit(ServerEvent.ROUND_ENDED, state)
   }, FINAL_ANSWERS_WAITING_TIME)
@@ -195,17 +199,47 @@ export const filledAnswer = (
   const uuid = getPlayerUUID(socket)
   const player = await playerClient.get(uuid)
 
-  if (!gameID || !player) {
+  if (!gameID || !player || !payload) {
     return
   }
 
   const state = await gameStates.get(gameID)
 
-  // fucking typescript
-  if (state.currentRound && payload) {
-    state.currentRound.answers[player.uuid] = payload
-    await gameStates.set(gameID, state)
+  const isGameActive =
+    state.stage === GameStage.ACTIVE || state.stage === GameStage.ENDING
+
+  // If there’s no active game, then something is amiss
+  if (!state || !isGameActive) {
+    return
   }
+
+  log.r('FILLED_ANSWER', payload)
+
+  await playerAnswers.set(gameID, uuid, payload)
+}
+
+export const retrieveAnswers = (
+  IO: SocketIO.Server,
+  socket: SocketIO.Socket
+) => async ({ gameID }: Payload) => {
+  const uuid = getPlayerUUID(socket)
+  const player = await playerClient.get(uuid)
+  const { d: logD, e: logE } = log.n('RETRIEVE_ANSWERS')
+
+  if (!gameID || !player) {
+    logD({ gameID, player })
+    logE('No gameID or player')
+    return
+  }
+
+  let answers = await playerAnswers.get(gameID, uuid)
+
+  if (!answers) {
+    logD('The player has not recorded any answers')
+    return
+  }
+
+  socket.emit(ServerEvent.SEND_ANSWERS, answers)
 }
 
 export const voteAnswer = (

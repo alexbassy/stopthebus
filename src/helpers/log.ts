@@ -1,18 +1,14 @@
-enum LOG_LEVEL {
-  None,
-  Errors,
-  Debug,
-}
+import * as dotenv from 'dotenv'
+dotenv.config()
+
+const LOGGING_ENV =
+  process.env.REACT_APP_LOGGING_LEVEL || process.env.LOGGING_LEVEL
 
 const LOGGING_LEVEL =
-  process.env.LOGGING_LEVEL === 'debug'
-    ? 2
-    : process.env.LOGGING_LEVEL === 'errors'
-    ? 1
-    : 0
+  LOGGING_ENV === 'debug' ? 2 : LOGGING_ENV === 'errors' ? 1 : 0
 
-const isDebugging = LOGGING_LEVEL === LOG_LEVEL.Debug
-const isProd = LOGGING_LEVEL === LOG_LEVEL.Errors
+const isDebugging = LOGGING_LEVEL === 2
+const isProd = LOGGING_LEVEL === 1
 
 // Logging functions for "received", "sending", "error", and "debug"
 const r = (name: string, ...rest: any) => {

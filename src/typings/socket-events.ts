@@ -45,6 +45,9 @@ export enum ClientEvent {
   // Sent when the player finishes entering an answer
   FILLED_ANSWER = 'FILLED_ANSWER',
 
+  // Sent when the player rejoins the game after disconnecting, to retrieve their answers
+  RETRIEVE_ANSWERS = 'RETRIEVE_ANSWERS',
+
   // Implies the round has finished, presumably when the player clicks the
   // "end round" button, but could also be with timer? Not sure how to handle this
   END_ROUND = 'END_ROUND',
@@ -79,6 +82,9 @@ export enum ServerEvent {
 
   // Triggered when a player has finished the round and all clients must submit final answers
   ROUND_ENDING = 'ROUND_ENDING',
+
+  // When the player reconnects to an active round and needs their answers
+  SEND_ANSWERS = 'SEND_ANSWERS',
 
   // Updates players' screens with progress of other players
   // I guess this sends { playerUUID, categoryName }

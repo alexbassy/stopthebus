@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useCallback } from 'react'
 import io from 'socket.io-client'
 import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
 import { getUserSession } from '../helpers/getUserSession'
@@ -77,9 +77,18 @@ export default function useSocket({
     }
   }, [socket, callbacks, getPayload])
 
+  const sendEvent = useCallback(
+    (name: string, payload: any) => {
+      if (!socket?.emit) return
+      if (logEvents) log.s(name, payload)
+      return socket.emit(name, getPayload(payload))
+    },
+    [socket, getPayload]
+  )
+
   return {
     socket,
+    emit: sendEvent,
     isInitialised: Boolean(socket),
-    emit: (name, payload) => socket?.emit(name, getPayload(payload)),
   }
 }

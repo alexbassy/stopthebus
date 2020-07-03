@@ -1,4 +1,4 @@
-export const FINAL_ANSWERS_WAITING_TIME = 2500
+export const FINAL_ANSWERS_WAITING_TIME = 1500
 
 export const categories = [
   `Country`,

@@ -1,8 +1,14 @@
 import { promisify } from 'util'
 import { RequestHandler } from 'express'
 import redis from 'redis'
-
-import { GameConfig, GameState, Player, Rooms } from '../typings/game'
+import {
+  GameConfig,
+  GameState,
+  Player,
+  Rooms,
+  RoundResults,
+  Round,
+} from '../typings/game'
 
 const ONE_HOUR = 60 * 60
 
@@ -10,6 +16,7 @@ const playerPrefix = 'player'
 const gameConfigPrefix = 'gameConfig'
 const gameStatePrefix = 'gameState'
 const gamePlayersPrefix = 'gamePlayers'
+const playerAnswersPrefix = 'answers'
 const nextGamePrefix = 'nextGame'
 
 const getKey = (key: string, prefix: string) => {
@@ -17,6 +24,7 @@ const getKey = (key: string, prefix: string) => {
 }
 
 const removePrefix = (key: string) => key.split(':')[1]
+const getPlayerIDFromAnswersRecord = (key: string) => key.split(':')[2]
 
 const client = redis.createClient(process.env.REDIS_URL as string)
 
@@ -82,6 +90,57 @@ export const gameStates = {
     return newVal
   },
   del: (id: string) => delAsync(getKey(id, gameStatePrefix)),
+}
+
+export const playerAnswers = {
+  get: async (gameID: string, playerID: string): Promise<RoundResults> => {
+    const answersKey = `${gameID}:${playerID}`
+    const result = await getAsync(getKey(answersKey, playerAnswersPrefix))
+    return JSON.parse(result)
+  },
+  getByGame: async (gameID: string): Promise<Round> => {
+    const round: Round = {}
+    const answersForGame = await keysAsync(
+      getKey(`${gameID}:*`, playerAnswersPrefix)
+    )
+
+    if (!answersForGame || !answersForGame.length) return {}
+
+    for (const key of answersForGame) {
+      const answers = await getAsync(key)
+      const uuid = getPlayerIDFromAnswersRecord(key)
+      round[uuid] = JSON.parse(answers)
+    }
+
+    return round
+  },
+  set: async (
+    gameID: string,
+    playerID: string,
+    answers: RoundResults
+  ): Promise<RoundResults> => {
+    const answersKey = `${gameID}:${playerID}`
+    await setAsync(
+      getKey(answersKey, playerAnswersPrefix),
+      JSON.stringify(answers),
+      'EX',
+      ONE_HOUR
+    )
+    return answers
+  },
+  delByGame: async (gameID: string) => {
+    const answersForGame = await keysAsync(
+      getKey(`${gameID}:*`, playerAnswersPrefix)
+    )
+
+    if (!answersForGame || !answersForGame.length) return {}
+
+    for (const key of answersForGame) {
+      await delAsync(key)
+    }
+  },
+  del: (gameID: string, playerID: string) =>
+    delAsync(getKey(`${gameID}:${playerID}`, playerAnswersPrefix)),
 }
 
 export const gamePlayers = {

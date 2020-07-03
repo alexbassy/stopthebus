@@ -21,6 +21,7 @@ import {
   GameStage,
   Room,
   Scores,
+  RoundResults,
 } from '../typings/game'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
@@ -43,6 +44,7 @@ export default function Game() {
   // Each of these states represents a top level property on the room
   const [gameState, setGameState] = useState<GameState>(defaultGameState)
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null)
+  const [answers, setAnswers] = useState<RoundResults>()
   const [players, setPlayers] = useState<Player[]>()
 
   const hasGameConfig = gameConfig !== null
@@ -98,6 +100,10 @@ export default function Game() {
 
       [ServerEvent.ROUND_STARTED]: (socket, newGameState: GameState) => {
         setGameState(newGameState)
+      },
+
+      [ServerEvent.SEND_ANSWERS]: (socket, playerAnswers: RoundResults) => {
+        setAnswers(playerAnswers)
       },
 
       [ServerEvent.ROUND_ENDING]: (socket, newGameState: GameState) => {
@@ -186,6 +192,7 @@ export default function Game() {
     config: gameConfig,
     state: gameState,
     players: players || [],
+    answers,
   }
 
   let Component
