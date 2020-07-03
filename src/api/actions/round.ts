@@ -186,6 +186,7 @@ export const endRound = (
     const votes = getInitialScores(room)
     if (votes) state.currentRound!.scores = votes
 
+    await playerAnswers.delByGame(gameID)
     await gameStates.set(gameID, state)
     IO.in(gameID).emit(ServerEvent.ROUND_ENDED, state)
   }, FINAL_ANSWERS_WAITING_TIME)

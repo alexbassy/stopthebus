@@ -128,6 +128,17 @@ export const playerAnswers = {
     )
     return answers
   },
+  delByGame: async (gameID: string) => {
+    const answersForGame = await keysAsync(
+      getKey(`${gameID}:*`, playerAnswersPrefix)
+    )
+
+    if (!answersForGame || !answersForGame.length) return {}
+
+    for (const key of answersForGame) {
+      await delAsync(key)
+    }
+  },
   del: (gameID: string, playerID: string) =>
     delAsync(getKey(`${gameID}:${playerID}`, playerAnswersPrefix)),
 }
