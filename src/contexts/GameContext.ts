@@ -1,6 +1,10 @@
 import { createContext } from 'react'
-import { Room } from '../typings/game'
+import { Room, RoundResults } from '../typings/game'
 
-const GameContext = createContext<Room | undefined>(undefined)
+interface GameContext extends Room {
+  answers?: RoundResults
+}
+
+const GameContext = createContext<GameContext | undefined>(undefined)
 
 export default GameContext

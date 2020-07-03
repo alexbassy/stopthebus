@@ -8,6 +8,7 @@ import {
   gameStates,
   nextGame,
   players as playerClient,
+  playerAnswers,
 } from '../redis-client'
 
 /**
@@ -43,10 +44,15 @@ export const joinGame = (
     return
   }
 
-  const [players, state] = await Promise.all([
-    await gamePlayers.get(gameID),
-    await gameStates.get(gameID),
+  const [players, state, answersForPlayer] = await Promise.all([
+    gamePlayers.get(gameID),
+    gameStates.get(gameID),
+    playerAnswers.get(gameID, uuid),
   ])
+
+  if (answersForPlayer && state.stage === GameStage.ACTIVE) {
+    state.currentRound!.answers[uuid] = answersForPlayer
+  }
 
   const isExistingPlayer = players.find((player) => player.uuid === uuid)
   if (state.stage !== GameStage.PRE && !isExistingPlayer) {

@@ -5,7 +5,13 @@ import socketIO from 'socket.io'
 import * as dotenv from 'dotenv'
 import { createGame, joinGame, updateGameConfig } from './actions/game'
 import { updateNickname } from './actions/player'
-import { endRound, filledAnswer, startRound, voteAnswer } from './actions/round'
+import {
+  endRound,
+  filledAnswer,
+  startRound,
+  voteAnswer,
+  retrieveAnswers,
+} from './actions/round'
 import client, { players, routeGetRooms } from './redis-client'
 import { ClientEvent } from '../typings/socket-events'
 import { getPlayerUUID } from '../helpers/socket'
@@ -65,10 +71,9 @@ IO.on('connection', async (socket) => {
 
   socket.on(ClientEvent.END_ROUND, endRound(IO, socket))
 
-  // This could end up rewriting other people’s answers,
-  // but with any luck the state would update to the final
-  // state when a user clicks the ”End game’ button.
   socket.on(ClientEvent.FILLED_ANSWER, filledAnswer(IO, socket))
+
+  socket.on(ClientEvent.RETRIEVE_ANSWERS, retrieveAnswers(IO, socket))
 
   socket.on(ClientEvent.VOTE_ANSWER, voteAnswer(IO, socket))
 })

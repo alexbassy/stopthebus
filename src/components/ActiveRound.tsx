@@ -15,14 +15,15 @@ import { RoundResults, GameStage } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
 
 export default function ActiveRound() {
-  const uuid = getUserSessionID()
   const emit = useContext(EmitterContext)
   const game = useContext(GameContext)
   const [values, setValues] = useState<RoundResults>({})
-
   const [hasEnded, setHasEnded] = useState<boolean>(false)
 
+  useScrollToTop()
+
   const gameState = game?.state?.stage ?? null
+
   useEffect(() => {
     if (gameState && gameState === GameStage.ENDING && !!emit && !hasEnded) {
       setHasEnded(true)
@@ -30,13 +31,19 @@ export default function ActiveRound() {
     }
   }, [gameState, emit, values, hasEnded])
 
-  useScrollToTop()
-
   useEffect(() => {
-    if (game?.state.currentRound?.answers?.[uuid]) {
-      setValues(game?.state.currentRound?.answers?.[uuid])
+    if (emit && gameState === GameStage.ACTIVE) {
+      console.log('Retrieving answers')
+      emit(ClientEvent.RETRIEVE_ANSWERS)
     }
-  }, [game, uuid])
+  }, [emit, gameState])
+
+  const answers = game?.answers
+  useEffect(() => {
+    if (answers) {
+      setValues(answers)
+    }
+  }, [answers])
 
   if (!game || !emit) return null
 
@@ -46,6 +53,7 @@ export default function ActiveRound() {
     event: ChangeEvent<HTMLInputElement>
   ) => {
     const inputValue = event.target.value
+    console.log('handleChange', inputValue)
     setValues((currentValues) => ({
       ...currentValues,
       [category]: inputValue,
