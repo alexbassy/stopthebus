@@ -1,6 +1,6 @@
 import log from '../../helpers/log'
 import { getPlayerUUID } from '../../helpers/socket'
-import { GameConfig, GameStage, Room } from '../../typings/game'
+import { GameConfig, GameStage, Room, Player } from '../../typings/game'
 import { ClientEvent, Payload, ServerEvent } from '../../typings/socket-events'
 import {
   gameConfigs,
@@ -10,6 +10,7 @@ import {
   players as playerClient,
   playerAnswers,
 } from '../redis-client'
+import { getColour } from '../../helpers/playerColours'
 
 /**
  * ServerEvents.REQUEST_JOIN_GAME
@@ -29,12 +30,22 @@ export const joinGame = (
     return
   }
 
+  // Check if the player is coming from a previous game
+  // and wants to play with the same configuration. If so,
+  // load the previous game configuration, exclude the played
+  // letters and create a new game.
   const previousGameID = await nextGame.get(gameID)
-
   if (previousGameID) {
     const previousGameConfig = await gameConfigs.get(previousGameID)
+    const previousState = await gameStates.get(previousGameID)
+    const playedLetters = previousState.rounds.map((round) => round.letter)
+    previousGameConfig.letters = previousGameConfig.letters
+      .split('')
+      .filter((letter) => playedLetters.includes(letter))
+      .join('')
     await createGame(IO, socket)({ gameID, payload: previousGameConfig })
     await nextGame.del(gameID)
+    return
   }
 
   const config = await gameConfigs.get(gameID)
@@ -65,7 +76,17 @@ export const joinGame = (
     const isPlayerAlreadyInRoom = players.find((player) => player.uuid === uuid)
 
     if (!isPlayerAlreadyInRoom) {
-      players.push(player)
+      // Add a colour for the player to display a little circle
+      // next to their name while the round is going.
+      const otherPlayerColours = players
+        .map((player) => player.colour)
+        .filter(Boolean)
+      debugger
+      const roomPlayer: Player = {
+        ...player,
+        colour: getColour(otherPlayerColours as string[]),
+      }
+      players.push(roomPlayer)
       await gamePlayers.set(gameID, players)
     }
 
@@ -108,28 +129,28 @@ export const createGame = (
   const { d: logD, e: logE } = log.n('REQUEST_CREATE_GAME')
 
   if (!gameID || !payload || !player) {
-    console.log({ gameID, payload, player })
     logE('No gameID, payload or player')
     return
   }
 
-  const [config, players] = await Promise.all([
-    gameConfigs.get(gameID),
-    gamePlayers.get(gameID),
-  ])
+  const config = await gameConfigs.get(gameID)
 
   if (config) {
     logD(`The room "${gameID} already exists, joining instead…`)
     return joinGame(IO, socket)({ gameID, payload })
   }
 
-  if (players && players.find(({ uuid }) => uuid === player.uuid)) {
-    logD(`Host rejoined room "${gameID}"`)
+  // Assign a colour to the first player in the room
+  const roomPlayer = {
+    ...player,
+    colour: getColour([]),
   }
+
+  debugger
 
   const room: Room = {
     config: { ...payload, lastAuthor: player.uuid },
-    players: [player],
+    players: [roomPlayer],
     state: {
       stage: GameStage.PRE,
       rounds: [],

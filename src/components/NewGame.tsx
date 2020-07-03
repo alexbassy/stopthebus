@@ -20,6 +20,7 @@ import {
   Spacing,
 } from './visual'
 import CategoriesList from '../components/CategoriesList'
+import Player from '../components/Player'
 import { ENGLISH_LETTERS } from '../constants/letters'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
@@ -200,8 +201,7 @@ export default function NewGame(props: NewGameProps) {
             {players &&
               players.map((player) => (
                 <Item key={player.uuid}>
-                  {player.name || player.uuid}{' '}
-                  {player.uuid === sessionID && ' (me)'}
+                  <Player {...player} />
                 </Item>
               ))}
           </List>
