@@ -51,6 +51,7 @@ const ShareButton = styled<'button'>('button')`
   background-position: center;
   background-size: 80%;
   padding: .75rem;
+  text-indent: -9999px;
 
   @media screen and (max-width: 460px) {
   width: 1rem;
@@ -63,12 +64,19 @@ export default function GameName(props: GameNameProps) {
   const { gameID: paramsGameID }: GameParams = useParams()
   const game = useContext(GameContext)
   const gameID = game && game.config ? game.config.id : paramsGameID
+  const hasShareAPI = Boolean(window.navigator.share)
 
   const handleShareClick = async (event: SyntheticEvent<HTMLButtonElement>) => {
+    const gameURL = window.location.href
+    if (!hasShareAPI) {
+      await navigator.clipboard.writeText(gameURL)
+      alert('The game URL was copied to the clipboard')
+      return
+    }
     try {
       await window.navigator.share({
         title: `Share game ${gameID}`,
-        url: window.location.href,
+        url: gameURL,
       })
     } catch (e) {
       console.log(e)
@@ -87,7 +95,10 @@ export default function GameName(props: GameNameProps) {
   return (
     <BorderedName>
       <Title>{game.config.name} </Title>
-      <ShareButton type='button' onClick={handleShareClick} />
+      <ShareButton type='button' onClick={handleShareClick}>
+        Share game (
+        {hasShareAPI ? 'opens share dialog' : 'copies URL to clipboard'})
+      </ShareButton>
     </BorderedName>
   )
 }
