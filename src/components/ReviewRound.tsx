@@ -24,6 +24,11 @@ const Table = styled('table')`
   }
 `
 
+const PlayerColumn = styled('td')`
+  word-break: break-all;
+  padding-right: 0.5rem;
+`
+
 interface ResultsTableProps {
   categoryName: string
   answers: Round
@@ -57,8 +62,8 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
   return (
     <Table>
       <colgroup>
-        <col span={1} style={{ width: '20%' }} />
-        <col span={1} style={{ width: '60%' }} />
+        <col span={1} style={{ width: '30%' }} />
+        <col span={1} style={{ width: '50%' }} />
         <col span={1} style={{ width: '20%' }} />
       </colgroup>
       <thead>
@@ -77,7 +82,7 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
 
           return (
             <tr key={`${categoryName}-${playerID}`}>
-              <td>{getPlayerName(playerID)}</td>
+              <PlayerColumn>{getPlayerName(playerID)}</PlayerColumn>
               <td>{answer}</td>
               <td>
                 <Checkbox
