@@ -51,8 +51,11 @@ export default function useSocket({
 
     const socket = socketRef.current
 
-    socket.once(ClientEvent.CONNECT, () => {
-      socket.emit(ClientEvent.UPDATE_NICKNAME, getPayload(session.name))
+    socket.on(ClientEvent.DISCONNECT, (reason: string) => {
+      if (reason === 'io server disconnect') {
+        // The disconnection was initiated by the server, need to reconnect manually
+        socket.connect()
+      }
     })
 
     const boundCallbacks: [string, Function][] = Object.entries(callbacks).map(

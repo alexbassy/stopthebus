@@ -67,6 +67,7 @@ export default function Game() {
 
       [ClientEvent.DISCONNECT]: () => {
         log.d('Gone inactive')
+        setIsConnected(false)
       },
 
       [ServerEvent.JOINED_GAME]: (socket, room: Room) => {
