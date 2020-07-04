@@ -11,7 +11,7 @@ import {
   readGameConfig,
   clearPersistedGameConfig,
 } from '../helpers/persistGame'
-import { getUserSessionID } from '../helpers/getUserSession'
+import { getUserSessionID, getUserSession } from '../helpers/getUserSession'
 import log from '../helpers/log'
 import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
 import {
@@ -71,6 +71,8 @@ export default function Game() {
       },
 
       [ServerEvent.JOINED_GAME]: (socket, room: Room) => {
+        const session = getUserSession()
+        socket.emit(ClientEvent.UPDATE_NICKNAME, getPayload(session.name))
         setPlayers(room.players)
         setGameConfig(room.config)
         setGameState(room.state)
