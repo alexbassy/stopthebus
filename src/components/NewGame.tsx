@@ -128,6 +128,10 @@ export default function NewGame(props: NewGameProps) {
   }
 
   const handleStartGameClick = (event: SyntheticEvent<HTMLButtonElement>) => {
+    if (!game.config.categories.length) {
+      alert('Please choose some categories to play with first')
+      return
+    }
     emit(ClientEvent.START_ROUND)
   }
 
