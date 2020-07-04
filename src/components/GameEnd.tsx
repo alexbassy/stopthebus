@@ -15,6 +15,12 @@ export default function ReviewRound() {
 
   if (!state.finalScores) return null
 
+  const sortedScores = Object.entries(state.finalScores).sort((a, b) => {
+    const scoreA = a[1]
+    const scoreB = b[1]
+    return scoreA > scoreB ? 1 : -1
+  })
+
   return (
     <div>
       <Helmet>
@@ -22,17 +28,17 @@ export default function ReviewRound() {
       </Helmet>
       <GameName />
       <List>
-        {Object.entries(state.finalScores).map(([playerID, score], index) => {
+        {sortedScores.map(([playerID, score], index) => {
           const playerData = players.find(({ uuid }) => uuid === playerID)
           const displayName = playerData?.name ?? playerID
 
-          // if (index === 0) {
-          //   return (
-          //     <Item key={playerID}>
-          //       {displayName} won with a score of {score}
-          //     </Item>
-          //   )
-          // }
+          if (index === 0) {
+            return (
+              <Item key={playerID}>
+                {displayName} won with a score of {score}
+              </Item>
+            )
+          }
 
           return (
             <Item key={playerID}>
