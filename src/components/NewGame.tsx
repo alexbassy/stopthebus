@@ -1,4 +1,3 @@
-import { Helmet } from 'react-helmet'
 import React, {
   ChangeEvent,
   Dispatch,
@@ -7,22 +6,25 @@ import React, {
   useContext,
   useState,
 } from 'react'
+import { Helmet } from 'react-helmet'
 import { Flex, Grid } from './layout'
 import {
   Button,
   Checkbox,
-  GameName,
   H2,
   H3,
   Input,
   Item,
   List,
   Spacing,
+  Select,
 } from './visual'
+import GameContext from '../contexts/GameContext'
 import CategoriesList from '../components/CategoriesList'
+import Player from '../components/Player'
 import { ENGLISH_LETTERS } from '../constants/letters'
 import EmitterContext from '../contexts/EmitterContext'
-import GameContext from '../contexts/GameContext'
+import GameName from '../components/GameName'
 import {
   getUserSessionID,
   updatePersistedUserName,
@@ -126,6 +128,10 @@ export default function NewGame(props: NewGameProps) {
   }
 
   const handleStartGameClick = (event: SyntheticEvent<HTMLButtonElement>) => {
+    if (!game.config.categories.length) {
+      alert('Please choose some categories to play with first')
+      return
+    }
     emit(ClientEvent.START_ROUND)
   }
 
@@ -148,7 +154,7 @@ export default function NewGame(props: NewGameProps) {
       <Helmet>
         <title>New Game - Stop The Bus</title>
       </Helmet>
-      <GameName>Game {config.id}</GameName>
+      <GameName />
       <p>Welcome, {currentPlayer.name || currentPlayer.uuid}!</p>
       <div>
         <Input
@@ -200,8 +206,7 @@ export default function NewGame(props: NewGameProps) {
             {players &&
               players.map((player) => (
                 <Item key={player.uuid}>
-                  {player.name || player.uuid}{' '}
-                  {player.uuid === sessionID && ' (me)'}
+                  <Player {...player} />
                 </Item>
               ))}
           </List>
@@ -220,14 +225,14 @@ export default function NewGame(props: NewGameProps) {
         <div aria-hidden style={{ display: 'none' }}>
           <label>
             Play mode{' '}
-            <select
+            <Select
               value={config?.mode}
               onBlur={handleModeChange}
               onChange={handleModeChange}
             >
               <option value={GameMode.RACE}>Race</option>
               <option value={GameMode.TIMER}>Timer</option>
-            </select>
+            </Select>
           </label>
         </div>
         <div>
@@ -243,8 +248,9 @@ export default function NewGame(props: NewGameProps) {
           )}
         </div>
         <div>
-          Number of rounds{' '}
-          <select
+          <label htmlFor='game-number-rounds'>Number of rounds </label>
+          <Select
+            id='game-number-rounds'
             value={config?.rounds}
             onBlur={handleRoundCountChange}
             onChange={handleRoundCountChange}
@@ -254,7 +260,7 @@ export default function NewGame(props: NewGameProps) {
                 {val}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div>
           <label>

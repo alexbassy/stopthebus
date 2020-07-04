@@ -4,6 +4,7 @@
   "private": true,
   "proxy": "http://localhost:4000",
   "scripts": {
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
     "dev:server": "nodemon src/api/index.ts",
     "dev": "react-scripts start",
     "start": "node src/api/index.js",
@@ -70,6 +71,7 @@
     "eslint-plugin-react-hooks": "^4.0.5",
     "eslint-plugin-simple-import-sort": "^5.0.3",
     "prettier": "^2.0.5",
+    "source-map-explorer": "^2.4.2",
     "ts-node": "^8.10.2"
   }
 }

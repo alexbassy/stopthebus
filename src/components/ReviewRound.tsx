@@ -5,7 +5,8 @@ import React, {
   useEffect,
 } from 'react'
 import { Helmet } from 'react-helmet'
-import { GameName, Button, Checkbox } from './visual'
+import { Button, Checkbox } from './visual'
+import GameName from './GameName'
 import styled from './styled'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
@@ -21,6 +22,11 @@ const Table = styled('table')`
   thead {
     text-align: left;
   }
+`
+
+const PlayerColumn = styled('td')`
+  word-break: break-all;
+  padding-right: 0.5rem;
 `
 
 interface ResultsTableProps {
@@ -56,8 +62,8 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
   return (
     <Table>
       <colgroup>
-        <col span={1} style={{ width: '20%' }} />
-        <col span={1} style={{ width: '60%' }} />
+        <col span={1} style={{ width: '30%' }} />
+        <col span={1} style={{ width: '50%' }} />
         <col span={1} style={{ width: '20%' }} />
       </colgroup>
       <thead>
@@ -76,7 +82,7 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
 
           return (
             <tr key={`${categoryName}-${playerID}`}>
-              <td>{getPlayerName(playerID)}</td>
+              <PlayerColumn>{getPlayerName(playerID)}</PlayerColumn>
               <td>{answer}</td>
               <td>
                 <Checkbox
@@ -103,6 +109,9 @@ export default function ReviewRound() {
 
   const { config, state, players } = game
   const round = state.currentRound
+  const timeStarted = state.currentRound?.timeStarted ?? 0
+  const timeEnded = state.currentRound?.timeEnded ?? timeStarted
+  const roundDuration = timeEnded - timeStarted
 
   if (!round) return null
 
@@ -116,15 +125,21 @@ export default function ReviewRound() {
     players.find(({ uuid }) => uuid === round.endedByPlayer)?.name ||
     round.endedByPlayer
 
+  const RoundDuration =
+    roundDuration === 0 ? null : (
+      <span> in {Math.floor(roundDuration / 1000)}s</span>
+    )
+
   return (
     <div>
       <Helmet>
         <title>Review - Stop The Bus</title>
       </Helmet>
-      <GameName>Game {config.id}</GameName>
+      <GameName />
       <h2>Review of round {state.rounds.length + 1}</h2>
       <p>
         Round finished by <strong>{playerWhoEndedRound}</strong>
+        {RoundDuration}
       </p>
 
       {config.categories.map((category) => {

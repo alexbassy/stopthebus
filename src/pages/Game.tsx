@@ -5,13 +5,14 @@ import ActiveRound from '../components/ActiveRound'
 import ReviewRound from '../components/ReviewRound'
 import GameEnd from '../components/GameEnd'
 import PageTitle from '../components/PageTitle'
-import { GameName } from '../components/visual'
+import { ExternalLink } from '../components/visual'
+import GameName from '../components/GameName'
 import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
   clearPersistedGameConfig,
 } from '../helpers/persistGame'
-import { getUserSessionID } from '../helpers/getUserSession'
+import { getUserSessionID, getUserSession } from '../helpers/getUserSession'
 import log from '../helpers/log'
 import { ClientEvent, ServerEvent, Payload } from '../typings/socket-events'
 import {
@@ -67,9 +68,12 @@ export default function Game() {
 
       [ClientEvent.DISCONNECT]: () => {
         log.d('Gone inactive')
+        setIsConnected(false)
       },
 
       [ServerEvent.JOINED_GAME]: (socket, room: Room) => {
+        const session = getUserSession()
+        socket.emit(ClientEvent.UPDATE_NICKNAME, getPayload(session.name))
         setPlayers(room.players)
         setGameConfig(room.config)
         setGameState(room.state)
@@ -155,7 +159,7 @@ export default function Game() {
     return (
       <>
         <PageTitle />
-        <GameName>Game {gameID}</GameName>
+        <GameName inactive />
         <p>Connecting…</p>
       </>
     )
@@ -165,7 +169,7 @@ export default function Game() {
     return (
       <>
         <PageTitle />
-        <GameName>Game {gameID}</GameName>
+        <GameName inactive />
         <p>Sorry! You disconnected from the server. Please refresh the page.</p>
       </>
     )
@@ -175,10 +179,11 @@ export default function Game() {
     return (
       <>
         <PageTitle />
-        <GameName>Game {gameID}</GameName>
+        <GameName inactive />
         <p>Sorry, the game does not exist.</p>
         <p>
-          Please refresh the page or <Link to='/'>create a new game</Link>
+          Please refresh the page or{' '}
+          <ExternalLink href='/'>create a new game</ExternalLink>
         </p>
       </>
     )
@@ -216,7 +221,7 @@ export default function Game() {
   return (
     <EmitterContext.Provider value={emit}>
       <GameContext.Provider value={gameContextValue}>
-        <PageTitle />
+        <PageTitle isInGame={gameState.stage !== GameStage.PRE} />
         <Component />
       </GameContext.Provider>
     </EmitterContext.Provider>

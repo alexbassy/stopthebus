@@ -1,14 +1,20 @@
-import React from 'react'
+import React, { SyntheticEvent } from 'react'
 import styled from './styled'
+import { ExternalLink } from './visual'
 
-export const Text = styled<'h1'>('h1')`
+const StyledLink = styled<'a'>('a')`
+  text-decoration: none;
+  --webkit-tap-highlight-color: transparent;
+`.withComponent(ExternalLink)
+
+const Title = styled<'div'>('div')`
   font-family: ${(props) => props.theme.fonts.title.name};
   color: ${(props) => props.theme.colours.yellow};
   background: linear-gradient(#f857a6, #ff5858);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-transform: uppercase;
-  font-size: 4.9rem;
+  font-size: 5rem;
   margin: 0;
   text-align: center;
 
@@ -27,7 +33,7 @@ const Logo = styled<'div'>('div')`
   }
 
   @media screen and (max-width: 760px) {
-    height: 9vw;
+    height: 8vw;
     vertical-align: top;
   }
 `
@@ -49,10 +55,22 @@ const BusIcon = `
     </g>
 </svg>`
 
-export default function PageTitle() {
+interface TitleProps {
+  isInGame?: boolean
+}
+
+export default function PageTitle(props: TitleProps) {
+  const handleClick = (event: SyntheticEvent<HTMLAnchorElement>) => {
+    if (props.isInGame) {
+      const isSure = window.confirm('Are you sure you want to leave the game?')
+      if (!isSure) event.preventDefault()
+    }
+  }
   return (
-    <Text>
-      Stop The Bus <Logo dangerouslySetInnerHTML={{ __html: BusIcon }} />
-    </Text>
+    <StyledLink href='/' onClick={handleClick}>
+      <Title>
+        Stop The Bus <Logo dangerouslySetInnerHTML={{ __html: BusIcon }} />
+      </Title>
+    </StyledLink>
   )
 }

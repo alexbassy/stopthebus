@@ -28,6 +28,7 @@ export interface Player {
   id?: string
   uuid: string
   name?: string
+  colour?: string
 }
 
 /**

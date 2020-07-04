@@ -155,6 +155,7 @@ export const endRound = (
     return log.e('Cannot end round that it not in progress')
   }
 
+  state.currentRound.timeEnded = Date.now()
   state.currentRound.endedByPlayer = player.uuid
 
   await gameStates.set(gameID, state)

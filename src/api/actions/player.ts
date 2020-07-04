@@ -35,8 +35,12 @@ export const updateNickname = (
     return
   }
 
+  // Update the name on the `gamePlayer` entity. I’m not really
+  // sure why players are being stored twice to be honest but
+  // here we are.
   const newPlayers = playersInGame.map((currentPlayer) => {
-    if (currentPlayer.uuid === uuid) return player
+    if (currentPlayer.uuid === uuid)
+      return { ...currentPlayer, name: player.name }
     return currentPlayer
   })
 
