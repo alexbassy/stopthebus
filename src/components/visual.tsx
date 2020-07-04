@@ -54,10 +54,6 @@ export const Wrapper = styled('div')`
   }
 `
 
-export const GameName = styled<'h2'>('h2')`
-  font-size: 1.75rem;
-`
-
 export const H2 = styled<'h2'>('h2')`
   text-shadow: 1px 1px rgb(0 0 0 / 40%);
 `
@@ -184,6 +180,10 @@ export const Button = styled<'button', ButtonProps>('button')`
 export const ExternalLink = styled<'a'>('a')`
   color: #fff;
   cursor: pointer;
+
+  :visited {
+    color: #fff;
+  }
 `
 
 export const Link = ExternalLink.withComponent(RouterLink)

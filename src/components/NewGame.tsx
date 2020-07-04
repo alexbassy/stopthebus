@@ -11,7 +11,6 @@ import { Flex, Grid } from './layout'
 import {
   Button,
   Checkbox,
-  GameName,
   H2,
   H3,
   Input,
@@ -20,11 +19,12 @@ import {
   Spacing,
   Select,
 } from './visual'
+import GameContext from '../contexts/GameContext'
 import CategoriesList from '../components/CategoriesList'
 import Player from '../components/Player'
 import { ENGLISH_LETTERS } from '../constants/letters'
 import EmitterContext from '../contexts/EmitterContext'
-import GameContext from '../contexts/GameContext'
+import GameName from '../components/GameName'
 import {
   getUserSessionID,
   updatePersistedUserName,
@@ -150,7 +150,7 @@ export default function NewGame(props: NewGameProps) {
       <Helmet>
         <title>New Game - Stop The Bus</title>
       </Helmet>
-      <GameName>Game {config.id}</GameName>
+      <GameName />
       <p>Welcome, {currentPlayer.name || currentPlayer.uuid}!</p>
       <div>
         <Input

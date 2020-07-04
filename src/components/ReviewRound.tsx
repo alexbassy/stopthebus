@@ -5,7 +5,8 @@ import React, {
   useEffect,
 } from 'react'
 import { Helmet } from 'react-helmet'
-import { GameName, Button, Checkbox } from './visual'
+import { Button, Checkbox } from './visual'
+import GameName from './GameName'
 import styled from './styled'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
@@ -121,7 +122,7 @@ export default function ReviewRound() {
       <Helmet>
         <title>Review - Stop The Bus</title>
       </Helmet>
-      <GameName>Game {config.id}</GameName>
+      <GameName />
       <h2>Review of round {state.rounds.length + 1}</h2>
       <p>
         Round finished by <strong>{playerWhoEndedRound}</strong>

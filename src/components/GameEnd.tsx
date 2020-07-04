@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { Helmet } from 'react-helmet'
-import { GameName, Item, List, ExternalLink } from './visual'
+import { Item, List, ExternalLink } from './visual'
+import GameName from './GameName'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
 
@@ -19,7 +20,7 @@ export default function ReviewRound() {
       <Helmet>
         <title>Game Finished - Stop The Bus</title>
       </Helmet>
-      <GameName>Game {config.id} finished</GameName>
+      <GameName />
       <List>
         {Object.entries(state.finalScores).map(([playerID, score], index) => {
           const playerData = players.find(({ uuid }) => uuid === playerID)

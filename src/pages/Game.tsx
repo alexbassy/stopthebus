@@ -5,7 +5,8 @@ import ActiveRound from '../components/ActiveRound'
 import ReviewRound from '../components/ReviewRound'
 import GameEnd from '../components/GameEnd'
 import PageTitle from '../components/PageTitle'
-import { GameName } from '../components/visual'
+import { ExternalLink } from '../components/visual'
+import GameName from '../components/GameName'
 import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
 import {
   readGameConfig,
@@ -158,7 +159,7 @@ export default function Game() {
     return (
       <>
         <PageTitle />
-        <GameName>Game {gameID}</GameName>
+        <GameName inactive />
         <p>Connecting…</p>
       </>
     )
@@ -168,7 +169,7 @@ export default function Game() {
     return (
       <>
         <PageTitle />
-        <GameName>Game {gameID}</GameName>
+        <GameName inactive />
         <p>Sorry! You disconnected from the server. Please refresh the page.</p>
       </>
     )
@@ -178,10 +179,11 @@ export default function Game() {
     return (
       <>
         <PageTitle />
-        <GameName>Game {gameID}</GameName>
+        <GameName inactive />
         <p>Sorry, the game does not exist.</p>
         <p>
-          Please refresh the page or <Link to='/'>create a new game</Link>
+          Please refresh the page or{' '}
+          <ExternalLink href='/'>create a new game</ExternalLink>
         </p>
       </>
     )
