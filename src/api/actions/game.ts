@@ -41,7 +41,7 @@ export const joinGame = (
     const playedLetters = previousState.rounds.map((round) => round.letter)
     previousGameConfig.letters = previousGameConfig.letters
       .split('')
-      .filter((letter) => playedLetters.includes(letter))
+      .filter((letter) => !playedLetters.includes(letter))
       .join('')
     await createGame(IO, socket)({ gameID, payload: previousGameConfig })
     await nextGame.del(gameID)
@@ -159,9 +159,9 @@ export const createGame = (
 
   // Save the newly created room
   await Promise.all([
-    await gameConfigs.set(gameID, room.config),
-    await gamePlayers.set(gameID, room.players),
-    await gameStates.set(gameID, room.state),
+    gameConfigs.set(gameID, room.config),
+    gamePlayers.set(gameID, room.players),
+    gameStates.set(gameID, room.state),
   ])
 
   socket.join(gameID, () => {
