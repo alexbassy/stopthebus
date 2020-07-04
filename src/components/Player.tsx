@@ -4,11 +4,23 @@ import { Spacing } from './visual'
 import { Player as PlayerType } from '../typings/game'
 import { getUserSessionID } from '../helpers/getUserSession'
 
+interface PlayerProps extends PlayerType {
+  inline?: boolean
+}
+
 const sessionID = getUserSessionID()
 
 interface PinProps {
   colour?: string
 }
+
+interface WrapperProps {
+  inline?: boolean
+}
+
+const Wrapper = styled<'div', WrapperProps>('div')`
+  display: ${(props) => (props.inline ? 'inline-block' : 'block')};
+`
 
 export const Pin = styled<'span', PinProps>('span')`
   display: inline-block;
@@ -23,13 +35,13 @@ const Lighter = styled<'span'>('span')`
   color: rgb(255 255 255 / 60%);
 `
 
-export default function Player(props: PlayerType) {
+export default function Player(props: PlayerProps) {
   return (
-    <div>
+    <Wrapper inline={props.inline}>
       <Pin colour={props.colour} />
       <Spacing r={0.5} inline />
       {props.name || props.uuid}{' '}
-      {props.uuid === sessionID && <Lighter> (me)</Lighter>}
-    </div>
+      {!props.inline && props.uuid === sessionID && <Lighter> (me)</Lighter>}
+    </Wrapper>
   )
 }

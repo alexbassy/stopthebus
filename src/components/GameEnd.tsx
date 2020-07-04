@@ -1,9 +1,11 @@
 import React, { useContext } from 'react'
 import { Helmet } from 'react-helmet'
-import { Item, List, ExternalLink } from './visual'
+import { Item, List, ExternalLink, Spacing } from './visual'
 import GameName from './GameName'
+import Player from './Player'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
+import { Player as PlayerType } from '../typings/game'
 
 export default function ReviewRound() {
   const emit = useContext(EmitterContext)
@@ -18,7 +20,7 @@ export default function ReviewRound() {
   const sortedScores = Object.entries(state.finalScores).sort((a, b) => {
     const scoreA = a[1]
     const scoreB = b[1]
-    return scoreA > scoreB ? 1 : -1
+    return scoreA < scoreB ? 1 : -1
   })
 
   return (
@@ -29,20 +31,25 @@ export default function ReviewRound() {
       <GameName />
       <List>
         {sortedScores.map(([playerID, score], index) => {
-          const playerData = players.find(({ uuid }) => uuid === playerID)
-          const displayName = playerData?.name ?? playerID
+          const playerData = players.find(
+            ({ uuid }) => uuid === playerID
+          ) as PlayerType
 
           if (index === 0) {
             return (
               <Item key={playerID}>
-                {displayName} won with a score of {score}
+                <Spacing b={0.5}>
+                  <Player {...playerData} inline /> won with a score of {score}
+                </Spacing>
               </Item>
             )
           }
 
           return (
             <Item key={playerID}>
-              {displayName} scored {score}
+              <Spacing b={0.5}>
+                <Player {...playerData} inline /> scored {score}
+              </Spacing>
             </Item>
           )
         })}

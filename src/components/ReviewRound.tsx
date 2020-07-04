@@ -109,6 +109,9 @@ export default function ReviewRound() {
 
   const { config, state, players } = game
   const round = state.currentRound
+  const timeStarted = state.currentRound?.timeStarted ?? 0
+  const timeEnded = state.currentRound?.timeEnded ?? timeStarted
+  const roundDuration = timeEnded - timeStarted
 
   if (!round) return null
 
@@ -122,6 +125,11 @@ export default function ReviewRound() {
     players.find(({ uuid }) => uuid === round.endedByPlayer)?.name ||
     round.endedByPlayer
 
+  const RoundDuration =
+    roundDuration === 0 ? null : (
+      <span> in {Math.floor(roundDuration / 1000)}s</span>
+    )
+
   return (
     <div>
       <Helmet>
@@ -131,6 +139,7 @@ export default function ReviewRound() {
       <h2>Review of round {state.rounds.length + 1}</h2>
       <p>
         Round finished by <strong>{playerWhoEndedRound}</strong>
+        {RoundDuration}
       </p>
 
       {config.categories.map((category) => {
