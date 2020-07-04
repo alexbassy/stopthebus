@@ -1,11 +1,11 @@
 import React, { SyntheticEvent } from 'react'
-import { Link, useHistory } from 'react-router-dom'
 import styled from './styled'
+import { ExternalLink } from './visual'
 
 const StyledLink = styled<'a'>('a')`
   text-decoration: none;
   --webkit-tap-highlight-color: transparent;
-`.withComponent(Link)
+`.withComponent(ExternalLink)
 
 const Title = styled<'div'>('div')`
   font-family: ${(props) => props.theme.fonts.title.name};
@@ -33,7 +33,7 @@ const Logo = styled<'div'>('div')`
   }
 
   @media screen and (max-width: 760px) {
-    height: 9vw;
+    height: 8vw;
     vertical-align: top;
   }
 `
@@ -60,14 +60,14 @@ interface TitleProps {
 }
 
 export default function PageTitle(props: TitleProps) {
-  const history = useHistory()
   const handleClick = (event: SyntheticEvent<HTMLAnchorElement>) => {
-    if (!props.isInGame) {
-      history.push('/')
+    if (props.isInGame) {
+      const isSure = window.confirm('Are you sure you want to leave the game?')
+      if (!isSure) event.preventDefault()
     }
   }
   return (
-    <StyledLink to='/' onClick={handleClick}>
+    <StyledLink href='/' onClick={handleClick}>
       <Title>
         Stop The Bus <Logo dangerouslySetInnerHTML={{ __html: BusIcon }} />
       </Title>
