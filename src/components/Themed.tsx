@@ -90,19 +90,19 @@ const PrideFlag = styled<'div'>('div')`
 const PrideFlagSVG = `
 <svg xmlns="http://www.w3.org/2000/svg" width="50" height="28">
   <g fill="none" fill-rule="evenodd">
-    <path fill="#D40606" d="M0 0h50v4.02H0z"/>
-    <path fill="#F09D03" d="M0 4.02h50v5.07H0z"/>
-    <path fill="#E5FE04" d="M0 9.09h50v5.07H0z"/>
-    <path fill="#0ABF02" d="M0 14.16h50v5.07H0z"/>
-    <path fill="#081A9A" d="M0 19.23h50v5.07H0z"/>
-    <path fill="#76008A" d="M0 24.3h50v3.85H0z"/>
+    <path fill="#EE3024" d="M0 0h50v4.02H0z"/>
+    <path fill="#F67F29" d="M0 4.02h50v5.07H0z"/>
+    <path fill="#FFEF01" d="M0 9.09h50v5.07H0z"/>
+    <path fill="#57B946" d="M0 14.16h50v5.07H0z"/>
+    <path fill="#0254A6" d="M0 19.23h50v5.07H0z"/>
+    <path fill="#9F258F" d="M0 24.3h50v3.85H0z"/>
     <g>
       <path fill="#010101" d="M7.03-4.37l18.54 18.54L7.03 32.71l-18.54-18.54z"/>
-      <path fill="#613915" d="M1.17-4.39l18.55 18.54L1.18 32.7l-18.55-18.54z"/>
+      <path fill="#603A17" d="M2.17-4.39l18.55 18.54L2.18 32.7l-18.55-18.54z"/>
     </g>
-    <path fill="#74D7EE" d="M-4.5-4.39l18.55 18.54L-4.5 32.7l-18.54-18.54z"/>
-    <path fill="#FFAFC8" d="M-9.34-4.38L9.2 14.16-9.34 32.7l-18.54-18.54z"/>
-    <path fill="#FAF9F5" d="M-14.01-4.39L4.53 14.15-14.01 32.7l-18.54-18.54z"/>
+    <path fill="#7CC0EA" d="M-2.5-4.39l18.55 18.54L-2.5 32.7l-18.54-18.54z"/>
+    <path fill="#F498C0" d="M-6.34-4.38L12.2 14.16-6.34 32.7l-18.54-18.54z"/>
+    <path fill="#FAF9F5" d="M-10.01-4.39L8.53 14.15-10.01 32.7l-18.54-18.54z"/>
   </g>
 </svg>
 `
@@ -124,15 +124,19 @@ export default function Themed({ theme = 'pastel', children }: ThemedProps) {
           </PrideBanner>
         </Wrapper>
         <Footer yCentre xCentre>
-          <FooterLink href='https://bass.dev/'>
-            <Spacing t={0.5} b={0.5}>
+          <Spacing t={1} b={1}>
+            <FooterLink href='https://bass.dev/'>
               made with{' '}
               <span role='img' aria-label='pizazz'>
                 ✨
               </span>
               in berlin
+            </FooterLink>
+            <Spacing l={0.5} r={0.5} inline>
+              &bull;
             </Spacing>
-          </FooterLink>
+            <FooterLink href='/acknowledgements'>acknowledgements</FooterLink>
+          </Spacing>
         </Footer>
       </Background>
     </ThemeProvider>
