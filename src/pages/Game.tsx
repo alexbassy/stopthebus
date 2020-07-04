@@ -217,7 +217,7 @@ export default function Game() {
   return (
     <EmitterContext.Provider value={emit}>
       <GameContext.Provider value={gameContextValue}>
-        <PageTitle />
+        <PageTitle isInGame={gameState.stage !== GameStage.PRE} />
         <Component />
       </GameContext.Provider>
     </EmitterContext.Provider>
