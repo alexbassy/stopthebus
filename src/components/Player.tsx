@@ -10,12 +10,17 @@ interface PinProps {
   colour?: string
 }
 
-const Pin = styled<'span', PinProps>('span')`
+export const Pin = styled<'span', PinProps>('span')`
   display: inline-block;
   width: 1rem;
   height: 1rem;
   border-radius: 100%;
   background-color: ${(props) => props.colour};
+  vertical-align: middle;
+`
+
+const Lighter = styled<'span'>('span')`
+  color: rgb(255 255 255 / 60%);
 `
 
 export default function Player(props: PlayerType) {
@@ -23,7 +28,8 @@ export default function Player(props: PlayerType) {
     <div>
       <Pin colour={props.colour} />
       <Spacing r={0.5} inline />
-      {props.name || props.uuid} {props.uuid === sessionID && ' (me)'}
+      {props.name || props.uuid}{' '}
+      {props.uuid === sessionID && <Lighter> (me)</Lighter>}
     </div>
   )
 }
