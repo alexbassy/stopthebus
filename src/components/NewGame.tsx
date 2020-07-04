@@ -244,8 +244,9 @@ export default function NewGame(props: NewGameProps) {
           )}
         </div>
         <div>
-          Number of rounds{' '}
+          <label htmlFor='game-number-rounds'>Number of rounds </label>
           <Select
+            id='game-number-rounds'
             value={config?.rounds}
             onBlur={handleRoundCountChange}
             onChange={handleRoundCountChange}

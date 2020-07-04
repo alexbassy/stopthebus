@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { Helmet } from 'react-helmet'
-import { GameName, Item, Link, List, ExternalLink } from './visual'
+import { GameName, Item, List, ExternalLink } from './visual'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
 

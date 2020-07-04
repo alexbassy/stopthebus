@@ -1,6 +1,6 @@
 import React, { ChangeEvent, SyntheticEvent, useContext, useState } from 'react'
 import { Flex } from './layout'
-import { Button, Checkbox, Input, Item, List } from './visual'
+import { Button, Checkbox, Input, Item, List, HiddenLabel } from './visual'
 import { categories } from '../constants/game'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
@@ -69,7 +69,11 @@ export default function CategoriesList(props: CategoriesListProps) {
       </List>
       <div>
         <form onSubmit={handleNewCustomCategory}>
+          <HiddenLabel htmlFor='game-custom-category'>
+            Custom category
+          </HiddenLabel>
           <Input
+            id='game-custom-category'
             type='text'
             value={customCategory}
             onChange={handleCustomCategoryChange}

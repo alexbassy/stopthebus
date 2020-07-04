@@ -64,6 +64,15 @@ export const H2 = styled<'h2'>('h2')`
 
 export const H3 = H2.withComponent('h3')
 
+export const HiddenLabel = styled<'label'>('label')`
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap; /* added line */
+`
+
 export const Input = styled<'input'>('input')`
   font-size: 1.2rem;
   padding: 0.75rem;
@@ -126,6 +135,7 @@ export const Select = styled<'select'>('select')`
   font-size: 1rem;
   padding: 0.3rem 1.5rem 0.3rem 1rem;
   -webkit-appearance: none;
+  font-family: inherit;
   border: none;
   box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
   border-radius: 2px;
