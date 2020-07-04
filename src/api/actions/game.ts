@@ -61,6 +61,11 @@ export const joinGame = (
     playerAnswers.get(gameID, uuid),
   ])
 
+  if (!state) {
+    logD(`Game doesn’t exist, bye felicia 👋`)
+    return
+  }
+
   if (answersForPlayer && state.stage === GameStage.ACTIVE) {
     state.currentRound!.answers[uuid] = answersForPlayer
   }
