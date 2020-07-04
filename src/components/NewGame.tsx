@@ -1,4 +1,3 @@
-import { Helmet } from 'react-helmet'
 import React, {
   ChangeEvent,
   Dispatch,
@@ -7,6 +6,7 @@ import React, {
   useContext,
   useState,
 } from 'react'
+import { Helmet } from 'react-helmet'
 import { Flex, Grid } from './layout'
 import {
   Button,
@@ -18,6 +18,7 @@ import {
   Item,
   List,
   Spacing,
+  Select,
 } from './visual'
 import CategoriesList from '../components/CategoriesList'
 import Player from '../components/Player'
@@ -220,14 +221,14 @@ export default function NewGame(props: NewGameProps) {
         <div aria-hidden style={{ display: 'none' }}>
           <label>
             Play mode{' '}
-            <select
+            <Select
               value={config?.mode}
               onBlur={handleModeChange}
               onChange={handleModeChange}
             >
               <option value={GameMode.RACE}>Race</option>
               <option value={GameMode.TIMER}>Timer</option>
-            </select>
+            </Select>
           </label>
         </div>
         <div>
@@ -244,7 +245,7 @@ export default function NewGame(props: NewGameProps) {
         </div>
         <div>
           Number of rounds{' '}
-          <select
+          <Select
             value={config?.rounds}
             onBlur={handleRoundCountChange}
             onChange={handleRoundCountChange}
@@ -254,7 +255,7 @@ export default function NewGame(props: NewGameProps) {
                 {val}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div>
           <label>

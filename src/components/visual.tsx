@@ -16,7 +16,7 @@ export const globalStyles = css`
     font-family: sans-serif;
     margin: 0;
     height: 100%;
-    background: #1d3557;
+    background: #132339;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -88,10 +88,7 @@ export const Input = styled<'input'>('input')`
   }
 `
 
-// 1. Hack for making checkboxes not broken on iOS
 export const Checkbox = styled<'input'>('input')`
-  /* 1 */
-  /* @media screen and (min-width: 460px) { */
   font-size: 1.2rem;
   padding: 0 0.4rem;
   -webkit-appearance: none;
@@ -121,7 +118,33 @@ export const Checkbox = styled<'input'>('input')`
   :active {
     background-color: #274672;
   }
-  /* } */
+`
+
+const DownArrow = `<svg width="10" height="6" xmlns="http://www.w3.org/2000/svg"><path d="M.6 0a.59.59 0 00-.42.19.69.69 0 000 .92l4.39 4.7a.58.58 0 00.86 0l4.38-4.7A.68.68 0 009.83.2a.58.58 0 00-.86 0L5 4.44 1.03.2A.59.59 0 00.6 0z" fill="white" fill-rule="nonzero"/></svg>`
+
+export const Select = styled<'select'>('select')`
+  font-size: 1rem;
+  padding: 0.3rem 1.5rem 0.3rem 1rem;
+  -webkit-appearance: none;
+  border: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  border-radius: 2px;
+  background-color: ${(props) => props.theme.colours.inputBackground};
+  background-image: url('data:image/svg+xml;utf8,${DownArrow}');
+  background-position: center right 0.5rem;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  color: #fff;
+  margin-right: 0.5rem;
+
+  :focus {
+    outline: none;
+    box-shadow: 0 0 0 2px ${(props) => props.theme.colours.pink};
+  }
+
+  :active {
+    background-color: #274672;
+  }
 `
 
 interface ButtonProps {
@@ -150,6 +173,7 @@ export const Button = styled<'button', ButtonProps>('button')`
 
 export const ExternalLink = styled<'a'>('a')`
   color: #fff;
+  cursor: pointer;
 `
 
 export const Link = ExternalLink.withComponent(RouterLink)
