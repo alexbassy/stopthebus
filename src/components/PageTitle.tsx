@@ -7,14 +7,14 @@ const StyledLink = styled<'a'>('a')`
   --webkit-tap-highlight-color: transparent;
 `.withComponent(Link)
 
-const Text = styled<'h1'>('h1')`
+const Title = styled<'div'>('div')`
   font-family: ${(props) => props.theme.fonts.title.name};
   color: ${(props) => props.theme.colours.yellow};
   background: linear-gradient(#f857a6, #ff5858);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-transform: uppercase;
-  font-size: 4.9rem;
+  font-size: 5rem;
   margin: 0;
   text-align: center;
 
@@ -68,9 +68,9 @@ export default function PageTitle(props: TitleProps) {
   }
   return (
     <StyledLink to='/' onClick={handleClick}>
-      <Text>
+      <Title>
         Stop The Bus <Logo dangerouslySetInnerHTML={{ __html: BusIcon }} />
-      </Text>
+      </Title>
     </StyledLink>
   )
 }
