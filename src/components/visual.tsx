@@ -238,3 +238,8 @@ export const Spacing = styled<'div', SpacingProps>('div')`
   ${(props) => props.b && `margin-bottom: ${props.b}rem;`};
   ${(props) => props.inline && `display: inline-block;`};
 `
+
+export const Lighter = styled<'span'>('span')`
+  color: rgb(255 255 255 / 60%);
+  font-weight: 400;
+`

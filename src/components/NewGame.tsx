@@ -18,6 +18,7 @@ import {
   List,
   Spacing,
   Select,
+  Lighter,
 } from './visual'
 import GameContext from '../contexts/GameContext'
 import CategoriesList from '../components/CategoriesList'
@@ -211,7 +212,10 @@ export default function NewGame(props: NewGameProps) {
         </section>
       </Grid>
       <section>
-        <H3>Categories</H3>
+        <H3>
+          Categories
+          <Lighter> ({config?.categories?.length ?? 0} selected)</Lighter>
+        </H3>
         <CategoriesList
           selectedCategories={config?.categories || []}
           onChange={handleCategoryChange}
