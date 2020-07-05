@@ -3,6 +3,7 @@ import path from 'path'
 import express from 'express'
 import socketIO from 'socket.io'
 import * as dotenv from 'dotenv'
+import compression from 'compression'
 import { createGame, joinGame, updateGameConfig } from './actions/game'
 import { updateNickname } from './actions/player'
 import {
@@ -27,6 +28,7 @@ const IO = socketIO(server)
 
 app.set('json spaces', 2)
 
+app.use(compression())
 app.use(express.static(path.resolve('build')))
 
 // Add debugging route. Should figure out a way to make this secure,
