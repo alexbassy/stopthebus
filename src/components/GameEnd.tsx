@@ -28,7 +28,6 @@ export default function ReviewRound() {
       <Helmet>
         <title>Game Finished - Stop The Bus</title>
       </Helmet>
-      <GameName />
       <List>
         {sortedScores.map(([playerID, score], index) => {
           const playerData = players.find(

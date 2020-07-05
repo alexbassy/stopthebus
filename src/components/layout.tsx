@@ -4,7 +4,7 @@ import styled from './styled'
 
 interface GridProps {
   columns: number[]
-  stackOnMobile: boolean
+  stackOnMobile?: boolean
 }
 
 export const Grid = styled.div<GridProps>`

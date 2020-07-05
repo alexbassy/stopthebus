@@ -86,7 +86,6 @@ export const joinGame = (
       const otherPlayerColours = players
         .map((player) => player.colour)
         .filter(Boolean)
-      debugger
       const roomPlayer: Player = {
         ...player,
         colour: getColour(otherPlayerColours as string[]),
@@ -150,8 +149,6 @@ export const createGame = (
     ...player,
     colour: getColour([]),
   }
-
-  debugger
 
   const room: Room = {
     config: { ...payload, lastAuthor: player.uuid },
