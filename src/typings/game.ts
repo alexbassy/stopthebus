@@ -52,6 +52,17 @@ export enum GameStage {
   FINISHED = 'finished',
 }
 
+// Y offsets of questions on ActiveRound page.
+// Players run along the "lanes" in the Lanes component.
+export interface QuestionPositions {
+  [categoryIndex: string]: number // value is X offset
+}
+
+// Map of UUID:questionIndex, to show where each player is.
+export interface OpponentProgress {
+  [player: string]: number
+}
+
 export interface FinalScores {
   [player: string]: number
 }

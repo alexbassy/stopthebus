@@ -23,6 +23,7 @@ import {
   Room,
   Scores,
   RoundResults,
+  OpponentProgress,
 } from '../typings/game'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
@@ -47,6 +48,7 @@ export default function Game() {
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null)
   const [answers, setAnswers] = useState<RoundResults>()
   const [players, setPlayers] = useState<Player[]>()
+  const [opponentProgress, setOpponentProgress] = useState<OpponentProgress>()
 
   const hasGameConfig = gameConfig !== null
 
@@ -79,6 +81,17 @@ export default function Game() {
         setGameState(room.state)
       },
 
+      [ServerEvent.OPPONENT_CURRENT_CATEGORY]: (
+        socket,
+        progress: OpponentProgress
+      ) => {
+        console.log({ progress })
+        setOpponentProgress((currentProgress) => ({
+          ...currentProgress,
+          ...progress,
+        }))
+      },
+
       [ServerEvent.PLAYER_JOINED_GAME]: (socket, players: Player[]) => {
         setPlayers(players)
       },
@@ -94,7 +107,6 @@ export default function Game() {
         }
 
         if (!hasGameConfig || newGameConfig.lastAuthor !== sessionID) {
-          log.r('GAME_CONFIG', 'Updating game config', newGameConfig)
           setGameConfig(newGameConfig)
           clearPersistedGameConfig()
         } else {
@@ -116,6 +128,7 @@ export default function Game() {
 
       [ServerEvent.ROUND_ENDED]: (socket, newGameState: GameState) => {
         setGameState(newGameState)
+        setOpponentProgress({})
       },
 
       [ServerEvent.UPDATE_VOTES]: (socket, newVotes: Scores) => {
@@ -131,7 +144,7 @@ export default function Game() {
         })
       },
     }),
-    [hasGameConfig]
+    [hasGameConfig, getPayload]
   )
 
   const { socket, isInitialised, emit } = useSocketIO({ callbacks, getPayload })
@@ -198,6 +211,7 @@ export default function Game() {
     state: gameState,
     players: players || [],
     answers,
+    opponentProgress,
   }
 
   let Component

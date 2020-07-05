@@ -42,6 +42,9 @@ export enum ClientEvent {
   // Sent when the "Start game" button is clicked and triggers the first/next round
   START_ROUND = 'START_ROUND',
 
+  // Sent when a player focusses an input, which will show up on other’s screens
+  FOCUSSED_ANSWER = 'FOCUSSED_ANSWER',
+
   // Sent when the player finishes entering an answer
   FILLED_ANSWER = 'FILLED_ANSWER',
 
@@ -87,8 +90,7 @@ export enum ServerEvent {
   SEND_ANSWERS = 'SEND_ANSWERS',
 
   // Updates players' screens with progress of other players
-  // I guess this sends { playerUUID, categoryName }
-  _FUTURE_PLAYER_FILLED_ANSWER = 'PLAYER_FILLED_ANSWER',
+  OPPONENT_CURRENT_CATEGORY = 'OPPONENT_CURRENT_CATEGORY',
 
   // When the round has ended and we should go to the review screen
   ROUND_ENDED = 'ROUND_ENDED',

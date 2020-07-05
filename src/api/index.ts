@@ -8,6 +8,7 @@ import { createGame, joinGame, updateGameConfig } from './actions/game'
 import { updateNickname } from './actions/player'
 import {
   endRound,
+  focussedAnswer,
   filledAnswer,
   startRound,
   voteAnswer,
@@ -72,6 +73,8 @@ IO.on('connection', async (socket) => {
   socket.on(ClientEvent.START_ROUND, startRound(IO, socket))
 
   socket.on(ClientEvent.END_ROUND, endRound(IO, socket))
+
+  socket.on(ClientEvent.FOCUSSED_ANSWER, focussedAnswer(IO, socket))
 
   socket.on(ClientEvent.FILLED_ANSWER, filledAnswer(IO, socket))
 

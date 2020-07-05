@@ -1,3 +1,4 @@
+import { response } from 'express'
 import log from '../../helpers/log'
 import * as random from '../../helpers/random'
 import {
@@ -193,28 +194,54 @@ export const endRound = (
   }, FINAL_ANSWERS_WAITING_TIME)
 }
 
+export const focussedAnswer = (
+  IO: SocketIO.Server,
+  socket: SocketIO.Socket
+) => async ({ gameID, payload }: Payload<number>) => {
+  const uuid = getPlayerUUID(socket)
+  const player = await playerClient.get(uuid)
+  log.r('FOCUSSED_ANSWER', payload)
+
+  if (!gameID || !player || typeof payload !== 'number') {
+    return
+  }
+
+  const state = await gameStates.get(gameID)
+
+  // If there’s no active game, then something is amiss
+  if (!state || state.stage !== GameStage.ACTIVE) {
+    return
+  }
+
+  IO.in(gameID).emit(ServerEvent.OPPONENT_CURRENT_CATEGORY, {
+    [uuid]: payload,
+  })
+}
+
 export const filledAnswer = (
   IO: SocketIO.Server,
   socket: SocketIO.Socket
 ) => async ({ gameID, payload }: Payload<RoundResults>) => {
   const uuid = getPlayerUUID(socket)
   const player = await playerClient.get(uuid)
+  log.r('FILLED_ANSWER', payload)
 
   if (!gameID || !player || !payload) {
     return
   }
 
-  const state = await gameStates.get(gameID)
+  const [config, state] = await Promise.all([
+    gameConfigs.get(gameID),
+    gameStates.get(gameID),
+  ])
 
   const isGameActive =
     state.stage === GameStage.ACTIVE || state.stage === GameStage.ENDING
 
   // If there’s no active game, then something is amiss
-  if (!state || !isGameActive) {
+  if (!state || !isGameActive || !config) {
     return
   }
-
-  log.r('FILLED_ANSWER', payload)
 
   await playerAnswers.set(gameID, uuid, payload)
 }
