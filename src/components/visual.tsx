@@ -50,7 +50,6 @@ export const Wrapper = styled('div')`
     min-height: 100%;
     margin: 0 auto;
     max-width: 100%;
-    border: 10px solid ${(props) => props.theme.colours.pink};
   }
 `
 

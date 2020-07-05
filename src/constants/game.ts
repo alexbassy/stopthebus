@@ -1,4 +1,6 @@
-export const FINAL_ANSWERS_WAITING_TIME = 1500
+export const FINAL_ANSWERS_WAITING_TIME = 1000
+
+export const TIME_BEFORE_GAME_START = 3000
 
 export const categories = [
   `Country`,

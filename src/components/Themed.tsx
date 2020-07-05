@@ -42,6 +42,7 @@ const pastel: Theme = {
     blue: '#1d3557',
     purple: '#b523da',
     green: '#35EF9E',
+    text: '#fff',
     interactiveButton: 'rgb(80 80 80)',
     pageBackground: '#132339',
     inputBackground: '#2e5286',

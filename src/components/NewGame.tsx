@@ -22,9 +22,11 @@ import {
   Description,
 } from './visual'
 import FormControl from './FormControl'
+import CategoriesList from './CategoriesList'
+import Player from './Player'
+import Dialog from './Dialog'
+import GameStarting from './GameStarting'
 import GameContext from '../contexts/GameContext'
-import CategoriesList from '../components/CategoriesList'
-import Player from '../components/Player'
 import { ENGLISH_LETTERS } from '../constants/letters'
 import EmitterContext from '../contexts/EmitterContext'
 import {
@@ -32,7 +34,7 @@ import {
   updatePersistedUserName,
 } from '../helpers/getUserSession'
 import { range } from '../helpers/util'
-import { GameConfig, GameMode } from '../typings/game'
+import { GameConfig, GameMode, GameStage } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
 
 const sessionID = getUserSessionID()
@@ -146,7 +148,11 @@ export default function NewGame(props: NewGameProps) {
     emit(ClientEvent.UPDATE_NICKNAME, nickname)
   }
 
-  const { config, players } = game
+  const handleCancelStartGame = (event: SyntheticEvent<HTMLButtonElement>) => {
+    emit(ClientEvent.CANCEL_START_ROUND)
+  }
+
+  const { config, players, state } = game
   const currentPlayer = players.find((player) => player.uuid === sessionID)
 
   if (!currentPlayer) return null
@@ -284,6 +290,12 @@ export default function NewGame(props: NewGameProps) {
       <Button large onClick={handleStartGameClick}>
         Start game
       </Button>
+
+      {state.stage === GameStage.STARTING && (
+        <Dialog>
+          <GameStarting onCancel={handleCancelStartGame} />
+        </Dialog>
+      )}
     </div>
   )
 }

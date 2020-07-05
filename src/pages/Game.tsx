@@ -114,6 +114,17 @@ export default function Game() {
         }
       },
 
+      [ServerEvent.ROUND_STARTING]: (socket, newGameState: GameState) => {
+        setGameState(newGameState)
+      },
+
+      [ServerEvent.ROUND_START_CANCELLED]: (
+        socket,
+        newGameState: GameState
+      ) => {
+        setGameState(newGameState)
+      },
+
       [ServerEvent.ROUND_STARTED]: (socket, newGameState: GameState) => {
         setGameState(newGameState)
       },

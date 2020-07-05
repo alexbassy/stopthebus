@@ -13,6 +13,7 @@ import {
   startRound,
   voteAnswer,
   retrieveAnswers,
+  cancelStartRound,
 } from './actions/round'
 import client, { players, routeGetRooms } from './redis-client'
 import { ClientEvent } from '../typings/socket-events'
@@ -71,6 +72,8 @@ IO.on('connection', async (socket) => {
   socket.on(ClientEvent.GAME_CONFIG, updateGameConfig(IO, socket))
 
   socket.on(ClientEvent.START_ROUND, startRound(IO, socket))
+
+  socket.on(ClientEvent.CANCEL_START_ROUND, cancelStartRound(IO, socket))
 
   socket.on(ClientEvent.END_ROUND, endRound(IO, socket))
 

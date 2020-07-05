@@ -6,7 +6,10 @@ import {
   getInitialScores,
   scoreAnswer,
 } from '../../helpers/scores'
-import { FINAL_ANSWERS_WAITING_TIME } from '../../constants/game'
+import {
+  FINAL_ANSWERS_WAITING_TIME,
+  TIME_BEFORE_GAME_START,
+} from '../../constants/game'
 import { getPlayerUUID } from '../../helpers/socket'
 import {
   GameRound,
@@ -33,80 +36,79 @@ export const startRound = (
 ) => async ({ gameID }: Payload) => {
   const uuid = getPlayerUUID(socket)
   const player = await playerClient.get(uuid)
+  const { e: logE } = log.n('START_ROUND')
 
   if (!gameID || !player) {
     return
   }
 
+  let state = await gameStates.get(gameID)
+
+  if (!state) {
+    logE('No game state found for room', gameID)
+    return
+  }
+
+  const isGameActiveOrEnded =
+    state.stage === GameStage.ACTIVE || state.stage === GameStage.FINISHED
+
+  if (isGameActiveOrEnded) {
+    logE('Cannot start a round that is in progress or has ended')
+    return
+  }
+
+  if (state.stage === GameStage.PRE) {
+    state.stage = GameStage.STARTING
+    setTimeout(
+      () => actuallyStartRound(IO, socket)(gameID),
+      TIME_BEFORE_GAME_START
+    )
+    // Save the game state and instruct the clients to show a countdown
+    await gameStates.set(gameID, state)
+    IO.in(gameID).emit(ServerEvent.ROUND_STARTING, state)
+  } else {
+    actuallyStartRound(IO, socket)(gameID)
+  }
+}
+
+const actuallyStartRound = (
+  IO: SocketIO.Server,
+  socket: SocketIO.Socket
+) => async (gameID: string) => {
   let [config, players, state] = await Promise.all([
     gameConfigs.get(gameID),
     gamePlayers.get(gameID),
     gameStates.get(gameID),
   ])
 
-  if (!config) {
-    log.e('START_ROUND', 'No game config found for room', gameID)
+  if (!config || !state) {
     return
   }
 
-  const isGameActiveOrEnded =
-    state.stage === GameStage.ACTIVE || state.stage === GameStage.FINISHED
   const isGameInReview = state.stage === GameStage.REVIEW
 
-  if (isGameActiveOrEnded) {
-    log.e(
-      'START_ROUND',
-      'Cannot start a round that is in progress or has ended'
-    )
-    return
-  }
-
+  // Create a template for player answers so it can be pushed to safely
   const answersTemplate: Round = players.reduce((round: Round, player) => {
     round[player.uuid] = {}
     return round
   }, {})
 
+  // If the round is being started following another round, free up the
+  // currentRound property
   if (isGameInReview) {
     const roundResults = state.currentRound
     if (roundResults) state.rounds.push(roundResults)
     delete state.currentRound
   }
 
+  // If the configured number of rounds has met the number of rounds played,
+  // the game will end rather than switch to active
   const numRoundsPlayed = state.rounds.length
   const hasPlayedAllRounds = config.rounds === numRoundsPlayed
   state.stage = hasPlayedAllRounds ? GameStage.FINISHED : GameStage.ACTIVE
 
   // If on the start screen or review screen, we can go ahead
-  if (!hasPlayedAllRounds) {
-    const previouslyPlayedLetters = state.rounds.length
-      ? state.rounds.map((round) => round.letter || '')
-      : []
-
-    const availableLetters = config.letters
-      .split('')
-      .filter((letter) => !previouslyPlayedLetters.includes(letter))
-
-    const playerVotes = config.categories.reduce<PlayerScores>(
-      (categories, category) => {
-        categories[category] = 0
-        return categories
-      },
-      {}
-    )
-
-    const newScores = players.reduce<Scores>((players, player) => {
-      if (players[player.uuid]) players[player.uuid] = playerVotes
-      return players
-    }, {})
-
-    const newRound: GameRound = {
-      timeStarted: Date.now(),
-      letter: random.getValue(availableLetters),
-      answers: answersTemplate,
-      scores: newScores,
-    }
-    state.currentRound = newRound
-  } else {
+  if (hasPlayedAllRounds) {
     state.nextGameID = random.getGameName()
     state.finalScores = getFinalScores(state.rounds)
 
@@ -114,16 +116,89 @@ export const startRound = (
     // ID will be searched for in the JOIN_GAME handler, which
     // will copy the config from the game ID returned.
     await nextGame.set(state.nextGameID, gameID)
+
+    // Save everything and tell the clients to move to the end screen
+    await gameStates.set(gameID, state)
+
+    // Confusingly called ROUND_STARTED, `ROUND_STAGE_CHANGE` would
+    // probably be a better name but that’s just not as cute
+    IO.in(gameID).emit(ServerEvent.ROUND_STARTED, state)
+
+    return
   }
 
+  // Count up the previously played letters and pick a new
+  // letter for the next round.
+  const previouslyPlayedLetters = state.rounds.length
+    ? state.rounds.map((round) => round.letter || '')
+    : []
+  const availableLetters = config.letters
+    .split('')
+    .filter((letter) => !previouslyPlayedLetters.includes(letter))
+  const letterForNextRound = random.getValue(availableLetters)
+
+  // Scaffold out a new voting object ready for the next round.
+  // This could easily be done in the END_ROUND event, but 🤷‍♂️
+  const playerVotes = config.categories.reduce<PlayerScores>(
+    (categories, category) => {
+      categories[category] = 0
+      return categories
+    },
+    {}
+  )
+  const newScores = players.reduce<Scores>((players, player) => {
+    if (players[player.uuid]) players[player.uuid] = playerVotes
+    return players
+  }, {})
+
+  // Create a new `currentRound` property upon which to play
+  const newRound: GameRound = {
+    timeStarted: Date.now(),
+    letter: letterForNextRound,
+    answers: answersTemplate,
+    scores: newScores,
+  }
+  state.currentRound = newRound
+  state.stage = GameStage.ACTIVE
+
   // Save everything
-  await Promise.all([
-    gameConfigs.set(gameID, config),
-    gamePlayers.set(gameID, players),
-    gameStates.set(gameID, state),
-  ])
+  await gameStates.set(gameID, state)
 
   IO.in(gameID).emit(ServerEvent.ROUND_STARTED, state)
+}
+
+export const cancelStartRound = (
+  IO: SocketIO.Server,
+  socket: SocketIO.Socket
+) => async ({ gameID }: Payload) => {
+  const uuid = getPlayerUUID(socket)
+  const player = await playerClient.get(uuid)
+  const { e: logE } = log.n('CANCEL_START_ROUND')
+
+  if (!gameID || !player) {
+    return
+  }
+
+  let state = await gameStates.get(gameID)
+
+  if (!state) {
+    logE('No game config found for room', gameID)
+    return
+  }
+
+  const isGameStarting = state.stage === GameStage.STARTING
+
+  if (!isGameStarting) {
+    logE('Too late, game has already started or already cancelled')
+    return
+  }
+
+  state.stage = GameStage.PRE
+
+  // Save everything
+  await gameStates.set(gameID, state)
+
+  IO.in(gameID).emit(ServerEvent.ROUND_START_CANCELLED, state)
 }
 
 export const endRound = (

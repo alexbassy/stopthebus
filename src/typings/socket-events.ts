@@ -42,6 +42,9 @@ export enum ClientEvent {
   // Sent when the "Start game" button is clicked and triggers the first/next round
   START_ROUND = 'START_ROUND',
 
+  // Sent when a player cancels the first round from being started
+  CANCEL_START_ROUND = 'CANCEL_START_ROUND',
+
   // Sent when a player focusses an input, which will show up on other’s screens
   FOCUSSED_ANSWER = 'FOCUSSED_ANSWER',
 
@@ -80,8 +83,14 @@ export enum ServerEvent {
   // Received from the client and should be spread to the other players in the game.
   GAME_CONFIG = 'GAME_CONFIG',
 
+  // Triggered by someone clicking the "start round" button and shows a countdown on clients
+  ROUND_STARTING = 'ROUND_STARTING',
+
   // Triggered by the `START_GAME` event - changes game state
   ROUND_STARTED = 'ROUND_STARTED',
+
+  // Triggered by clicking "cancel" when someone starts the game
+  ROUND_START_CANCELLED = 'ROUND_START_CANCELLED',
 
   // Triggered when a player has finished the round and all clients must submit final answers
   ROUND_ENDING = 'ROUND_ENDING',

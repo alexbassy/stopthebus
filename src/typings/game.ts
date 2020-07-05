@@ -39,6 +39,9 @@ export enum GameStage {
   // Still on the config screen, game not started yet
   PRE = 'pre',
 
+  // Someone has just clicked the “start game” button
+  STARTING = 'starting',
+
   // Game is in progress, players are typing answers
   ACTIVE = 'active',
 
