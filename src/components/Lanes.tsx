@@ -53,7 +53,7 @@ function Lanes(props: LanesProps) {
             key={player.uuid}
             count={numPlayers}
             style={{
-              transform: `translateY(${playerOffset + currentQuestion * 2}px)`,
+              transform: `translateY(${playerOffset + currentQuestion}px)`,
             }}
           >
             <Pin colour={player.colour} small />

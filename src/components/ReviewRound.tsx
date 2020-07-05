@@ -9,6 +9,7 @@ import EmitterContext from '../contexts/EmitterContext'
 import useScrollToTop from '../hooks/useScrollToTop'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
 import { Round, Scores, Player as PlayerType } from '../typings/game'
+import useIsSmallScreen from '../hooks/useIsSmallScreen'
 
 const Table = styled('table')`
   width: 100%;
@@ -53,6 +54,7 @@ interface ResultsTableProps {
 const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
   const game = useContext(GameContext)
   const emit = useContext(EmitterContext)
+  const isSmallScreen = useIsSmallScreen()
 
   useScrollToTop()
 
@@ -99,7 +101,7 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
           return (
             <tr key={`${categoryName}-${playerID}`}>
               <PlayerColumn>
-                <Player {...player} small />
+                <Player {...player} small={isSmallScreen} />
               </PlayerColumn>
               <td>{answer}</td>
               <td>

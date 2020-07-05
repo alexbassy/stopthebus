@@ -1,27 +1,27 @@
-import { css } from '@emotion/core'
-
 import styled from './styled'
 
 interface GridProps {
   columns: number[]
+  gap?: number
   stackOnMobile?: boolean
 }
 
-export const Grid = styled.div<GridProps>`
-  display: grid;
-  grid-template-columns: ${(props) =>
-    props.columns
-      .map((col) => col + `fr`)
-      .join(' ')
-      .trim()};
+const getTemplateColumns = (cols: number[]) =>
+  cols
+    .map((col) => col + 'fr')
+    .join(' ')
+    .trim()
 
-  ${(props) =>
-    props.stackOnMobile &&
-    css`
-      @media screen and (max-width: 460px) {
-        grid-template-columns: 1fr;
-      }
-    `}
+export const Grid = styled.div<GridProps>`
+  --mobile-columns: ${(props) =>
+    props.stackOnMobile ? '1fr' : getTemplateColumns(props.columns)};
+  display: grid;
+  grid-template-columns: ${(props) => getTemplateColumns(props.columns)};
+  grid-column-gap: ${(props) => props.gap + 'rem'};
+
+  @media screen and (max-width: 460px) {
+    grid-template-columns: var(--mobile-columns);
+  }
 `
 
 interface FlexProps {

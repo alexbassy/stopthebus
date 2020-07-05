@@ -31,6 +31,7 @@ const BorderedName = styled<'div'>('div')`
   border: 2px dashed rgb(255 255 255 / 50%);
   padding: 0.75rem;
   border-radius: 8px;
+  margin-top: 0.5rem;
 
   @media screen and (max-width: 460px) {
     padding: 0.5rem 0.75rem;

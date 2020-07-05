@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom'
 import { persistGameConfig } from '../helpers/persistGame'
 import { Input, Button, H2, Spacing } from '../components/visual'
 import PageTitle from '../components/PageTitle'
+import FormControl from '../components/FormControl'
 import * as random from '../helpers/random'
 
 export default function Home() {
@@ -33,35 +34,37 @@ export default function Home() {
       <PageTitle />
       <H2>Join a game</H2>
       <form onSubmit={handleJoinGame}>
-        <Input
-          type='text'
-          id='game-id'
-          aria-label='Enter a game ID, words separated with hyphens'
-          value={gameID}
-          onChange={(ev) => setGameID(ev.target.value.toLowerCase())}
-          placeholder='Type in game name'
-        />
-        <Spacing r={0.5} inline />
-        <Button>Join</Button>
+        <FormControl>
+          <Input
+            type='text'
+            id='game-id'
+            aria-label='Enter a game ID, words separated with hyphens'
+            value={gameID}
+            onChange={(ev) => setGameID(ev.target.value.toLowerCase())}
+            placeholder='Type in game name'
+          />
+          {/* <Spacing r={0.5} inline /> */}
+          <Button>Join</Button>
+        </FormControl>
       </form>
       <H2>Create a game</H2>
       <form onSubmit={handleCreateGame}>
-        <Input
-          type='text'
-          id='new-game-id'
-          value={newGameID}
-          aria-label='New game name'
-          readOnly
-        />
-        <Spacing r={0.5} inline />
-        <Button
-          type='button'
-          onClick={() => setNewGameID(random.getGameName())}
-        >
-          Shuffle
-        </Button>
-        <br />
-        <br />
+        <FormControl>
+          <Input
+            type='text'
+            id='new-game-id'
+            value={newGameID}
+            aria-label='New game name'
+            readOnly
+          />
+          <Button
+            type='button'
+            onClick={() => setNewGameID(random.getGameName())}
+          >
+            Change
+          </Button>
+        </FormControl>
+        <Spacing b={1} />
         <Button>Create game</Button>
       </form>
     </div>

@@ -19,7 +19,9 @@ import {
   Spacing,
   Select,
   Lighter,
+  Description,
 } from './visual'
+import FormControl from './FormControl'
 import GameContext from '../contexts/GameContext'
 import CategoriesList from '../components/CategoriesList'
 import Player from '../components/Player'
@@ -154,8 +156,10 @@ export default function NewGame(props: NewGameProps) {
       <Helmet>
         <title>New Game - Stop The Bus</title>
       </Helmet>
-      <p>Welcome, {currentPlayer.name || currentPlayer.uuid}!</p>
-      <div>
+      <p>
+        Welcome, <Player {...currentPlayer} inline />!
+      </p>
+      <FormControl>
         <Input
           type='text'
           value={nickname}
@@ -164,15 +168,15 @@ export default function NewGame(props: NewGameProps) {
           aria-label='Nickname'
           aria-describedby='nickname-description'
         />
-        <Spacing r={0.5} inline />
         <Button type='button' onClick={handleNickNameUpdate}>
           Update
         </Button>
-        <p id='nickname-description'>
+      </FormControl>
+      <Spacing t={0.5}>
+        <Description id='nickname-description'>
           Enter a nickname for other players to see you by.
-        </p>
-      </div>
-      <H2>Game settings</H2>
+        </Description>
+      </Spacing>
       <Grid columns={[2, 1]} stackOnMobile>
         <section>
           <H3>Letters</H3>
@@ -205,7 +209,7 @@ export default function NewGame(props: NewGameProps) {
             {players &&
               players.map((player) => (
                 <Item key={player.uuid}>
-                  <Player {...player} />
+                  <Player {...player} showMe />
                 </Item>
               ))}
           </List>
