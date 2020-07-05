@@ -1,18 +1,12 @@
-import React, {
-  useContext,
-  ChangeEvent,
-  SyntheticEvent,
-  useEffect,
-} from 'react'
+import React, { useContext, ChangeEvent, SyntheticEvent } from 'react'
 import { Helmet } from 'react-helmet'
 import { Button, Checkbox } from './visual'
-import GameName from './GameName'
 import styled from './styled'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import useScrollToTop from '../hooks/useScrollToTop'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
-import { Round, Scores, GameStage } from '../typings/game'
+import { Round, Scores } from '../typings/game'
 
 const Table = styled('table')`
   width: 100%;
@@ -135,8 +129,9 @@ export default function ReviewRound() {
       <Helmet>
         <title>Review - Stop The Bus</title>
       </Helmet>
-      <GameName />
-      <h2>Review of round {state.rounds.length + 1}</h2>
+      <h2>
+        End of round {state.rounds.length + 1}/{config.rounds}
+      </h2>
       <p>
         Round finished by <strong>{playerWhoEndedRound}</strong>
         {RoundDuration}
