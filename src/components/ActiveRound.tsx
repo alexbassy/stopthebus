@@ -11,11 +11,16 @@ import { Helmet } from 'react-helmet'
 import { Button, Input, Item, List, Spacing } from './visual'
 import { Grid } from './layout'
 import Lanes from './Lanes'
+import styled from './styled'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
 import useScrollToTop from '../hooks/useScrollToTop'
 import { RoundResults, GameStage } from '../typings/game'
 import { ClientEvent } from '../typings/socket-events'
+
+const Wrap = styled('div')`
+  max-width: 400px;
+`
 
 interface QuestionPositions {
   [categoryIndex: string]: number // value is X offset
@@ -145,39 +150,42 @@ export default function ActiveRound() {
           {game.state.currentRound?.letter?.toUpperCase()}
         </strong>
       </p>
-      <Grid columns={[3, 1]}>
-        <form onSubmit={handleEndRoundClick} ref={formRef}>
-          <List>
-            {config.categories.map((category) => {
-              const stripped = category.replace(/\W/g, '')
-              const id = `input-${stripped}`
-              return (
-                <Item key={category}>
-                  <Spacing b={1}>
-                    <label htmlFor={id}>{category}</label>
-                    <Spacing b={0.5} />
-                    <Input
-                      type='text'
-                      id={id}
-                      name={category}
-                      onBlur={handleBlur}
-                      onFocus={handleFocus}
-                      onChange={handleChange(category)}
-                      value={values[category] ?? ''}
-                      autoCorrect='off'
-                      disabled={hasEnded}
-                    />
-                  </Spacing>
-                </Item>
-              )
-            })}
-          </List>
-          <Button disabled={hasEnded}>
-            {hasEnded ? 'Out of time!' : 'Finished'}
-          </Button>
-        </form>
-        <Lanes questionPositions={questionPositions} />
-      </Grid>
+      <Wrap>
+        <Grid columns={[3, 1]}>
+          <form onSubmit={handleEndRoundClick} ref={formRef}>
+            <List>
+              {config.categories.map((category) => {
+                const stripped = category.replace(/\W/g, '')
+                const id = `input-${stripped}`
+                return (
+                  <Item key={category}>
+                    <Spacing b={1}>
+                      <label htmlFor={id}>{category}</label>
+                      <Spacing b={0.5} />
+                      <Input
+                        type='text'
+                        id={id}
+                        name={category}
+                        onBlur={handleBlur}
+                        onFocus={handleFocus}
+                        onChange={handleChange(category)}
+                        value={values[category] ?? ''}
+                        autoCorrect='off'
+                        disabled={hasEnded}
+                        grow
+                      />
+                    </Spacing>
+                  </Item>
+                )
+              })}
+            </List>
+            <Button disabled={hasEnded}>
+              {hasEnded ? 'Out of time!' : 'Finished'}
+            </Button>
+          </form>
+          <Lanes questionPositions={questionPositions} />
+        </Grid>
+      </Wrap>
     </div>
   )
 }

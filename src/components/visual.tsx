@@ -69,7 +69,11 @@ export const HiddenLabel = styled<'label'>('label')`
   white-space: nowrap; /* added line */
 `
 
-export const Input = styled<'input'>('input')`
+interface InputProps {
+  grow?: boolean
+}
+
+export const Input = styled<'input', InputProps>('input')`
   font-size: 1.2rem;
   padding: 0.75rem;
   -webkit-appearance: none;
@@ -83,6 +87,7 @@ export const Input = styled<'input'>('input')`
   box-shadow: 0 0 0 0 ${(props) => props.theme.colours.pink};
   background-color: ${(props) => props.theme.colours.inputBackground};
   transition: box-shadow 0.25s ease;
+  width: ${(props) => (props.grow ? '100%' : 'auto')};
 
   ::placeholder {
     color: rgb(255 255 255 / 80%);

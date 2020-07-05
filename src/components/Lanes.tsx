@@ -4,6 +4,7 @@ import { Pin } from './Player'
 import styled from './styled'
 import { QuestionPositions } from '../typings/game'
 import GameContext from '../contexts/GameContext'
+import { SMALL_SCREEN_BREAKPOINT } from '../constants/styles'
 
 interface LanesProps {
   questionPositions: QuestionPositions
@@ -11,7 +12,11 @@ interface LanesProps {
 
 const Wrapper = styled('div')`
   display: flex;
-  margin-left: 0.5rem;
+  margin-left: 1rem;
+
+  @media screen and (max-width: ${SMALL_SCREEN_BREAKPOINT}px) {
+    margin-left: 0.5rem;
+  }
 `
 
 interface PinWrapperProps {
