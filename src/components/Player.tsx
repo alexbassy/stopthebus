@@ -6,6 +6,7 @@ import { getUserSessionID } from '../helpers/getUserSession'
 
 interface PlayerProps extends PlayerType {
   inline?: boolean
+  small?: boolean
 }
 
 const sessionID = getUserSessionID()
@@ -17,10 +18,12 @@ interface PinProps {
 
 interface WrapperProps {
   inline?: boolean
+  small?: boolean
 }
 
 const Wrapper = styled<'div', WrapperProps>('div')`
   display: ${(props) => (props.inline ? 'inline-block' : 'block')};
+  font-size: ${(props) => (props.small ? '0.75rem' : '1rem')};
 `
 
 export const Pin = styled<'span', PinProps>('span')`
@@ -35,11 +38,13 @@ export const Pin = styled<'span', PinProps>('span')`
 
 export default function Player(props: PlayerProps) {
   return (
-    <Wrapper inline={props.inline}>
-      <Pin colour={props.colour} />
-      <Spacing r={0.5} inline />
+    <Wrapper inline={props.inline} small={props.small}>
+      <Pin colour={props.colour} small={props.small} />
+      <Spacing r={props.small ? 0.25 : 0.5} inline />
       {props.name || props.uuid}{' '}
-      {!props.inline && props.uuid === sessionID && <Lighter> (me)</Lighter>}
+      {!props.small && !props.inline && props.uuid === sessionID && (
+        <Lighter> (me)</Lighter>
+      )}
     </Wrapper>
   )
 }

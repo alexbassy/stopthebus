@@ -2,25 +2,46 @@ import React, { useContext, ChangeEvent, SyntheticEvent } from 'react'
 import { Helmet } from 'react-helmet'
 import { Button, Checkbox } from './visual'
 import styled from './styled'
+import Player from './Player'
+import { Flex } from './layout'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import useScrollToTop from '../hooks/useScrollToTop'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
-import { Round, Scores } from '../typings/game'
+import { Round, Scores, Player as PlayerType } from '../typings/game'
 
 const Table = styled('table')`
   width: 100%;
   table-layout: fixed;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
+  border-collapse: collapse;
 
   thead {
     text-align: left;
+  }
+
+  td {
+    padding-top: 0.5rem;
   }
 `
 
 const PlayerColumn = styled('td')`
   word-break: break-all;
   padding-right: 0.5rem;
+`
+
+const TableHeader = styled('thead')`
+  padding-bottom: 0.5rem;
+  font-size: 0.75rem;
+
+  th {
+    color: rgb(255 255 255 / 75%);
+    padding-bottom: 0.5rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 1px rgb(255 255 255 / 10%);
+  }
 `
 
 interface ResultsTableProps {
@@ -50,25 +71,26 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
     emit(ClientEvent.VOTE_ANSWER, payload)
   }
 
-  const getPlayerName = (uuid: string) =>
-    game.players.find((player) => uuid === player.uuid)?.name || uuid
+  const getPlayer = (uuid: string) =>
+    game.players.find((player) => uuid === player.uuid)
 
   return (
     <Table>
       <colgroup>
         <col span={1} style={{ width: '30%' }} />
-        <col span={1} style={{ width: '50%' }} />
-        <col span={1} style={{ width: '20%' }} />
+        <col span={1} style={{ width: '52.5%' }} />
+        <col span={1} style={{ width: '17.5%' }} />
       </colgroup>
-      <thead>
+      <TableHeader>
         <tr>
           <th>{/* Player */}</th>
           <th>{categoryName}</th>
           <th>Score</th>
         </tr>
-      </thead>
+      </TableHeader>
       <tbody>
         {Object.keys(answers).map((playerID) => {
+          const player = getPlayer(playerID) as PlayerType
           const answer = answers[playerID][categoryName]
           const score = scores[playerID][categoryName]
 
@@ -76,16 +98,20 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
 
           return (
             <tr key={`${categoryName}-${playerID}`}>
-              <PlayerColumn>{getPlayerName(playerID)}</PlayerColumn>
+              <PlayerColumn>
+                <Player {...player} small />
+              </PlayerColumn>
               <td>{answer}</td>
               <td>
-                <Checkbox
-                  type='checkbox'
-                  title='Vote'
-                  checked={score > 0}
-                  onChange={handleVote(playerID, categoryName)}
-                />{' '}
-                {score}
+                <Flex yCentre>
+                  <Checkbox
+                    type='checkbox'
+                    title='Vote'
+                    checked={score > 0}
+                    onChange={handleVote(playerID, categoryName)}
+                  />{' '}
+                  {score}
+                </Flex>
               </td>
             </tr>
           )
