@@ -243,3 +243,7 @@ export const Lighter = styled<'span'>('span')`
   color: rgb(255 255 255 / 60%);
   font-weight: 400;
 `
+
+export const Description = styled(Lighter)`
+  font-size: 0.85rem;
+`
