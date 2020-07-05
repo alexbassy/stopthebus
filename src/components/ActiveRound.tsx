@@ -7,7 +7,6 @@ import React, {
 } from 'react'
 import { Helmet } from 'react-helmet'
 import { Button, Input, Item, List, Spacing } from './visual'
-import GameName from './GameName'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
 import useScrollToTop from '../hooks/useScrollToTop'
@@ -85,7 +84,6 @@ export default function ActiveRound() {
           Letter {game.state.currentRound?.letter?.toUpperCase()} - Stop The Bus
         </title>
       </Helmet>
-      <GameName />
       <p>
         The letter is{' '}
         <strong style={{ fontSize: '2rem' }}>

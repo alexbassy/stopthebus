@@ -159,7 +159,7 @@ export default function Game() {
     return (
       <>
         <PageTitle />
-        <GameName inactive />
+        <GameName />
         <p>Connecting…</p>
       </>
     )
@@ -169,7 +169,7 @@ export default function Game() {
     return (
       <>
         <PageTitle />
-        <GameName inactive />
+        <GameName />
         <p>Sorry! You disconnected from the server. Please refresh the page.</p>
       </>
     )
@@ -179,7 +179,7 @@ export default function Game() {
     return (
       <>
         <PageTitle />
-        <GameName inactive />
+        <GameName />
         <p>Sorry, the game does not exist.</p>
         <p>
           Please refresh the page or{' '}
@@ -222,6 +222,7 @@ export default function Game() {
     <EmitterContext.Provider value={emit}>
       <GameContext.Provider value={gameContextValue}>
         <PageTitle isInGame={gameState.stage !== GameStage.PRE} />
+        <GameName isShareable={gameState.stage === GameStage.PRE} />
         <Component />
       </GameContext.Provider>
     </EmitterContext.Provider>

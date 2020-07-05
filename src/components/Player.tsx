@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from './styled'
-import { Spacing } from './visual'
+import { Spacing, Lighter } from './visual'
 import { Player as PlayerType } from '../typings/game'
 import { getUserSessionID } from '../helpers/getUserSession'
 
@@ -12,6 +12,7 @@ const sessionID = getUserSessionID()
 
 interface PinProps {
   colour?: string
+  small?: boolean
 }
 
 interface WrapperProps {
@@ -23,16 +24,13 @@ const Wrapper = styled<'div', WrapperProps>('div')`
 `
 
 export const Pin = styled<'span', PinProps>('span')`
+  --size: ${(props) => (props.small ? '0.5rem' : '1rem')};
   display: inline-block;
-  width: 1rem;
-  height: 1rem;
+  width: var(--size);
+  height: var(--size);
   border-radius: 100%;
   background-color: ${(props) => props.colour};
   vertical-align: middle;
-`
-
-const Lighter = styled<'span'>('span')`
-  color: rgb(255 255 255 / 60%);
 `
 
 export default function Player(props: PlayerProps) {
