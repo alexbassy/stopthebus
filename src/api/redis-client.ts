@@ -8,9 +8,11 @@ import {
   Rooms,
   RoundResults,
   Round,
+  QueueJob,
 } from '../typings/game'
 
 const ONE_HOUR = 60 * 60
+const ONE_DAY = ONE_HOUR * 24
 
 const playerPrefix = 'player'
 const gameConfigPrefix = 'gameConfig'
@@ -18,13 +20,13 @@ const gameStatePrefix = 'gameState'
 const gamePlayersPrefix = 'gamePlayers'
 const playerAnswersPrefix = 'answers'
 const nextGamePrefix = 'nextGame'
+const queuePrefix = 'queue'
 
 const getKey = (key: string, prefix: string) => {
   return key.startsWith(prefix) ? key : `${prefix}:${key}`
 }
 
-const removePrefix = (key: string) => key.split(':')[1]
-const getPlayerIDFromAnswersRecord = (key: string) => key.split(':')[2]
+const removePrefix = (key: string) => key.split(':').slice(1)
 
 const client = redis.createClient(process.env.REDIS_URL as string)
 
@@ -108,7 +110,7 @@ export const playerAnswers = {
 
     for (const key of answersForGame) {
       const answers = await getAsync(key)
-      const uuid = getPlayerIDFromAnswersRecord(key)
+      const [gameID, uuid] = removePrefix(key)
       round[uuid] = JSON.parse(answers)
     }
 
@@ -171,6 +173,80 @@ export const nextGame = {
   del: (gameID: string) => delAsync(getKey(gameID, nextGamePrefix)),
 }
 
+// Key for queues:
+// {queuePrefix}:{id}:{time}
+// All keys can be gotten with `{queuePrefix}:`
+// Keys ready for work can be gotten with `{queuePrefix}`
+export const queue = {
+  get: async (id: string): Promise<QueueJob | null> => {
+    const result = await getAsync(getKey(id, queuePrefix))
+    return JSON.parse(result)
+  },
+  getJobs: async (timeNow: number = Date.now()) => {
+    const keys = await keysAsync(getKey('*', queuePrefix))
+
+    if (!keys) {
+      return []
+    }
+
+    const dueJobs = keys
+      .map(removePrefix)
+      .filter(([id, timeDue]) => Number(timeDue) <= timeNow)
+
+    const jobs: QueueJob[] = await Promise.all(
+      dueJobs.map(([id, timeDue]) =>
+        getAsync(getKey(`${id}:${timeDue}`, queuePrefix)).then(JSON.parse)
+      )
+    )
+
+    return jobs
+  },
+  getJobsForGame: async (gameID: string) => {
+    const keys = await keysAsync(getKey('*', queuePrefix))
+
+    if (!keys) {
+      return []
+    }
+
+    // Filter the queue item names that contain the game ID
+    const jobsForGame = keys
+      .map(removePrefix)
+      .filter(([id]) => id === gameID)
+      .map((keys) => keys.join(':'))
+
+    // Get the records for the matching keys
+    const jobs: QueueJob[] = await Promise.all(
+      jobsForGame.map((key) =>
+        getAsync(getKey(key, queuePrefix)).then(JSON.parse)
+      )
+    )
+
+    return jobs
+  },
+  add: async (id: string, job: QueueJob): Promise<string> => {
+    const { due } = job
+    // Return the unprefixed key for easy GETting
+    const keyWithoutPrefix = `${id}:${due}`
+    const key = getKey(`${id}:${due}`, queuePrefix)
+    const newJob: QueueJob = {
+      ...job,
+      id: key,
+      created: Date.now(),
+    }
+    console.log('Adding', key, newJob)
+    await setAsync(key, JSON.stringify(newJob), 'EX', ONE_DAY)
+    return keyWithoutPrefix
+  },
+  setInProgress: async (key: string) => {
+    const result = await getAsync(key)
+    const job: QueueJob = JSON.parse(result)
+    job.inProgress = true
+    await setAsync(key, JSON.stringify(job), 'EX', ONE_DAY)
+    return job
+  },
+  remove: async (id: string) => delAsync(id),
+}
+
 interface GetRoomsRouteResponse {
   state: 'clean' | 'faulty' | 'empty'
   errors: string[]
@@ -194,7 +270,8 @@ export const routeGetRooms: RequestHandler = async (req, res) => {
       nextGames.map((gameID) => nextGame.get(gameID))
     )
     nextGames.forEach((key, i) => {
-      response.nextGames[removePrefix(key)] = games[i]
+      const [gameID] = removePrefix(key)
+      response.nextGames[gameID] = games[i]
     })
   }
 
@@ -209,7 +286,7 @@ export const routeGetRooms: RequestHandler = async (req, res) => {
   const gameTuples = await Promise.all(
     games
       .map(removePrefix)
-      .map((gameID) =>
+      .map(([gameID]) =>
         Promise.all([
           Promise.resolve(gameID),
           gameConfigs.get(gameID),
@@ -238,6 +315,25 @@ export const routeGetRooms: RequestHandler = async (req, res) => {
   response.rooms = rooms
 
   return res.json(response)
+}
+
+interface GetQueueRouteResponse {
+  count: number
+  all: QueueJob[]
+  due: QueueJob[]
+}
+
+export const routeGetQueue: RequestHandler = async (req, res) => {
+  const allJobs = await queue.getJobs(0)
+  const dueJobs = await queue.getJobs()
+
+  let response: GetQueueRouteResponse = {
+    count: 0,
+    all: allJobs,
+    due: dueJobs,
+  }
+
+  res.json(response)
 }
 
 export default client

@@ -1,3 +1,4 @@
+import { join } from 'path'
 import { response } from 'express'
 import log from '../../helpers/log'
 import * as random from '../../helpers/random'
@@ -20,7 +21,7 @@ import {
   RoundResults,
   Scores,
 } from '../../typings/game'
-import { Payload, ServerEvent } from '../../typings/socket-events'
+import { Payload, ServerEvent, QueueEvent } from '../../typings/socket-events'
 import {
   gameConfigs,
   gamePlayers,
@@ -28,6 +29,7 @@ import {
   nextGame,
   playerAnswers,
   players as playerClient,
+  queue,
 } from '../redis-client'
 
 export const startRound = (
@@ -58,23 +60,25 @@ export const startRound = (
   }
 
   if (state.stage === GameStage.PRE) {
-    state.stage = GameStage.STARTING
-    setTimeout(
-      () => actuallyStartRound(IO, socket)(gameID),
-      TIME_BEFORE_GAME_START
-    )
     // Save the game state and instruct the clients to show a countdown
+    state.stage = GameStage.STARTING
     await gameStates.set(gameID, state)
+    await queue.add(gameID, {
+      name: QueueEvent.START_ROUND,
+      data: { gameID },
+      inProgress: false,
+      due: Date.now() + TIME_BEFORE_GAME_START,
+    })
     IO.in(gameID).emit(ServerEvent.ROUND_STARTING, state)
   } else {
-    actuallyStartRound(IO, socket)(gameID)
+    actuallyStartRound(IO, gameID)
   }
 }
 
-const actuallyStartRound = (
+export const actuallyStartRound = async (
   IO: SocketIO.Server,
-  socket: SocketIO.Socket
-) => async (gameID: string) => {
+  gameID: string
+) => {
   let [config, players, state] = await Promise.all([
     gameConfigs.get(gameID),
     gamePlayers.get(gameID),
@@ -173,11 +177,30 @@ export const cancelStartRound = (
 ) => async ({ gameID }: Payload) => {
   const uuid = getPlayerUUID(socket)
   const player = await playerClient.get(uuid)
-  const { e: logE } = log.n('CANCEL_START_ROUND')
+  const { e: logE, d: logD } = log.n('CANCEL_START_ROUND')
 
   if (!gameID || !player) {
     return
   }
+
+  // First check if there are any game starts in the queue
+  const jobsForGame = await queue.getJobsForGame(gameID)
+  const roundStartCancellation = jobsForGame.filter(
+    (job) => job.name === QueueEvent.START_ROUND
+  )
+
+  if (!jobsForGame.length || !roundStartCancellation.length) {
+    return
+  }
+
+  logD(
+    'Deleting queue items',
+    roundStartCancellation.map((job) => job.id)
+  )
+
+  await Promise.all([
+    roundStartCancellation.map((job) => queue.remove(job.id!)),
+  ])
 
   let state = await gameStates.get(gameID)
 
@@ -195,10 +218,9 @@ export const cancelStartRound = (
 
   state.stage = GameStage.PRE
 
-  // Save everything
   await gameStates.set(gameID, state)
 
-  IO.in(gameID).emit(ServerEvent.ROUND_START_CANCELLED, state)
+  IO.in(gameID).emit(ServerEvent.GAME_STATE_CHANGE, state)
 }
 
 export const endRound = (

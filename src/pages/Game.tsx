@@ -118,7 +118,7 @@ export default function Game() {
         setGameState(newGameState)
       },
 
-      [ServerEvent.ROUND_START_CANCELLED]: (
+      [ServerEvent.GAME_STATE_CHANGE]: (
         socket,
         newGameState: GameState
       ) => {

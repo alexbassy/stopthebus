@@ -1,14 +1,3 @@
-enum Events {
-  Connected = 'connect',
-  JoinGame = 'join-game',
-  Joiner = 'joiner',
-  Joined = 'joined',
-}
-
-interface Player {
-  id: string
-}
-
 export interface Payload<T = any> {
   gameID?: string
   payload?: T
@@ -23,6 +12,7 @@ export interface PlayerVote {
 // These events are only emitted from the client but are read by the server.
 export enum ClientEvent {
   CONNECT = 'connect',
+
   DISCONNECT = 'disconnect',
 
   // Sent from the host with the game config in their session storage
@@ -89,9 +79,6 @@ export enum ServerEvent {
   // Triggered by the `START_GAME` event - changes game state
   ROUND_STARTED = 'ROUND_STARTED',
 
-  // Triggered by clicking "cancel" when someone starts the game
-  ROUND_START_CANCELLED = 'ROUND_START_CANCELLED',
-
   // Triggered when a player has finished the round and all clients must submit final answers
   ROUND_ENDING = 'ROUND_ENDING',
 
@@ -106,6 +93,13 @@ export enum ServerEvent {
 
   // Emit an updated vote for the given player and answer when in review screen
   UPDATE_VOTES = 'UPDATE_VOTES',
+
+  // Triggered by clicking "cancel" when someone starts the game
+  // but I gave it a generic name because it seems so specific
+  GAME_STATE_CHANGE = 'GAME_STATE_CHANGE',
 }
 
-export default Events
+export enum QueueEvent {
+  START_ROUND = 'START_ROUND',
+  END_ROUND = 'END_ROUND',
+}

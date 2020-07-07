@@ -1,4 +1,19 @@
 /**
+ * Queued jobs
+ */
+
+import { QueueEvent } from './socket-events'
+
+export interface QueueJob {
+  id?: string
+  name: QueueEvent
+  data: any
+  created?: number
+  due: number
+  inProgress: boolean
+}
+
+/**
  * GAME CONFIG
  */
 

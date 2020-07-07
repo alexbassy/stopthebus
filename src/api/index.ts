@@ -4,6 +4,7 @@ import express from 'express'
 import socketIO from 'socket.io'
 import * as dotenv from 'dotenv'
 import compression from 'compression'
+import { CronJob } from 'cron'
 import { createGame, joinGame, updateGameConfig } from './actions/game'
 import { updateNickname } from './actions/player'
 import {
@@ -11,12 +12,18 @@ import {
   focussedAnswer,
   filledAnswer,
   startRound,
+  actuallyStartRound,
   voteAnswer,
   retrieveAnswers,
   cancelStartRound,
 } from './actions/round'
-import client, { players, routeGetRooms } from './redis-client'
-import { ClientEvent } from '../typings/socket-events'
+import client, {
+  queue,
+  players,
+  routeGetRooms,
+  routeGetQueue,
+} from './redis-client'
+import { ClientEvent, QueueEvent } from '../typings/socket-events'
 import { getPlayerUUID } from '../helpers/socket'
 import * as random from '../helpers/random'
 
@@ -33,10 +40,37 @@ app.set('json spaces', 2)
 app.use(compression())
 app.use(express.static(path.resolve('build')))
 
+const job = new CronJob(
+  '* * * * * *',
+  async () => {
+    const jobs = await queue.getJobs()
+    if (!jobs.length) {
+      return
+    }
+    for (let job of jobs) {
+      if (!job.id || job.inProgress) {
+        return
+      }
+
+      console.log(job)
+      job = await queue.setInProgress(job.id)
+
+      if (job.name === QueueEvent.START_ROUND && job.data?.gameID) {
+        await actuallyStartRound(IO, job.data.gameID)
+        await queue.remove(job.id!)
+      }
+    }
+  },
+  null,
+  true
+)
+
 // Add debugging route. Should figure out a way to make this secure,
 // but for the meantime there is no sensitive data. Revealing the
 // structure of the schema does make the app vulnerable though.
 app.get('/__debug/rooms', routeGetRooms)
+
+app.get('/__debug/queue', routeGetQueue)
 
 app.get('/_debug/players', (req, res) => {
   client.keys('player:*', function (err, keys) {
