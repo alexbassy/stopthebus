@@ -9,6 +9,9 @@ import log from '../helpers/log'
 
 export const getWords = (string: string) => string.trim().split(' ')
 
+const sanitiseAnswer = (answer: string) =>
+  typeof answer === 'string' ? answer.trim().toLowerCase() : ''
+
 export const scoreAnswer = (
   gameConfig: GameConfig,
   letter: string,
@@ -37,6 +40,10 @@ export const scoreAnswer = (
   return isValid ? 0 : scoreWithAlliteration ? alliteratedWords.length : 1
 }
 
+interface GroupedAnswers {
+  [categoryName: string]: { [answer: string]: number }
+}
+
 export const getInitialScores = (room: Room): Scores | undefined => {
   const categories = room.config.categories
   const { answers, letter } = room.state.currentRound ?? {}
@@ -48,16 +55,37 @@ export const getInitialScores = (room: Room): Scores | undefined => {
 
   const votes: Scores = {}
 
-  const groupedAnswers = categories.map((category) => {
-    return Object.values(answers)[category]
-  })
+  const groupedAnswers = Object.values(answers).reduce<GroupedAnswers>(
+    (accum, answers) => {
+      categories.forEach((category) => {
+        if (!accum[category]) {
+          accum[category] = {}
+        }
+
+        const answer = sanitiseAnswer(answers[category])
+
+        if (accum[category][answer]) {
+          accum[category][answer] += 1
+        } else {
+          accum[category][answer] = 1
+        }
+      })
+      return accum
+    },
+    {}
+  )
 
   room.players.forEach(
     (player) =>
       categories.map((category) => {
         if (!votes[player.uuid]) votes[player.uuid] = {}
-        const answer = answers?.[player.uuid]?.[category].toLowerCase?.() || ''
+        const answer = sanitiseAnswer(answers?.[player.uuid]?.[category])
         votes[player.uuid][category] = scoreAnswer(room.config, letter, answer)
+
+        if (groupedAnswers[category][answer] > 1) {
+          votes[player.uuid][category] = 0
+        }
+
         return votes
       }),
     {}
