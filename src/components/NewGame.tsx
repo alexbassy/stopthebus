@@ -162,9 +162,9 @@ export default function NewGame(props: NewGameProps) {
       <Helmet>
         <title>New Game - Stop The Bus</title>
       </Helmet>
-      <p>
+      <Spacing y={1}>
         Welcome, <Player {...currentPlayer} inline />!
-      </p>
+      </Spacing>
       <FormControl>
         <Input
           type='text'

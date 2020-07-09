@@ -125,7 +125,7 @@ export default function Themed({ theme = 'pastel', children }: ThemedProps) {
           </PrideBanner>
         </Wrapper>
         <Footer yCentre xCentre>
-          <Spacing t={1} b={1}>
+          <Spacing y={1}>
             <FooterLink href='https://bass.dev/'>
               made with{' '}
               <span role='img' aria-label='pizazz'>

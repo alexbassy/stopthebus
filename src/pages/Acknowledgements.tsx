@@ -15,7 +15,7 @@ export default function Acknowledgements() {
         <title>Acknowledgements - Stop The Bus</title>
       </Helmet>
       <PageTitle />
-      <Spacing t={1} b={1}>
+      <Spacing y={1}>
         <StyledLink onClick={() => window.history.back()}>← Go Back</StyledLink>
       </Spacing>
       <h1>Acknowledgements</h1>

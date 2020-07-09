@@ -96,8 +96,6 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
           const answer = answers[playerID][categoryName]
           const score = scores[playerID][categoryName]
 
-          if (score > 0) console.log({ score, bool: Boolean(score) })
-
           return (
             <tr key={`${categoryName}-${playerID}`}>
               <PlayerColumn>

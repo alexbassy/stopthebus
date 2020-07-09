@@ -232,14 +232,17 @@ interface SpacingProps {
   t?: number
   r?: number
   b?: number
+  x?: number
+  y?: number
   inline?: boolean
 }
 
 export const Spacing = styled<'div', SpacingProps>('div')`
-  ${(props) => props.l && `margin-left: ${props.l}rem;`};
-  ${(props) => props.t && `margin-top: ${props.t}rem;`};
-  ${(props) => props.r && `margin-right: ${props.r}rem;`};
-  ${(props) => props.b && `margin-bottom: ${props.b}rem;`};
+  ${(p) => (p.l || p.x) && `margin-left: ${p.l || p.x}rem;`};
+  ${(p) => (p.t || p.y) && `margin-top: ${p.t || p.y}rem;`};
+  ${(p) => (p.r || p.x) && `margin-right: ${p.r || p.x}rem;`};
+  ${(p) => (p.b || p.y) && `margin-bottom: ${p.b || p.y}rem;`};
+
   ${(props) => props.inline && `display: inline-block;`};
 `
 
