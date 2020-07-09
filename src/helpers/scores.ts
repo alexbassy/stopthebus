@@ -45,10 +45,11 @@ interface GroupedAnswers {
 }
 
 export const getInitialScores = (room: Room): Scores | undefined => {
-  const categories = room.config.categories
-  const { answers, letter } = room.state.currentRound ?? {}
+  const { categories } = room.config
+  const { currentRound } = room.state
+  const { answers, letter } = currentRound ?? {}
 
-  if (!room.state.currentRound || !answers || typeof letter !== 'string') {
+  if (!currentRound || !answers || typeof letter !== 'string') {
     log.e('Cannot get votes without answers')
     return
   }

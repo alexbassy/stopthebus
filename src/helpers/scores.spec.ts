@@ -1,6 +1,6 @@
-import { scoreAnswer, getFinalScores } from './scores'
+import { scoreAnswer, getInitialScores, getFinalScores } from './scores'
 import { rounds } from './__fixtures__'
-import { GameConfig } from '../typings/game'
+import { GameConfig, Room } from '../typings/game'
 
 describe('scoreAnswer()', () => {
   const gameConfig = { scoreWithAlliteration: false } as GameConfig
@@ -39,6 +39,52 @@ describe('scoreAnswer()', () => {
     expect(scoreAnswer(gameConfigWithAlliteration, 'p', 'ru paul', false)).toBe(
       1
     )
+  })
+})
+
+describe('getInitialScores()', () => {
+  let game
+  beforeEach(() => {
+    game = {
+      config: { categories: ['animals', 'people'] },
+      players: [{ uuid: 'one' }, { uuid: 'two' }],
+      state: {
+        currentRound: {
+          letter: 'c',
+          answers: {
+            one: { animals: 'cat', people: 'cady' },
+            two: { animals: 'cayote', people: 'carry' },
+          },
+        },
+      },
+    }
+  })
+
+  it('adds up scores', () => {
+    const results = getInitialScores(game as Room)
+    expect(results).toEqual({
+      one: { animals: 1, people: 1 },
+      two: { animals: 1, people: 1 },
+    })
+  })
+
+  it('gives extra points for alliteration', () => {
+    game.config.scoreWithAlliteration = true
+    game.state.currentRound.answers.one.people = 'cady carson'
+    const results = getInitialScores(game as Room)
+    expect(results).toEqual({
+      one: { animals: 1, people: 2 },
+      two: { animals: 1, people: 1 },
+    })
+  })
+
+  it('excludes duplicates', () => {
+    game.state.currentRound.answers.two.people = 'cady'
+    const results = getInitialScores(game as Room)
+    expect(results).toEqual({
+      one: { animals: 1, people: 0 },
+      two: { animals: 1, people: 0 },
+    })
   })
 })
 
