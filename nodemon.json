@@ -9,7 +9,7 @@
   ],
   "verbose": true,
   "execMap": {
-    "ts": "node --inspect=9229 ./node_modules/.bin/ts-node --project tsconfig.node.json"
+    "ts": "node --inspect=9232 ./node_modules/.bin/ts-node --project tsconfig.node.json"
   },
   "watch": ["src/"],
   "env": {
