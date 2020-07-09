@@ -48,15 +48,15 @@ export const getInitialScores = (room: Room): Scores | undefined => {
 
   const votes: Scores = {}
 
+  const groupedAnswers = categories.map((category) => {
+    return Object.values(answers)[category]
+  })
+
   room.players.forEach(
     (player) =>
       categories.map((category) => {
         if (!votes[player.uuid]) votes[player.uuid] = {}
-        const answer =
-          (answers[player.uuid] &&
-            answers[player.uuid][category] &&
-            answers[player.uuid][category].toLowerCase()) ||
-          ''
+        const answer = answers?.[player.uuid]?.[category].toLowerCase?.() || ''
         votes[player.uuid][category] = scoreAnswer(room.config, letter, answer)
         return votes
       }),
