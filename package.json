@@ -5,12 +5,13 @@
   "proxy": "http://localhost:4000",
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "dev:server": "nodemon src/api/index.ts",
+    "dev:server": "PORT=4000 nodemon src/api/index.ts",
     "dev": "react-scripts start",
     "start": "node src/api/index.js",
     "heroku-postbuild": "yarn build && tsc --esModuleInterop src/api/index.ts",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "e2e": "cd tests/e2e && jest",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -52,9 +53,12 @@
   "devDependencies": {
     "@types/compression": "^1.7.0",
     "@types/cron": "^1.7.2",
+    "@types/expect-puppeteer": "^4.4.3",
     "@types/express": "^4.17.6",
-    "@types/jest": "^24.0.0",
+    "@types/jest": "^26.0.4",
+    "@types/jest-environment-puppeteer": "^4.3.2",
     "@types/node": "^12.0.0",
+    "@types/puppeteer": "^3.0.1",
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
     "@types/react-helmet": "^6.0.0",
@@ -75,8 +79,11 @@
     "eslint-plugin-react": "^7.20.2",
     "eslint-plugin-react-hooks": "^4.0.5",
     "eslint-plugin-simple-import-sort": "^5.0.3",
+    "jest-puppeteer": "^4.4.0",
     "prettier": "^2.0.5",
+    "puppeteer": "^5.0.0",
     "source-map-explorer": "^2.4.2",
+    "ts-jest": "^26.1.1",
     "ts-node": "^8.10.2"
   }
 }

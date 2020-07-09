@@ -65,7 +65,7 @@ export default function Home() {
           </Button>
         </FormControl>
         <Spacing b={1} />
-        <Button>Create game</Button>
+        <Button data-qa='create-game'>Create game</Button>
       </form>
     </div>
   )
