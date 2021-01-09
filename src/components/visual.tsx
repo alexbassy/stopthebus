@@ -36,15 +36,15 @@ export const Background = styled('div')`
   }
 `
 
-export const Wrapper = styled('div')`
+export const GameWrapper = styled('div')`
   max-width: 760px;
   margin: 2rem auto 0;
-  background: ${(props) => props.theme.colours.blue};
+  background: ${(props) => props.theme.colours.gameBackground};
   font-family: ${(props) => props.theme.fonts.body.name};
-  padding: 20px;
+  padding: 0.5rem;
   color: #fff;
   font-size: 120%;
-  border: 10px solid ${(props) => props.theme.colours.pink};
+  border: 10px solid ${(props) => props.theme.colours.gameBorder};
 
   @media screen and (max-width: 768px) {
     min-height: 100%;
@@ -54,6 +54,9 @@ export const Wrapper = styled('div')`
 `
 
 export const H2 = styled<'h2'>('h2')`
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
   text-shadow: 1px 1px rgb(0 0 0 / 40%);
 `
 
@@ -73,7 +76,7 @@ interface InputProps {
 }
 
 export const Input = styled<'input', InputProps>('input')`
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   padding: 0.75rem;
   -webkit-appearance: none;
   font-family: inherit;
@@ -162,10 +165,10 @@ interface ButtonProps {
 }
 
 export const Button = styled<'button', ButtonProps>('button')`
-  font-size: ${(props) => (props.large ? '1.5rem' : '1.15rem')};
-  padding: 0.75rem;
   -webkit-appearance: none;
-  background: #2866bd;
+  font-size: ${(props) => (props.large ? '1.25rem' : '1rem')};
+  padding: 0.75rem;
+  background: ${(props) => props.theme.colours.buttonBackground};
   font-family: inherit;
   font-weight: 500;
   color: #fff;

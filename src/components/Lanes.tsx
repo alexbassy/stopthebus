@@ -36,7 +36,7 @@ const PlayerPinWrapper = styled<'span', PinWrapperProps>('span')`
   ${(props) =>
     props.count > 7 &&
     css`
-      box-shadow: 0 0 0 2px ${props.theme.colours.blue};
+      box-shadow: 0 0 0 2px ${props.theme.colours.gameBackground};
     `};
 `
 

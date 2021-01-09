@@ -5,55 +5,16 @@ import { Global } from '@emotion/core'
 import {
   globalStyles,
   Background,
-  Wrapper,
+  GameWrapper,
   Spacing,
   ExternalLink,
 } from './visual'
 import styled from './styled'
-import { Flex } from './layout'
-
-interface Typeface {
-  name: string
-  href: string
-}
-
-export interface Theme {
-  fonts: { [typeface: string]: Typeface }
-  colours: { [color: string]: string }
-}
-
-const pastel: Theme = {
-  fonts: {
-    title: {
-      name: 'Raleway, sans-serif',
-      href:
-        'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Raleway:wght@700&display=swap',
-    },
-    body: {
-      name: '"Roboto"',
-      href: '',
-    },
-  },
-  colours: {
-    orange: '#FF9770',
-    pink: '#FF70A6',
-    yellow: '#FFD670',
-    lemon: '#E9FF70',
-    blue: '#1d3557',
-    purple: '#b523da',
-    green: '#35EF9E',
-    text: '#fff',
-    interactiveButton: 'rgb(80 80 80)',
-    pageBackground: '#132339',
-    inputBackground: '#2e5286',
-    buttonBackground: '#2866bd',
-  },
-}
-
-const themes = { pastel }
+import { Flex } from './Grid'
+import themes, { Themes } from '../themes'
 
 interface ThemedProps {
-  theme?: 'pastel'
+  theme?: Themes
   children: ReactChild
 }
 
@@ -108,7 +69,10 @@ const PrideFlagSVG = `
 </svg>
 `
 
-export default function Themed({ theme = 'pastel', children }: ThemedProps) {
+export default function Themed({
+  theme = Themes.PASTEL,
+  children,
+}: ThemedProps) {
   return (
     <ThemeProvider theme={themes[theme]}>
       <Helmet>
@@ -116,14 +80,14 @@ export default function Themed({ theme = 'pastel', children }: ThemedProps) {
       </Helmet>
       <Global styles={globalStyles} />
       <Background>
-        <Wrapper>
+        <GameWrapper>
           {children}
           <Spacing t={2} />
           <PrideBanner yCentre xCentre>
             <PrideFlag dangerouslySetInnerHTML={{ __html: PrideFlagSVG }} />
             <strong>Happy Pride</strong>
           </PrideBanner>
-        </Wrapper>
+        </GameWrapper>
         <Footer yCentre xCentre>
           <Spacing y={1}>
             <FooterLink href='https://bass.dev/'>

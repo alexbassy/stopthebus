@@ -19,7 +19,7 @@ const Title = styled<'div'>('div')`
   text-align: center;
 
   @media screen and (max-width: 760px) {
-    font-size: 10vw;
+    font-size: 11vw;
   }
 `
 

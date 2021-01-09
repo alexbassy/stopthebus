@@ -7,11 +7,10 @@ import React, {
   useState,
 } from 'react'
 import { Helmet } from 'react-helmet'
-import { Flex, Grid } from './layout'
+import { Flex, Grid } from './Grid'
 import {
   Button,
   Checkbox,
-  H2,
   H3,
   Input,
   Item,
@@ -291,11 +290,11 @@ export default function NewGame(props: NewGameProps) {
         Start game
       </Button>
 
-      {state.stage === GameStage.STARTING && (
-        <Dialog>
+      <Dialog>
+        {state.stage === GameStage.STARTING && (
           <GameStarting onCancel={handleCancelStartGame} />
-        </Dialog>
-      )}
+        )}
+      </Dialog>
     </div>
   )
 }
