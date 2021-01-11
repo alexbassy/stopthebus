@@ -24,7 +24,7 @@ import FormControl from './FormControl'
 import CategoriesList from './CategoriesList'
 import Player from './Player'
 import Dialog from './Dialog'
-import GameStarting from './GameStarting'
+import Countdown from './Countdown'
 import GameContext from '../contexts/GameContext'
 import { ENGLISH_LETTERS } from '../constants/letters'
 import EmitterContext from '../contexts/EmitterContext'
@@ -147,7 +147,7 @@ export default function NewGame(props: NewGameProps) {
     emit(ClientEvent.UPDATE_NICKNAME, nickname)
   }
 
-  const handleCancelStartGame = (event: SyntheticEvent<HTMLButtonElement>) => {
+  const handleCancelStartGame = () => {
     emit(ClientEvent.CANCEL_START_ROUND)
   }
 
@@ -292,7 +292,14 @@ export default function NewGame(props: NewGameProps) {
 
       <Dialog>
         {state.stage === GameStage.STARTING && (
-          <GameStarting onCancel={handleCancelStartGame} />
+          <Countdown
+            from={3}
+            onCancel={handleCancelStartGame}
+            showAfter={state.nextLetter?.toUpperCase()}
+            // In reality it should be displayed for 1.5s, but instruct the
+            // component to display it for longer to account for transport latency
+            afterMessageDuration={3000}
+          />
         )}
       </Dialog>
     </div>

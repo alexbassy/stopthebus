@@ -1,7 +1,6 @@
-import { join } from 'path'
-import { response } from 'express'
 import log from '../../helpers/log'
 import * as random from '../../helpers/random'
+import { getNextLetterForGame } from '../../helpers/letters'
 import {
   getFinalScores,
   getInitialScores,
@@ -44,7 +43,10 @@ export const startRound = (
     return
   }
 
-  let state = await gameStates.get(gameID)
+  let [config, state] = await Promise.all([
+    gameConfigs.get(gameID),
+    gameStates.get(gameID),
+  ])
 
   if (!state) {
     logE('No game state found for room', gameID)
@@ -62,6 +64,12 @@ export const startRound = (
   if (state.stage === GameStage.PRE) {
     // Save the game state and instruct the clients to show a countdown
     state.stage = GameStage.STARTING
+
+    // Select a letter for the round so that it can be shown at the end of the countdown
+    if (!state.nextLetter) {
+      state.nextLetter = getNextLetterForGame(config, state)
+    }
+
     await gameStates.set(gameID, state)
     await queue.add(gameID, {
       name: QueueEvent.START_ROUND,
@@ -117,7 +125,6 @@ export const actuallyStartRound = async (
     state.finalScores = getFinalScores(state.rounds)
 
     // When a player clicks on the next game link, the game
-    // ID will be searched for in the JOIN_GAME handler, which
     // will copy the config from the game ID returned.
     await nextGame.set(state.nextGameID, gameID)
 
@@ -130,16 +137,6 @@ export const actuallyStartRound = async (
 
     return
   }
-
-  // Count up the previously played letters and pick a new
-  // letter for the next round.
-  const previouslyPlayedLetters = state.rounds.length
-    ? state.rounds.map((round) => round.letter || '')
-    : []
-  const availableLetters = config.letters
-    .split('')
-    .filter((letter) => !previouslyPlayedLetters.includes(letter))
-  const letterForNextRound = random.getValue(availableLetters)
 
   // Scaffold out a new voting object ready for the next round.
   // This could easily be done in the END_ROUND event, but 🤷‍♂️
@@ -158,12 +155,13 @@ export const actuallyStartRound = async (
   // Create a new `currentRound` property upon which to play
   const newRound: GameRound = {
     timeStarted: Date.now(),
-    letter: letterForNextRound,
+    letter: getNextLetterForGame(config, state),
     answers: answersTemplate,
     scores: newScores,
   }
   state.currentRound = newRound
   state.stage = GameStage.ACTIVE
+  state.nextLetter = undefined
 
   // Save everything
   await gameStates.set(gameID, state)

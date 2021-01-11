@@ -91,6 +91,7 @@ export interface GameState {
   currentRound?: GameRound
   finalScores?: FinalScores
   nextGameID?: string
+  nextLetter?: string
 }
 
 export interface RoundResults {
