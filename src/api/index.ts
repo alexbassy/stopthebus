@@ -22,6 +22,7 @@ import client, {
   players,
   routeGetRooms,
   routeGetQueue,
+  routeClearRooms,
 } from './redis-client'
 import { ClientEvent, QueueEvent } from '../typings/socket-events'
 import { getPlayerUUID } from '../helpers/socket'
@@ -79,6 +80,10 @@ app.get('/_debug/players', (req, res) => {
     res.json(keys)
   })
 })
+
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/__debug/clear', routeClearRooms)
+}
 
 app.get('*', (req, res) => {
   res.sendFile(path.resolve('build/index.html'))

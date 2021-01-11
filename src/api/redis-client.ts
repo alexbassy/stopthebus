@@ -37,11 +37,13 @@ client.on('error', (error) => {
 type KeysFn = { (key: string): Promise<string[] | null> }
 type SetFn = { <T>(key: string, val: T, ex: 'EX', time: number): Promise<T> }
 type DelFn = { (key: string | string[]): Promise<number> }
+type FlushFn = { (): Promise<void> }
 
 export const getAsync = promisify(client.get).bind(client)
 export const keysAsync = promisify(client.keys).bind(client) as KeysFn
 export const setAsync = promisify(client.set).bind(client) as SetFn
 export const delAsync = promisify(client.del).bind(client) as DelFn
+export const flushAllAsync = promisify(client.flushall).bind(client) as FlushFn
 
 export const players = {
   get: async (gameID: string): Promise<Player> => {
@@ -313,6 +315,27 @@ export const routeGetRooms: RequestHandler = async (req, res) => {
 
   response.count = Object.keys(rooms).length
   response.rooms = rooms
+
+  return res.json(response)
+}
+
+interface ClearRoomsRouteResponse {
+  status: 'ok' | 'error'
+  message?: string
+}
+
+export const routeClearRooms: RequestHandler = async (req, res) => {
+  const response: ClearRoomsRouteResponse = {
+    status: 'ok',
+  }
+
+  try {
+    await flushAllAsync()
+  } catch (e) {
+    response.status = 'error'
+    response.message = e?.message
+    return res.json(response)
+  }
 
   return res.json(response)
 }
