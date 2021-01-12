@@ -9,7 +9,7 @@ import React, {
 } from 'react'
 import { Helmet } from 'react-helmet'
 import { Button, Input, Item, List, Spacing } from './visual'
-import { Grid } from './layout'
+import { Grid } from './Grid'
 import Lanes from './Lanes'
 import styled from './styled'
 import EmitterContext from '../contexts/EmitterContext'

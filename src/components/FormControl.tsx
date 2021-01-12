@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid } from './layout'
+import { Grid } from './Grid'
 import styled from './styled'
 import { SMALL_SCREEN_BREAKPOINT } from '../constants/styles'
 
@@ -8,20 +8,21 @@ interface FormControlProps {
 }
 
 const StyledGrid = styled(Grid)`
-  max-width: 400px;
+  max-width: calc(100vw - 2rem);
 
   > * {
-    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   @media screen and (max-width: ${SMALL_SCREEN_BREAKPOINT}px) {
-    max-width: 100%:
+    max-width: 100%;
   }
 `
 
 export default function FormControl(props: FormControlProps) {
   return (
-    <StyledGrid columns={[3, 1]} gap={0.5}>
+    <StyledGrid columns={[5, 2]} gap={0.5}>
       {props.children}
     </StyledGrid>
   )

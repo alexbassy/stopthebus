@@ -1,6 +1,7 @@
 export const FINAL_ANSWERS_WAITING_TIME = 1000
 
-export const TIME_BEFORE_GAME_START = 3000
+// 3s for the countdown + 1.5s for displaying the letter
+export const TIME_BEFORE_GAME_START = 3000 + 1500
 
 export const categories = [
   `Country`,

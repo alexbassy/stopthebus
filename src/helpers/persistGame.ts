@@ -1,4 +1,4 @@
-import getLetters from './getLetters'
+import { getLetters } from './letters'
 import { GameConfig, GameMode } from '../typings/game'
 
 const KEY = 'newGame'
