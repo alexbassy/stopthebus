@@ -37,6 +37,8 @@ export const Background = styled('div')`
 `
 
 export const GameWrapper = styled('div')`
+  display: flex;
+  flex-direction: column;
   max-width: 760px;
   margin: 2rem auto 0;
   background: ${(props) => props.theme.colours.gameBackground};

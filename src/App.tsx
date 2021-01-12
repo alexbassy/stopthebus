@@ -4,11 +4,10 @@ import Home from './pages/Home'
 import Game from './pages/Game'
 import Acknowledgements from './pages/Acknowledgements'
 import Themed from './components/Themed'
-import { Themes } from './themes'
 
 function App() {
   return (
-    <Themed theme={Themes.DARK}>
+    <Themed>
       <Router>
         <Switch>
           <Route exact path='/'>
