@@ -37,6 +37,8 @@ export const joinGame = (
   const previousGameID = await nextGame.get(gameID)
   if (previousGameID) {
     const previousGameConfig = await gameConfigs.get(previousGameID)
+    previousGameConfig.id = gameID
+    previousGameConfig.name = gameID
     const previousState = await gameStates.get(previousGameID)
     const playedLetters = previousState.rounds.map((round) => round.letter)
     previousGameConfig.letters = previousGameConfig.letters
