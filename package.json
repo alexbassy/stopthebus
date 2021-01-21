@@ -46,7 +46,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
     "redis": "^3.0.2",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.4.0",
     "typescript": "^3.9.5",
     "uuid": "^8.1.0"
   },
