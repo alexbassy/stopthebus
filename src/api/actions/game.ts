@@ -54,6 +54,7 @@ export const joinGame = (
 
   if (!config) {
     logE(`There is no room with name "${gameID}"`)
+    socket.emit(ServerEvent.GAME_NOT_FOUND)
     return
   }
 
@@ -65,6 +66,7 @@ export const joinGame = (
 
   if (!state) {
     logD(`Game doesn’t exist, bye felicia 👋`)
+    socket.emit(ServerEvent.GAME_NOT_FOUND)
     return
   }
 

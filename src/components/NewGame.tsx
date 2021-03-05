@@ -39,7 +39,7 @@ import { ClientEvent } from '../typings/socket-events'
 const sessionID = getUserSessionID()
 
 interface NewGameProps {
-  onChange: Dispatch<SetStateAction<GameConfig | null>>
+  onChange: Dispatch<SetStateAction<GameConfig | null | undefined>>
 }
 
 export default function NewGame(props: NewGameProps) {

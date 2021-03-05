@@ -45,7 +45,7 @@ export default function Game() {
 
   // Each of these states represents a top level property on the room
   const [gameState, setGameState] = useState<GameState>(defaultGameState)
-  const [gameConfig, setGameConfig] = useState<GameConfig | null>(null)
+  const [gameConfig, setGameConfig] = useState<GameConfig | null | undefined>()
   const [answers, setAnswers] = useState<RoundResults>()
   const [players, setPlayers] = useState<Player[]>()
   const [opponentProgress, setOpponentProgress] = useState<OpponentProgress>()
@@ -73,6 +73,10 @@ export default function Game() {
         setIsConnected(false)
       },
 
+      [ServerEvent.GAME_NOT_FOUND]: () => {
+        setGameConfig(null)
+      },
+
       [ServerEvent.JOINED_GAME]: (socket, room: Room) => {
         const session = getUserSession()
         socket.emit(ClientEvent.UPDATE_NICKNAME, getPayload(session.name))
@@ -82,7 +86,7 @@ export default function Game() {
       },
 
       [ServerEvent.OPPONENT_CURRENT_CATEGORY]: (
-        socket,
+        _socket,
         progress: OpponentProgress
       ) => {
         console.log({ progress })
@@ -92,15 +96,18 @@ export default function Game() {
         }))
       },
 
-      [ServerEvent.PLAYER_JOINED_GAME]: (socket, players: Player[]) => {
+      [ServerEvent.PLAYER_JOINED_GAME]: (_socket, players: Player[]) => {
         setPlayers(players)
       },
 
-      [ServerEvent.PLAYER_LEFT]: (socket, players: Player[]) => {
+      [ServerEvent.PLAYER_LEFT]: (_socket, players: Player[]) => {
         setPlayers(players)
       },
 
-      [ServerEvent.GAME_CONFIG]: (socket, newGameConfig: GameConfig | null) => {
+      [ServerEvent.GAME_CONFIG]: (
+        _socket,
+        newGameConfig: GameConfig | null
+      ) => {
         if (newGameConfig === null) {
           setGameConfig(null)
           return
@@ -114,30 +121,27 @@ export default function Game() {
         }
       },
 
-      [ServerEvent.ROUND_STARTING]: (socket, newGameState: GameState) => {
+      [ServerEvent.ROUND_STARTING]: (_socket, newGameState: GameState) => {
         setGameState(newGameState)
       },
 
-      [ServerEvent.GAME_STATE_CHANGE]: (
-        socket,
-        newGameState: GameState
-      ) => {
+      [ServerEvent.GAME_STATE_CHANGE]: (_socket, newGameState: GameState) => {
         setGameState(newGameState)
       },
 
-      [ServerEvent.ROUND_STARTED]: (socket, newGameState: GameState) => {
+      [ServerEvent.ROUND_STARTED]: (_socket, newGameState: GameState) => {
         setGameState(newGameState)
       },
 
-      [ServerEvent.SEND_ANSWERS]: (socket, playerAnswers: RoundResults) => {
+      [ServerEvent.SEND_ANSWERS]: (_socket, playerAnswers: RoundResults) => {
         setAnswers(playerAnswers)
       },
 
-      [ServerEvent.ROUND_ENDING]: (socket, newGameState: GameState) => {
+      [ServerEvent.ROUND_ENDING]: (_socket, newGameState: GameState) => {
         setGameState(newGameState)
       },
 
-      [ServerEvent.ROUND_ENDED]: (socket, newGameState: GameState) => {
+      [ServerEvent.ROUND_ENDED]: (_socket, newGameState: GameState) => {
         setGameState(newGameState)
         setOpponentProgress({})
       },
