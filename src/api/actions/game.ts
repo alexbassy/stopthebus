@@ -174,6 +174,7 @@ export const createGame = (
     logD(
       `Joined room "${gameID}", emitting GAME_CONFIG and PLAYER_JOINED_GAME event`
     )
+    socket.emit(ServerEvent.JOINED_GAME, room)
     IO.in(gameID).emit(ServerEvent.GAME_CONFIG, room.config)
     IO.in(gameID).emit(ServerEvent.PLAYER_JOINED_GAME, room.players)
   })
