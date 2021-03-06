@@ -236,6 +236,7 @@ export default function Game() {
     case GameStage.ENDING:
       Component = ActiveRound
       break
+    case GameStage.NEXT_STARTING:
     case GameStage.REVIEW:
       Component = ReviewRound
       break

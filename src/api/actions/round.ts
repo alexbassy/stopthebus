@@ -61,26 +61,27 @@ export const startRound = (
     return
   }
 
-  if (state.stage === GameStage.PRE) {
-    // Save the game state and instruct the clients to show a countdown
-    state.stage = GameStage.STARTING
-
-    // Select a letter for the round so that it can be shown at the end of the countdown
-    if (!state.nextLetter) {
-      state.nextLetter = getNextLetterForGame(config, state)
-    }
-
-    await gameStates.set(gameID, state)
-    await queue.add(gameID, {
-      name: QueueEvent.START_ROUND,
-      data: { gameID },
-      inProgress: false,
-      due: Date.now() + TIME_BEFORE_GAME_START,
-    })
-    IO.in(gameID).emit(ServerEvent.ROUND_STARTING, state)
-  } else {
-    actuallyStartRound(IO, gameID)
+  if (state.stage !== GameStage.PRE && state.stage !== GameStage.REVIEW) {
+    return
   }
+
+  // Save the game state and instruct the clients to show a countdown
+  state.stage =
+    state.stage === GameStage.PRE ? GameStage.STARTING : GameStage.NEXT_STARTING
+
+  // Select a letter for the round so that it can be shown at the end of the countdown
+  if (!state.nextLetter) {
+    state.nextLetter = getNextLetterForGame(config, state)
+  }
+
+  await gameStates.set(gameID, state)
+  await queue.add(gameID, {
+    name: QueueEvent.START_ROUND,
+    data: { gameID },
+    inProgress: false,
+    due: Date.now() + TIME_BEFORE_GAME_START,
+  })
+  IO.in(gameID).emit(ServerEvent.ROUND_STARTING, state)
 }
 
 export const actuallyStartRound = async (
@@ -97,7 +98,7 @@ export const actuallyStartRound = async (
     return
   }
 
-  const isGameInReview = state.stage === GameStage.REVIEW
+  const isGameInReview = state.stage === GameStage.NEXT_STARTING
 
   // Create a template for player answers so it can be pushed to safely
   const answersTemplate: Round = players.reduce((round: Round, player) => {

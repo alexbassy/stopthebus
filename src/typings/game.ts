@@ -66,6 +66,9 @@ export enum GameStage {
   // Round has finished, players are reviewing/scoring
   REVIEW = 'review',
 
+  // Non-initial round is about to begin; review round screen is shown
+  NEXT_STARTING = 'NEXT_STARTING',
+
   // Game has finished, scores are revealed
   FINISHED = 'finished',
 }
