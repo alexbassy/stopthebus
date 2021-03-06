@@ -52,13 +52,13 @@ const ShareButton = styled<'button'>('button')`
   background-repeat: no-repeat;
   background-position: center;
   background-size: 80%;
-  padding: .75rem;
+  padding: 0.75rem;
   text-indent: -9999px;
 
   @media screen and (max-width: 460px) {
-  width: 1rem;
-  height: 1rem;
-    background-size: 70%
+    width: 1rem;
+    height: 1rem;
+    background-size: 70%;
   }
 `
 
