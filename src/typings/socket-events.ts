@@ -64,6 +64,9 @@ export enum ServerEvent {
   // When a player joins the game successfully, payload is the whole room
   JOINED_GAME = 'JOINED_GAME',
 
+  // When the game doesn’t exist
+  GAME_NOT_FOUND = 'GAME_NOT_FOUND',
+
   // When another player joins the game. It will trigger the clients to `SELF_IDENTIFY`
   PLAYER_JOINED_GAME = 'PLAYER_JOINED_GAME',
 

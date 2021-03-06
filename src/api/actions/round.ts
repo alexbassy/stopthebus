@@ -25,11 +25,15 @@ import {
   gameConfigs,
   gamePlayers,
   gameStates,
-  nextGame,
   playerAnswers,
   players as playerClient,
   queue,
 } from '../redis-client'
+import {
+  endGame,
+  finaliseRoundAnswers,
+  hasPlayedAllRounds,
+} from '../../helpers/game'
 
 export const startRound = (
   IO: SocketIO.Server,
@@ -37,7 +41,7 @@ export const startRound = (
 ) => async ({ gameID }: Payload) => {
   const uuid = getPlayerUUID(socket)
   const player = await playerClient.get(uuid)
-  const { e: logE } = log.n('START_ROUND')
+  const { e: logE, d: logD } = log.n('START_ROUND')
 
   if (!gameID || !player) {
     return
@@ -61,28 +65,35 @@ export const startRound = (
     return
   }
 
-  if (state.stage === GameStage.PRE) {
-    // Save the game state and instruct the clients to show a countdown
-    state.stage = GameStage.STARTING
-
-    // Select a letter for the round so that it can be shown at the end of the countdown
-    if (!state.nextLetter) {
-      state.nextLetter = getNextLetterForGame(config, state)
-    }
-
-    await gameStates.set(gameID, state)
-    await queue.add(gameID, {
-      name: QueueEvent.START_ROUND,
-      data: { gameID },
-      inProgress: false,
-      due: Date.now() + TIME_BEFORE_GAME_START,
-    })
-    IO.in(gameID).emit(ServerEvent.ROUND_STARTING, state)
-  } else {
-    actuallyStartRound(IO, gameID)
+  if (state.stage !== GameStage.PRE && state.stage !== GameStage.REVIEW) {
+    return
   }
+
+  if (hasPlayedAllRounds({ state, config })) {
+    logD('Played all rounds, ending game...')
+    return endGame(IO, gameID, { state, config })
+  }
+
+  // Save the game state and instruct the clients to show a countdown
+  state.stage =
+    state.stage === GameStage.PRE ? GameStage.STARTING : GameStage.NEXT_STARTING
+
+  // Select a letter for the round so that it can be shown at the end of the countdown
+  if (!state.nextLetter) {
+    state.nextLetter = getNextLetterForGame(config, state)
+  }
+
+  await gameStates.set(gameID, state)
+  await queue.add(gameID, {
+    name: QueueEvent.START_ROUND,
+    data: { gameID },
+    inProgress: false,
+    due: Date.now() + TIME_BEFORE_GAME_START,
+  })
+  IO.in(gameID).emit(ServerEvent.ROUND_STARTING, state)
 }
 
+// TODO: Extract game ending to function and call instead of adding to queue above
 export const actuallyStartRound = async (
   IO: SocketIO.Server,
   gameID: string
@@ -97,46 +108,17 @@ export const actuallyStartRound = async (
     return
   }
 
-  const isGameInReview = state.stage === GameStage.REVIEW
-
-  // Create a template for player answers so it can be pushed to safely
-  const answersTemplate: Round = players.reduce((round: Round, player) => {
-    round[player.uuid] = {}
-    return round
-  }, {})
+  const isGameInReview = state.stage === GameStage.NEXT_STARTING
 
   // If the round is being started following another round, free up the
   // currentRound property
   if (isGameInReview) {
-    const roundResults = state.currentRound
-    if (roundResults) state.rounds.push(roundResults)
-    delete state.currentRound
+    state = finaliseRoundAnswers(state)
   }
 
   // If the configured number of rounds has met the number of rounds played,
   // the game will end rather than switch to active
-  const numRoundsPlayed = state.rounds.length
-  const hasPlayedAllRounds = config.rounds === numRoundsPlayed
-  state.stage = hasPlayedAllRounds ? GameStage.FINISHED : GameStage.ACTIVE
-
-  // If on the start screen or review screen, we can go ahead
-  if (hasPlayedAllRounds) {
-    state.nextGameID = random.getGameName()
-    state.finalScores = getFinalScores(state.rounds)
-
-    // When a player clicks on the next game link, the game
-    // will copy the config from the game ID returned.
-    await nextGame.set(state.nextGameID, gameID)
-
-    // Save everything and tell the clients to move to the end screen
-    await gameStates.set(gameID, state)
-
-    // Confusingly called ROUND_STARTED, `ROUND_STAGE_CHANGE` would
-    // probably be a better name but that’s just not as cute
-    IO.in(gameID).emit(ServerEvent.ROUND_STARTED, state)
-
-    return
-  }
+  state.stage = GameStage.ACTIVE
 
   // Scaffold out a new voting object ready for the next round.
   // This could easily be done in the END_ROUND event, but 🤷‍♂️
@@ -150,6 +132,12 @@ export const actuallyStartRound = async (
   const newScores = players.reduce<Scores>((players, player) => {
     if (players[player.uuid]) players[player.uuid] = playerVotes
     return players
+  }, {})
+
+  // Create a template for player answers so it can be pushed to safely
+  const answersTemplate: Round = players.reduce((round: Round, player) => {
+    round[player.uuid] = {}
+    return round
   }, {})
 
   // Create a new `currentRound` property upon which to play
@@ -207,14 +195,17 @@ export const cancelStartRound = (
     return
   }
 
-  const isGameStarting = state.stage === GameStage.STARTING
+  const isGameStarting =
+    state.stage === GameStage.STARTING ||
+    state.stage === GameStage.NEXT_STARTING
 
   if (!isGameStarting) {
     logE('Too late, game has already started or already cancelled')
     return
   }
 
-  state.stage = GameStage.PRE
+  state.stage =
+    state.stage === GameStage.NEXT_STARTING ? GameStage.REVIEW : GameStage.PRE
 
   await gameStates.set(gameID, state)
 

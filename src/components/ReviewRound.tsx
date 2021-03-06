@@ -8,8 +8,10 @@ import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
 import useScrollToTop from '../hooks/useScrollToTop'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
-import { Round, Scores, Player as PlayerType } from '../typings/game'
+import { Round, Scores, Player as PlayerType, GameStage } from '../typings/game'
 import useIsSmallScreen from '../hooks/useIsSmallScreen'
+import Dialog from './Dialog'
+import Countdown from './Countdown'
 
 const Table = styled('table')`
   width: 100%;
@@ -139,6 +141,10 @@ export default function ReviewRound() {
     emit(ClientEvent.START_ROUND)
   }
 
+  const handleCancelStartGame = () => {
+    emit(ClientEvent.CANCEL_START_ROUND)
+  }
+
   const isLastRound = state.rounds.length + 1 === config.rounds
 
   const playerWhoEndedRound =
@@ -177,6 +183,19 @@ export default function ReviewRound() {
       <Button onClick={handleNextRoundClick}>
         {isLastRound ? 'Finish game' : 'Next round'}
       </Button>
+
+      <Dialog>
+        {!isLastRound && state.stage === GameStage.NEXT_STARTING && (
+          <Countdown
+            from={3}
+            onCancel={handleCancelStartGame}
+            showAfter={state.nextLetter?.toUpperCase()}
+            // In reality it should be displayed for 1.5s, but instruct the
+            // component to display it for longer to account for transport latency
+            afterMessageDuration={3000}
+          />
+        )}
+      </Dialog>
     </div>
   )
 }

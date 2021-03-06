@@ -54,6 +54,7 @@ export const joinGame = (
 
   if (!config) {
     logE(`There is no room with name "${gameID}"`)
+    socket.emit(ServerEvent.GAME_NOT_FOUND)
     return
   }
 
@@ -65,6 +66,7 @@ export const joinGame = (
 
   if (!state) {
     logD(`Game doesn’t exist, bye felicia 👋`)
+    socket.emit(ServerEvent.GAME_NOT_FOUND)
     return
   }
 
@@ -172,6 +174,7 @@ export const createGame = (
     logD(
       `Joined room "${gameID}", emitting GAME_CONFIG and PLAYER_JOINED_GAME event`
     )
+    socket.emit(ServerEvent.JOINED_GAME, room)
     IO.in(gameID).emit(ServerEvent.GAME_CONFIG, room.config)
     IO.in(gameID).emit(ServerEvent.PLAYER_JOINED_GAME, room.players)
   })
