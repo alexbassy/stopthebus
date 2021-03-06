@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet'
 import { Button, Checkbox } from './visual'
 import styled from './styled'
 import Player from './Player'
+import Dialog from './Dialog'
+import Countdown from './Countdown'
 import { Flex } from './Grid'
 import GameContext from '../contexts/GameContext'
 import EmitterContext from '../contexts/EmitterContext'
@@ -10,8 +12,6 @@ import useScrollToTop from '../hooks/useScrollToTop'
 import { ClientEvent, PlayerVote } from '../typings/socket-events'
 import { Round, Scores, Player as PlayerType, GameStage } from '../typings/game'
 import useIsSmallScreen from '../hooks/useIsSmallScreen'
-import Dialog from './Dialog'
-import Countdown from './Countdown'
 
 const Table = styled('table')`
   width: 100%;
