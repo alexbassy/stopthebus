@@ -1,6 +1,8 @@
 import { hasPlayedAllRounds } from './game'
 import { GameConfig, GameState } from '../typings/game'
 
+jest.mock('../api/redis-client')
+
 describe('hasPlayedAllRounds', () => {
   it('returns true when all rounds finalised', () => {
     const state: GameState = {
