@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import NewGame from '../components/NewGame'
 import ActiveRound from '../components/ActiveRound'
 import ReviewRound from '../components/ReviewRound'

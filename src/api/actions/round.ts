@@ -1,11 +1,6 @@
 import log from '../../helpers/log'
-import * as random from '../../helpers/random'
 import { getNextLetterForGame } from '../../helpers/letters'
-import {
-  getFinalScores,
-  getInitialScores,
-  scoreAnswer,
-} from '../../helpers/scores'
+import { getInitialScores, scoreAnswer } from '../../helpers/scores'
 import {
   FINAL_ANSWERS_WAITING_TIME,
   TIME_BEFORE_GAME_START,
@@ -93,7 +88,6 @@ export const startRound = (
   IO.in(gameID).emit(ServerEvent.ROUND_STARTING, state)
 }
 
-// TODO: Extract game ending to function and call instead of adding to queue above
 export const actuallyStartRound = async (
   IO: SocketIO.Server,
   gameID: string
@@ -129,6 +123,7 @@ export const actuallyStartRound = async (
     },
     {}
   )
+
   const newScores = players.reduce<Scores>((players, player) => {
     if (players[player.uuid]) players[player.uuid] = playerVotes
     return players

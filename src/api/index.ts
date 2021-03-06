@@ -41,7 +41,7 @@ app.set('json spaces', 2)
 app.use(compression())
 app.use(express.static(path.resolve('build')))
 
-const job = new CronJob(
+new CronJob(
   '* * * * * *',
   async () => {
     const jobs = await queue.getJobs()

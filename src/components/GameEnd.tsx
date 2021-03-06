@@ -1,7 +1,6 @@
 import React, { useContext } from 'react'
 import { Helmet } from 'react-helmet'
 import { Item, List, ExternalLink, Spacing } from './visual'
-import GameName from './GameName'
 import Player from './Player'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
@@ -13,7 +12,7 @@ export default function ReviewRound() {
 
   if (!game || !emit) return null
 
-  const { config, state, players } = game
+  const { state, players } = game
 
   if (!state.finalScores) return null
 

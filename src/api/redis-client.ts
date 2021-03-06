@@ -112,7 +112,7 @@ export const playerAnswers = {
 
     for (const key of answersForGame) {
       const answers = await getAsync(key)
-      const [gameID, uuid] = removePrefix(key)
+      const [, uuid] = removePrefix(key)
       round[uuid] = JSON.parse(answers)
     }
 
