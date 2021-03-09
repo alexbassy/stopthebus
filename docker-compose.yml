@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis
+    container_name: redis-store
+    expose:
+      - 6379
+
+  client:
+    build: 
+      context: '.'
+      context: Dockerfile.dev
+    ports:
+      - '3000:3000'
+
+  server:
+    build: 
+      context: '.'
+      context: Dockerfile.dev
+    ports:
+      - '4000:4000'
+    links:
+      - redis
+    depends_on:
+      - redis
