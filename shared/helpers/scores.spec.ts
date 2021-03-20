@@ -1,6 +1,6 @@
 import { scoreAnswer, getInitialScores, getFinalScores } from './scores'
 import { rounds } from './__fixtures__'
-import { GameConfig, Room } from 'shared/typings/game'
+import { GameConfig, Room } from '../typings/game'
 
 describe('scoreAnswer()', () => {
   const gameConfig = { scoreWithAlliteration: false } as GameConfig

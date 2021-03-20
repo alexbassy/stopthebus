@@ -1,5 +1,5 @@
 import { getLetters } from './letters'
-import { GameConfig, GameMode } from 'shared/typings/game'
+import { GameConfig, GameMode } from '../typings/game'
 
 const KEY = 'newGame'
 

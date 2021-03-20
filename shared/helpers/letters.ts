@@ -1,6 +1,9 @@
-import * as random from './random'
-import { ENGLISH_LETTERS, ENGLISH_DISABLED_LETTERS } from 'shared/constants/letters'
+import {
+  ENGLISH_LETTERS,
+  ENGLISH_DISABLED_LETTERS,
+} from 'shared/constants/letters'
 import { GameConfig, GameState } from 'shared/typings/game'
+import * as random from './random'
 
 export function getLetters() {
   return ENGLISH_LETTERS.filter(
