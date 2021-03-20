@@ -48,7 +48,7 @@ export const flushAllAsync = promisify(client.flushall).bind(client) as FlushFn
 export const players = {
   get: async (gameID: string): Promise<Player> => {
     const result = await getAsync(getKey(gameID, playerPrefix))
-    return result ? JSON.parse(result) : {}
+    return JSON.parse(result!)
   },
   set: async (gameID: string, newVal: Player): Promise<Player> => {
     await setAsync(
@@ -65,7 +65,7 @@ export const players = {
 export const gameConfigs = {
   get: async (gameID: string): Promise<GameConfig> => {
     const result = await getAsync(getKey(gameID, gameConfigPrefix))
-    return result ? JSON.parse(result) : {}
+    return JSON.parse(result!)
   },
   set: async (gameID: string, newVal: GameConfig): Promise<GameConfig> => {
     await setAsync(
@@ -82,7 +82,7 @@ export const gameConfigs = {
 export const gameStates = {
   get: async (gameID: string): Promise<GameState> => {
     const result = await getAsync(getKey(gameID, gameStatePrefix))
-    return result ? JSON.parse(result) : {}
+    return JSON.parse(result!)
   },
   set: async (gameID: string, newVal: GameState): Promise<GameState> => {
     await setAsync(
@@ -100,7 +100,7 @@ export const playerAnswers = {
   get: async (gameID: string, playerID: string): Promise<RoundResults> => {
     const answersKey = `${gameID}:${playerID}`
     const result = await getAsync(getKey(answersKey, playerAnswersPrefix))
-    return result ? JSON.parse(result) : {}
+    return JSON.parse(result!)
   },
   getByGame: async (gameID: string): Promise<Round> => {
     const round: Round = {}
@@ -150,7 +150,7 @@ export const playerAnswers = {
 export const gamePlayers = {
   get: async (gameID: string): Promise<Player[]> => {
     const result = await getAsync(getKey(gameID, gamePlayersPrefix))
-    return result ? JSON.parse(result) : {}
+    return JSON.parse(result!)
   },
   set: async (gameID: string, newVal: Player[]): Promise<Player[]> => {
     await setAsync(
@@ -183,7 +183,7 @@ export const nextGame = {
 export const queue = {
   get: async (id: string): Promise<QueueJob | null> => {
     const result = await getAsync(getKey(id, queuePrefix))
-    return result ? JSON.parse(result) : {}
+    return JSON.parse(result!)
   },
   getJobs: async (timeNow: number = Date.now()) => {
     const keys = await keysAsync(getKey('*', queuePrefix))

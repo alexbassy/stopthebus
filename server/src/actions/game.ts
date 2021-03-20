@@ -20,7 +20,7 @@ export const joinGame = (
   socket: SocketIO.Socket
 ) => async ({ gameID }: Payload) => {
   const uuid = getPlayerUUID(socket)
-  const player = await playerClient.get(getPlayerUUID(socket))
+  const player = await playerClient.get(uuid)
 
   const { d: logD, e: logE } = log.n('REQUEST_JOIN_GAME')
 
