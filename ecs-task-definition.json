@@ -1,0 +1,22 @@
+{
+  "family": "stopthebus",
+  "executionRoleArn": "arn:aws:iam::197098829537:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+    {
+      "name": "stopthebus",
+      "image": "197098829537.dkr.ecr.eu-central-1.amazonaws.com/stopthebus:latest",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true
+    }
+  ],
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024"
+}
