@@ -5,6 +5,7 @@ import socketIO from 'socket.io'
 import * as dotenv from 'dotenv'
 import compression from 'compression'
 import { CronJob } from 'cron'
+import 'module-alias/register'
 import { ClientEvent, QueueEvent } from 'shared/typings/socket-events'
 import { getPlayerUUID } from 'shared/helpers/socket'
 import * as random from 'shared/helpers/random'
@@ -39,7 +40,7 @@ const IO = socketIO(server)
 app.set('json spaces', 2)
 
 app.use(compression())
-app.use(express.static(path.resolve('build')))
+app.use(express.static(path.resolve('../client/build/')))
 
 new CronJob(
   '* * * * * *',
@@ -86,7 +87,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 app.get('*', (req, res) => {
-  res.sendFile(path.resolve('build/index.html'))
+  res.sendFile(path.resolve('../client/build/index.html'))
 })
 
 IO.on('connection', async (socket) => {

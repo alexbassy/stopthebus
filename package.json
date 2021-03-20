@@ -5,5 +5,8 @@
     "server",
     "client",
     "shared"
-  ]
+  ],
+  "_moduleAliases": {
+    "shared": "./shared/build/"
+  }
 }

@@ -13,15 +13,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
-    "noFallthroughCasesInSwitch": true
+    "jsx": "react-jsx",
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "build",
+    "rootDir": "src",
+    "baseUrl": "."
   },
-  "include": [
-    "module.d.ts",
-    "src/*.ts",
-    "src/*.tsx",
-    "../shared/**.ts",
-    "../shared/**/**.ts"
-  ],
+  "include": ["module.d.ts", "src/*.ts", "src/*.tsx"],
   "references": [{ "path": "../shared" }]
 }
