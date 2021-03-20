@@ -34,12 +34,14 @@ describe('hasPlayedAllRounds', () => {
   })
 
   it('returns false when first round is active', () => {
-    const state: GameState = {
+    const state: unknown = {
       rounds: [],
       currentRound: { timeStarted: Date.now() },
-    } as GameState
+    }
     const config: GameConfig = { rounds: 1 } as GameConfig
 
-    expect(hasPlayedAllRounds({ state, config })).toBe(false)
+    expect(hasPlayedAllRounds({ state: state as GameState, config })).toBe(
+      false
+    )
   })
 })
