@@ -23,6 +23,6 @@ RUN yarn build
 ARG PORT
 ARG REDIS_URL
 
-EXPOSE 4000
+EXPOSE 3000
 
 CMD ["yarn", "workspace", "server", "start"]

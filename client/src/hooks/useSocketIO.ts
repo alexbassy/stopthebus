@@ -40,7 +40,7 @@ export default function useSocket({
   useEffect(() => {
     if (!socketRef.current) {
       console.log('[useSocket] initialising')
-      const soc = io('localhost:4000', {
+      const soc = io(process.env.BACKEND_URL as string, {
         query: { sessionID: session.uuid },
       })
       socketRef.current = soc

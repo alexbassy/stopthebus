@@ -2,7 +2,6 @@ import http from 'http'
 import path from 'path'
 import express from 'express'
 import socketIO from 'socket.io'
-import * as dotenv from 'dotenv'
 import compression from 'compression'
 import { CronJob } from 'cron'
 import 'module-alias/register'
@@ -29,7 +28,7 @@ import client, {
   routeClearRooms,
 } from './redis-client'
 
-dotenv.config()
+require('dotenv').config({ path: path.resolve('../.env') })
 
 const app = express()
 const server = http.createServer(app)

@@ -1,12 +1,14 @@
-import pastel from './pastel'
 import dark from './dark'
+import pastel from './pastel'
 
 export enum Themes {
   PASTEL = 'pastel',
   DARK = 'dark',
 }
 
-export default {
+const themes = {
   pastel,
   dark,
 }
+
+export default themes
