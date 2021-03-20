@@ -1,16 +1,28 @@
-FROM node:15-alpine AS fe-build
-WORKDIR /usr/src/app
-COPY package.json yarn.lock ./
-RUN yarn --frozen-lockfile
-COPY . ./
+FROM node:15-alpine
 
-# Build the client
+WORKDIR /usr/src/app
+
+COPY package.json .
+COPY yarn.lock .
+COPY tsconfig.json .
+COPY .eslintrc .
+COPY .prettierrc .
+
+COPY client ./client
+COPY server ./server
+COPY shared ./shared
+
+RUN yarn --frozen-lockfile
+
+WORKDIR /usr/src/app/server/
 RUN yarn build
 
-# Build server 
-RUN yarn tsc --esModuleInterop --outDir srv src/api/index.ts
+WORKDIR /usr/src/app/client/
+RUN yarn build
 
-ENV PORT=3000
-EXPOSE 3000
+ARG PORT
+ARG REDIS_URL
 
-CMD ["node", "./srv/api/index.js"]
+EXPOSE 4000
+
+CMD ["yarn", "workspace", "server", "start"]

@@ -1,6 +1,9 @@
 node_modules
 npm-debug.log
 build
+server/build
+client/build
+shared/build
 .dockerignore
 **/.git
 **/.DS_Store

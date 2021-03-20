@@ -1,4 +1,4 @@
-/// <reference path="../../module.d.ts" />
+/// <reference path="../module.d.ts" />
 
 import { hri } from 'human-readable-ids'
 

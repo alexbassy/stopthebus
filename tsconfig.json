@@ -21,9 +21,5 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "references": [
-    { "path": "./shared" },
-    { "path": "./server" },
-    { "path": "./client" }
-  ]
+  "references": [{ "path": "./shared" }]
 }
