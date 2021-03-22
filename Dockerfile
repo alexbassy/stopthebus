@@ -8,11 +8,19 @@ COPY tsconfig.json .
 COPY .eslintrc .
 COPY .prettierrc .
 
-COPY client ./client
-COPY server ./server
-COPY shared ./shared
+RUN mkdir client
+RUN mkdir server
+RUN mkdir shared
+
+COPY client/package.json ./client/package.json
+COPY server/package.json ./server/package.json
+COPY shared/package.json ./shared/package.json
 
 RUN yarn --frozen-lockfile
+
+COPY ./client/. client/
+COPY ./server/. server/
+COPY ./shared/. shared/
 
 WORKDIR /usr/src/app/server/
 RUN yarn build
