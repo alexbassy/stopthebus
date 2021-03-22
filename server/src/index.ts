@@ -85,9 +85,9 @@ if (process.env.NODE_ENV !== 'production') {
   app.get('/__debug/clear', routeClearRooms)
 }
 
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve('../client/build/index.html'))
-})
+// app.get('*', (req, res) => {
+//   res.sendFile(path.resolve('../client/build/index.html'))
+// })
 
 IO.on('connection', async (socket) => {
   const uuid = getPlayerUUID(socket)
