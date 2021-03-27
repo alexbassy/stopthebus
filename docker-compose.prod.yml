@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: arm64v8/nginx:1.18.0-alpine
+    restart: always
+    volumes:
+      - ./nginx/:/etc/nginx/
+      - ./nginx/cache/:/etc/nginx/cache
+      # - /etc/letsencrypt/:/etc/letsencrypt/
+      - asset-volume:/usr/src/app/client/build/:ro
+    ports:
+      - 80:80
+      - 443:443
+    links:
+      - app
+    depends_on:
+      - app
+    logging:
+      driver: 'json-file'
+      options:
+        max-file: 5
+        max-size: 10m
+
+  redis:
+    image: arm64v8/redis:6.2.1-alpine
+    restart: always
+    ports:
+      - 6379:6379
+    expose:
+      - 6379
+    volumes:
+      - /data/redis:/data
+
+  app:
+    build:
+      context: '.'
+      dockerfile: Dockerfile.prod
+    restart: always
+    ports:
+      - 8080:8080
+    links:
+      - redis
+    depends_on:
+      - redis
+    environment:
+      # - REACT_APP_BACKEND_URL is not set as it will gracefully
+      #   default to the current hostname.
+      - REDIS_URL=redis://redis:6379
+      - PORT=8080
+    volumes:
+      - asset-volume:/usr/src/app/client/build/
+    logging:
+      driver: 'json-file'
+      options:
+        max-file: 5
+        max-size: 10m
+
+volumes:
+  asset-volume:
