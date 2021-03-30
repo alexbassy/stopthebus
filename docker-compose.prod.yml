@@ -16,11 +16,6 @@ services:
       - app
     depends_on:
       - app
-    logging:
-      driver: 'json-file'
-      options:
-        max-file: 5
-        max-size: 10m
 
   redis:
     image: arm64v8/redis:6.2.1-alpine
@@ -50,11 +45,6 @@ services:
       - PORT=8080
     volumes:
       - asset-volume:/usr/src/app/client/build/
-    logging:
-      driver: 'json-file'
-      options:
-        max-file: 5
-        max-size: 10m
 
 volumes:
   asset-volume:
