@@ -28,9 +28,7 @@ services:
       - /data/redis:/data
 
   app:
-    build:
-      context: '.'
-      dockerfile: Dockerfile.prod
+    image: stopthebus/app:latest
     restart: always
     ports:
       - 8080:8080
