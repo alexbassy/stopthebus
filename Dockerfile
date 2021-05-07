@@ -22,12 +22,6 @@ COPY ./client/. client/
 COPY ./server/. server/
 COPY ./shared/. shared/
 
-WORKDIR /usr/src/app/server/
-RUN yarn build
-
-WORKDIR /usr/src/app/client/
-RUN yarn build
-
 ARG PORT
 ARG REDIS_URL
 
