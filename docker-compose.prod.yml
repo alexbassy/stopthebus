@@ -20,7 +20,7 @@ services:
       - app
 
   certbot:
-    image: certbot/certbot
+    image: certbot/certbot:arm32v6-latest
     restart: unless-stopped
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
