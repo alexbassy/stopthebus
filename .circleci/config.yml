@@ -10,6 +10,14 @@ jobs:
       - run: uname -a
       - run: echo "Hello, Arm!"
       - run: ls -ahl
+      - run: |
+          echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
+
+      # build the application image
+      - run: docker build -t stopthebus/app:$CIRCLE_BRANCH .
+
+      # deploy the image
+      - run: docker push stopthebus/app:$CIRCLE_BRANCH
 
 workflows:
   build:
