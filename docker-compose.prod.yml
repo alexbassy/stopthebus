@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: arm64v8/nginx:1.18.0-alpine
+    restart: unless-stopped
+    volumes:
+      - ./nginx/:/etc/nginx/
+      - ./nginx/cache/:/etc/nginx/cache
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+      - asset-volume:/usr/src/app/client/build/:ro
+    ports:
+      - 80:80
+      - 443:443
+    command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
+    links:
+      - app
+    depends_on:
+      - app
+
+  certbot:
+    image: certbot/certbot:arm32v6-latest
+    restart: unless-stopped
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+  redis:
+    image: arm64v8/redis:6.2.1-alpine
+    restart: always
+    ports:
+      - 6379:6379
+    expose:
+      - 6379
+    volumes:
+      - /data/redis:/data
+
+  app:
+    image: stopthebus/app:main
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    links:
+      - redis
+    depends_on:
+      - redis
+    environment:
+      # - REACT_APP_BACKEND_URL is not set as it will gracefully
+      #   default to the current hostname.
+      - REDIS_URL=redis://redis:6379
+      - PORT=8080
+    volumes:
+      - asset-volume:/usr/src/app/client/build/
+
+volumes:
+  certbot-etc:
+  certbot-var:
+  asset-volume:

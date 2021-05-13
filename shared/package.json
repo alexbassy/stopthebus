@@ -1,0 +1,12 @@
+{
+  "name": "shared",
+  "version": "0.1.0",
+  "private": true,
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {},
+  "dependencies": {
+    "human-readable-ids": "^1.0.4",
+    "nanoid": "^3.1.10"
+  }
+}
