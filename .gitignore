@@ -30,3 +30,6 @@ yarn-error.log*
 
 nginx/cache
 nginx/error_log.log
+
+# ssl certs
+/data
