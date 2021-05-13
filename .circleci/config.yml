@@ -37,11 +37,10 @@ jobs:
             sleep 5
             # 7- SSH to the server to deploy
             echo "now logging into server"
-            ssh -o StrictHostKeyChecking=no ec2-user@3.65.249.201 \
-                # other commands
-            # TODO Perform steps to deploy
-            echo "i'm in"
+            ssh -o StrictHostKeyChecking=no ec2-user@3.65.249.201 
+            echo "i'm in" 
             exit
+            # TODO Perform steps to deploy
             # .
             # .
             # 8- Remove the ingress rule
