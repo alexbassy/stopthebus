@@ -1,4 +1,3 @@
-import path from 'path'
 import { promisify } from 'util'
 import { RequestHandler } from 'express'
 import redis from 'redis'
