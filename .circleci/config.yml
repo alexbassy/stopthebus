@@ -37,12 +37,7 @@ jobs:
             sleep 5
             # 7- SSH to the server to deploy
             echo "now logging into server"
-            ssh -o StrictHostKeyChecking=no ec2-user@3.65.249.201 
-            echo "i'm in" 
-            exit
-            # TODO Perform steps to deploy
-            # .
-            # .
+            ssh -o StrictHostKeyChecking=no ec2-user@3.65.249.201 'cd stopthebus; ls -ahl; exit;'
             # 8- Remove the ingress rule
             echo "Removing security rule"
             #~/bin/aws ec2 revoke-security-group-ingress --region $AWS_REGION --group-id $SG_ID \
