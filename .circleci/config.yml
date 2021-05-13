@@ -1,19 +1,23 @@
 version: 2.1
 
 jobs:
-  build-medium:
+  docker-build-and-deploy:
     machine:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
     steps:
       - checkout
-      - run: echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
+      - run:
+          name: Docker Login
+          command: echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
 
-      # build the application image
-      - run: docker build -f Dockerfile.prod -t stopthebus/app:$CIRCLE_BRANCH .
+      - run:
+          name: Build
+          command: docker build -f Dockerfile.prod -t stopthebus/app:$CIRCLE_BRANCH .
 
-      # deploy the image
-      - run: docker push stopthebus/app:$CIRCLE_BRANCH
+      - run:
+          name: Push
+          command: docker push stopthebus/app:$CIRCLE_BRANCH
 
       - run:
           name: Deploy
@@ -22,28 +26,35 @@ jobs:
             curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
             unzip awscli-bundle.zip
             ./awscli-bundle/install -b ~/bin/aws
+
             # 2- Get the public IP of the current CircleCI runner
             PUBLIC_IP=$(curl ipinfo.io/ip)
+
             # 3- Get AWS Region
-            # TODO Don't forget to replcae by your own Region
             AWS_REGION=eu-central-1
+
             # 4- Get SG ID
             SG_ID=sg-0566412ebc88127c3
+
             # 5- Add an ingress rule to the security group
             echo "adding $PUBLIC_IP to $SG_ID"
             ~/bin/aws ec2 authorize-security-group-ingress --region $AWS_REGION --group-id $SG_ID \
               --protocol tcp --port 22 --cidr $PUBLIC_IP/24
+
             # 6- Give the ingress rule some time to propogate
             sleep 5
+
             # 7- SSH to the server to deploy
-            echo "now logging into server"
-            ssh -o StrictHostKeyChecking=no ec2-user@3.65.249.201 'cd stopthebus; git pull --rebase; docker-compose down; docker-compose -f docker-compose.prod.yml pull; docker-compose -f docker-compose.prod.yml up -d;'
+            ssh -o StrictHostKeyChecking=no ec2-user@3.65.249.201 'cd stopthebus; git checkout main; git pull --rebase; docker-compose down; docker-compose -f docker-compose.prod.yml pull; docker-compose -f docker-compose.prod.yml up -d;'
+
             # 8- Remove the ingress rule
-            echo "Removing security rule"
             ~/bin/aws ec2 revoke-security-group-ingress --region $AWS_REGION --group-id $SG_ID \
               --protocol tcp --port 22 --cidr $PUBLIC_IP/24
 
 workflows:
   build:
     jobs:
-      - build-medium
+      - docker-build-and-deploy:
+          filters:
+            branches:
+              only: main
