@@ -5,8 +5,8 @@ services:
     image: arm64v8/nginx:1.18.0-alpine
     restart: unless-stopped
     volumes:
-      - ./nginx/:/etc/nginx/
-      - ./nginx/cache/:/etc/nginx/cache
+      - ./nginx/prod/:/etc/nginx/
+      - ./nginx/prod/cache/:/etc/nginx/cache
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
       - asset-volume:/usr/src/app/client/build/:ro
