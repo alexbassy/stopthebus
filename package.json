@@ -14,9 +14,6 @@
     "start": "docker-compose up --build",
     "stop": "docker-compose down"
   },
-  "_moduleAliases": {
-    "shared": "./shared/build/"
-  },
   "devDependencies": {
     "@types/compression": "^1.7.0",
     "@types/cron": "^1.7.2",
