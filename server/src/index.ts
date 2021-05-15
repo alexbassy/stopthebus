@@ -81,6 +81,10 @@ app.get('/_debug/players', (req, res) => {
   })
 })
 
+app.get('/__debug/sha', (req, res) => {
+  res.send(process.env.SHORT_SHA || 'local')
+})
+
 if (process.env.NODE_ENV !== 'production') {
   app.get('/__debug/clear', routeClearRooms)
 }

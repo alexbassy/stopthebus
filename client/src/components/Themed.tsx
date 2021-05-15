@@ -87,10 +87,14 @@ export default function Themed({ children }: ThemedProps) {
         </GameWrapper>
         <Footer yCentre xCentre>
           <Spacing y={1}>
+            {process.env.SHORT_SHA || 'local'}
+            <Spacing l={0.5} r={0.5} inline>
+              &bull;
+            </Spacing>
             <FooterLink href='https://bass.dev/'>
               made with{' '}
               <span role='img' aria-label='pizazz'>
-                ✨
+                💛
               </span>
               in berlin
             </FooterLink>
