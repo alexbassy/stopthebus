@@ -24,11 +24,9 @@ COPY ./shared/. shared/
 
 ENV NODE_ENV=production
 
-WORKDIR /usr/src/app/server/
-RUN yarn build
+RUN yarn workspace server build
 
-WORKDIR /usr/src/app/client/
-RUN yarn build
+RUN yarn workspace client build
 
 ARG PORT
 ARG REDIS_URL
