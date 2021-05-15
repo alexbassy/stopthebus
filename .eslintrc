@@ -2,6 +2,7 @@
   "extends": ["react-app", "prettier", "plugin:jsx-a11y/recommended"],
   "plugins": ["prettier", "import"],
   "rules": {
+    "react/react-in-jsx-scope": "off",
     "prettier/prettier": "error",
     "import/order": [
       "error",
