@@ -22,6 +22,8 @@ COPY ./client/. client/
 COPY ./server/. server/
 COPY ./shared/. shared/
 
+ARG SHORT_SHA
+ARG REACT_APP_SHORT_SHA
 ARG PORT
 ARG REDIS_URL
 

@@ -24,12 +24,15 @@ COPY ./shared/. shared/
 
 ENV NODE_ENV=production
 
+ARG SHORT_SHA
+ARG REACT_APP_SHORT_SHA
+ARG PORT
+ARG REDIS_URL
+
 RUN yarn workspace server build
 
 RUN yarn workspace client build
 
-ARG PORT
-ARG REDIS_URL
 
 EXPOSE 3000
 

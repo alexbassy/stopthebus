@@ -38,6 +38,8 @@ services:
       #   default to the current hostname.
       - REDIS_URL=redis://redis:6379
       - PORT=8080
+      - SHORT_SHA
+      - REACT_APP_SHORT_SHA
     volumes:
       - asset-volume:/usr/src/app/client/build/
 
