@@ -15,7 +15,7 @@ jobs:
 
       - run:
           name: Build
-          command: docker build -f Dockerfile.prod -t stopthebus/app:$CIRCLE_BRANCH .
+          command: docker build -f Dockerfile.prod --build-arg SHORT_SHA -t stopthebus/app:$CIRCLE_BRANCH .
 
       - run:
           name: Push
