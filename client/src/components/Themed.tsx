@@ -87,7 +87,7 @@ export default function Themed({ children }: ThemedProps) {
         </GameWrapper>
         <Footer yCentre xCentre>
           <Spacing y={1}>
-            @{process.env.SHORT_SHA || 'local'}
+            @{process.env.REACT_APP_SHORT_SHA || 'local'}
             <Spacing l={0.5} r={0.5} inline>
               &bull;
             </Spacing>

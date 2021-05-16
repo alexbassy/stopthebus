@@ -23,9 +23,16 @@ COPY ./server/. server/
 COPY ./shared/. shared/
 
 ARG SHORT_SHA
-ARG REACT_APP_SHORT_SHA
 ARG PORT
 ARG REDIS_URL
+
+ENV SHORT_SHA=$SHORT_SHA
+ENV REACT_APP_SHORT_SHA=$SHORT_SHA
+ENV NODE_ENV=production
+
+RUN yarn workspace server build
+
+RUN yarn workspace client build
 
 EXPOSE 3000
 
