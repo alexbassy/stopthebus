@@ -5,8 +5,6 @@ jobs:
     machine:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
-    environment:
-      SHORT_SHA: $(echo $CIRCLE_SHA1 | cut -c -7)
     steps:
       - checkout
       - run:
@@ -15,7 +13,11 @@ jobs:
 
       - run:
           name: Build
-          command: docker build -f Dockerfile.prod --build-arg SHORT_SHA -t stopthebus/app:$CIRCLE_BRANCH .
+          command: |
+            echo 'export SHORT_SHA=$(echo $CIRCLE_SHA1 | cut -c -7)' >> $BASH_ENV
+            source $BASH_ENV
+            echo "SHORT_SHA is $SHORT_SHA"
+            docker build -f Dockerfile.prod --build-arg SHORT_SHA -t stopthebus/app:$CIRCLE_BRANCH .
 
       - run:
           name: Push
