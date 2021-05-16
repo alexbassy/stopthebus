@@ -7,7 +7,6 @@ jobs:
     resource_class: arm.medium
     environment:
       SHORT_SHA: $(echo $CIRCLE_SHA1 | cut -c -7)
-      REACT_APP_SHORT_SHA: $(echo $CIRCLE_SHA1 | cut -c -7)
     steps:
       - checkout
       - run:
