@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
-import { Helmet } from 'react-helmet'
-import { Player as PlayerType } from 'shared/typings/game'
+import Head from 'next/head'
+import { Player as PlayerType } from '@/typings/game'
 import { Item, List, ExternalLink, Spacing } from './visual'
 import Player from './Player'
 import EmitterContext from '../contexts/EmitterContext'
@@ -24,9 +24,9 @@ export default function ReviewRound() {
 
   return (
     <div>
-      <Helmet>
+      <Head>
         <title>Game Finished - Stop The Bus</title>
-      </Helmet>
+      </Head>
       <List>
         {sortedScores.map(([playerID, score], index) => {
           const playerData = players.find(

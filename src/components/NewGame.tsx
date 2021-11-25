@@ -6,15 +6,15 @@ import React, {
   useContext,
   useState,
 } from 'react'
-import { Helmet } from 'react-helmet'
-import { ENGLISH_LETTERS } from 'shared/constants/letters'
+import Head from 'next/head'
+import { ENGLISH_LETTERS } from '@/constants/letters'
 import {
   getUserSessionID,
   updatePersistedUserName,
-} from 'shared/helpers/getUserSession'
-import { range } from 'shared/helpers/util'
-import { GameConfig, GameMode, GameStage } from 'shared/typings/game'
-import { ClientEvent } from 'shared/typings/socket-events'
+} from '@/helpers/getUserSession'
+import { range } from '@/helpers/util'
+import { GameConfig, GameMode, GameStage } from '@/typings/game'
+import { ClientEvent } from '@/typings/socket-events'
 import { Flex, Grid } from './Grid'
 import {
   Button,
@@ -158,9 +158,9 @@ export default function NewGame(props: NewGameProps) {
 
   return (
     <div>
-      <Helmet>
+      <Head>
         <title>New Game - Stop The Bus</title>
-      </Helmet>
+      </Head>
       <Spacing y={1}>
         Welcome, <Player {...currentPlayer} inline />!
       </Spacing>

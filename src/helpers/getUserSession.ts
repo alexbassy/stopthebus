@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { Player } from 'shared/typings/game'
+import { Player } from '@/typings/game'
 import * as random from '../helpers/random'
 
 const ID_LENGTH = 8

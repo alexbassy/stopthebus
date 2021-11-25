@@ -1,7 +1,7 @@
 import React from 'react'
-import { Player as PlayerType } from 'shared/typings/game'
-import { getUserSessionID } from 'shared/helpers/getUserSession'
-import styled from './styled'
+import { Player as PlayerType } from '@/typings/game'
+import { getUserSessionID } from '@/helpers/getUserSession'
+import styled from '@emotion/styled'
 import { Spacing, Lighter } from './visual'
 
 interface PlayerProps extends PlayerType {

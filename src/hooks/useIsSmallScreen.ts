@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState } from 'react'
-import { SMALL_SCREEN_BREAKPOINT } from 'shared/constants/styles'
+import { SMALL_SCREEN_BREAKPOINT } from '@/constants/styles'
 
 export default function useIsSmallScreen(): boolean {
   const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false)

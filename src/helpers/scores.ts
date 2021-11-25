@@ -4,7 +4,7 @@ import {
   Scores,
   GameRound,
   FinalScores,
-} from 'shared/typings/game'
+} from '@/typings/game'
 import log from '../helpers/log'
 
 export const getWords = (string: string) => string.trim().split(' ')

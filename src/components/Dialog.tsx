@@ -1,7 +1,7 @@
 import React from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import styled from './styled'
+import styled from '@emotion/styled'
 
 const Underlay = styled(motion.div)`
   position: fixed;

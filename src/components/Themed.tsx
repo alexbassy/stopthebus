@@ -1,7 +1,7 @@
 import React, { ChangeEvent, ReactChild, useState } from 'react'
-import { Helmet } from 'react-helmet'
+import Head from 'next/head'
 import { ThemeProvider } from 'emotion-theming'
-import { Global } from '@emotion/core'
+import { Global } from '@emotion/react'
 import {
   globalStyles,
   Background,
@@ -10,7 +10,7 @@ import {
   ExternalLink,
   HiddenLabel,
 } from './visual'
-import styled from './styled'
+import styled from '@emotion/styled'
 import { Flex } from './Grid'
 import themes, { Themes } from '../themes'
 
@@ -65,9 +65,9 @@ export default function Themed({ children }: ThemedProps) {
 
   return (
     <ThemeProvider theme={themes[activeTheme]}>
-      <Helmet>
+      <Head>
         <link href={themes[activeTheme].fonts.title.href} rel='stylesheet' />
-      </Helmet>
+      </Head>
       <Global styles={globalStyles} />
       <Background>
         <GameWrapper>

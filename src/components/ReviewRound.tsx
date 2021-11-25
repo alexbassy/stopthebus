@@ -1,14 +1,9 @@
 import React, { useContext, ChangeEvent, SyntheticEvent } from 'react'
-import { Helmet } from 'react-helmet'
-import { ClientEvent, PlayerVote } from 'shared/typings/socket-events'
-import {
-  Round,
-  Scores,
-  Player as PlayerType,
-  GameStage,
-} from 'shared/typings/game'
+import Head from 'next/head'
+import { ClientEvent, PlayerVote } from '@/typings/socket-events'
+import { Round, Scores, Player as PlayerType, GameStage } from '@/typings/game'
 import { Button, Checkbox } from './visual'
-import styled from './styled'
+import styled from '@emotion/styled'
 import Player from './Player'
 import Dialog from './Dialog'
 import Countdown from './Countdown'
@@ -163,9 +158,9 @@ export default function ReviewRound() {
 
   return (
     <div>
-      <Helmet>
+      <Head>
         <title>Review - Stop The Bus</title>
-      </Helmet>
+      </Head>
       <h2>
         End of round {state.rounds.length + 1}/{config.rounds}
       </h2>

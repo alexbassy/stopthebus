@@ -7,13 +7,13 @@ import React, {
   useRef,
   useLayoutEffect,
 } from 'react'
-import { Helmet } from 'react-helmet'
-import { RoundResults, GameStage } from 'shared/typings/game'
-import { ClientEvent } from 'shared/typings/socket-events'
+import Head from 'next/head'
+import { RoundResults, GameStage } from '@/typings/game'
+import { ClientEvent } from '@/typings/socket-events'
 import { Button, Input, Item, List, Spacing } from './visual'
 import { Grid } from './Grid'
 import Lanes from './Lanes'
-import styled from './styled'
+import styled from '@emotion/styled'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
 import useScrollToTop from '../hooks/useScrollToTop'
@@ -139,11 +139,11 @@ export default function ActiveRound() {
 
   return (
     <div>
-      <Helmet>
+      <Head>
         <title>
           Letter {game.state.currentRound?.letter?.toUpperCase()} - Stop The Bus
         </title>
-      </Helmet>
+      </Head>
       <p>
         The letter is{' '}
         <strong style={{ fontSize: '2rem' }}>

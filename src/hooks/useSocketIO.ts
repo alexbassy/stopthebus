@@ -1,8 +1,8 @@
 import { useRef, useEffect, useCallback } from 'react'
 import io from 'socket.io-client'
-import { ClientEvent, ServerEvent, Payload } from 'shared/typings/socket-events'
-import { getUserSession } from 'shared/helpers/getUserSession'
-import log from 'shared/helpers/log'
+import { ClientEvent, ServerEvent, Payload } from '@/typings/socket-events'
+import { getUserSession } from '@/helpers/getUserSession'
+import log from '@/helpers/log'
 
 export type SocketCallback = {
   (socket: SocketIOClient.Socket, ...args: any): void

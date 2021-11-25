@@ -1,8 +1,5 @@
-import {
-  ENGLISH_LETTERS,
-  ENGLISH_DISABLED_LETTERS,
-} from 'shared/constants/letters'
-import { GameConfig, GameState } from 'shared/typings/game'
+import { ENGLISH_LETTERS, ENGLISH_DISABLED_LETTERS } from '@/constants/letters'
+import { GameConfig, GameState } from '@/typings/game'
 import * as random from './random'
 
 export function getLetters() {

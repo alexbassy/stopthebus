@@ -1,4 +1,4 @@
-import { GameRound } from 'shared/typings/game'
+import { GameRound } from '@/typings/game'
 
 export const rounds: GameRound[] = [
   {

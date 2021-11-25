@@ -1,5 +1,5 @@
 import React, { ChangeEvent, SyntheticEvent, useContext, useState } from 'react'
-import { categories } from 'shared/constants/game'
+import { categories } from '@/constants/game'
 import { Flex } from './Grid'
 import { Button, Checkbox, Input, Item, List, HiddenLabel } from './visual'
 import EmitterContext from '../contexts/EmitterContext'

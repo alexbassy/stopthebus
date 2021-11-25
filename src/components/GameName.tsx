@@ -1,8 +1,8 @@
 import React, { useContext, SyntheticEvent } from 'react'
-import { css } from '@emotion/core'
+import { css } from '@emotion/react'
 import { useParams } from 'react-router-dom'
-import log from 'shared/helpers/log'
-import styled from './styled'
+import log from '@/helpers/log'
+import styled from '@emotion/styled'
 import { Spacing } from './visual'
 import GameContext from '../contexts/GameContext'
 
