@@ -1,4 +1,4 @@
-import React, { ChangeEvent, ReactChild, useEffect, useState } from 'react'
+import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react'
 import Head from 'next/head'
 import { ThemeProvider } from '@emotion/react'
 import { Global } from '@emotion/react'
@@ -15,7 +15,7 @@ import { Flex } from './Grid'
 import themes, { Themes } from '../themes'
 
 interface ThemedProps {
-  children: ReactChild
+  children: ReactNode
 }
 
 const Footer = styled<'footer'>('footer')`
@@ -53,7 +53,7 @@ function persistTheme(theme: Themes) {
   localStorage.setItem('theme', theme)
 }
 
-export default function Themed({ children }: ThemedProps) {
+const Themed: React.FC<ThemedProps> = ({ children }) => {
   const [activeTheme, setActiveTheme] = useState<Themes>()
 
   const theme = activeTheme ? themes[activeTheme] : themes[Themes.PASTEL]
@@ -101,7 +101,8 @@ export default function Themed({ children }: ThemedProps) {
             <FooterLink href='https://bass.dev/'>
               made with{' '}
               <span role='img' aria-label='pizazz'>
-                💛
+                {' '}
+                💛{' '}
               </span>
               in berlin
             </FooterLink>
@@ -115,3 +116,5 @@ export default function Themed({ children }: ThemedProps) {
     </ThemeProvider>
   )
 }
+
+export default Themed

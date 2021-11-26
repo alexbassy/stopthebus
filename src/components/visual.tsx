@@ -242,7 +242,7 @@ interface SpacingProps {
   inline?: boolean
 }
 
-export const Spacing = styled<'div', SpacingProps>('div')`
+export const Spacing = styled.div<SpacingProps>`
   ${(p) => (p.l || p.x) && `margin-left: ${p.l || p.x}rem;`};
   ${(p) => (p.t || p.y) && `margin-top: ${p.t || p.y}rem;`};
   ${(p) => (p.r || p.x) && `margin-right: ${p.r || p.x}rem;`};
