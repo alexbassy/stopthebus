@@ -1,6 +1,6 @@
 import React, { useContext, SyntheticEvent } from 'react'
+import { useRouter } from 'next/router'
 import { css } from '@emotion/react'
-import { useParams } from 'react-router-dom'
 import log from '@/helpers/log'
 import styled from '@emotion/styled'
 import { Spacing } from './visual'
@@ -67,7 +67,9 @@ interface GameNameProps {
 }
 
 export default function GameName(props: GameNameProps) {
-  const { gameID: paramsGameID }: GameParams = useParams()
+  const {
+    query: { game: paramsGameID },
+  } = useRouter()
   const game = useContext(GameContext)
   const gameID = game && game.config ? game.config.id : paramsGameID
   const hasShareAPI = Boolean(window.navigator.share)

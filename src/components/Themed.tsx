@@ -1,6 +1,6 @@
-import React, { ChangeEvent, ReactChild, useState } from 'react'
+import React, { ChangeEvent, ReactChild, useEffect, useState } from 'react'
 import Head from 'next/head'
-import { ThemeProvider } from 'emotion-theming'
+import { ThemeProvider } from '@emotion/react'
 import { Global } from '@emotion/react'
 import {
   globalStyles,
@@ -54,7 +54,10 @@ function persistTheme(theme: Themes) {
 }
 
 export default function Themed({ children }: ThemedProps) {
-  const [activeTheme, setActiveTheme] = useState<Themes>(getPersistedTheme())
+  const [activeTheme, setActiveTheme] = useState<Themes>()
+
+  const theme = activeTheme ? themes[activeTheme] : themes[Themes.PASTEL]
+
   const changeTheme = (ev: ChangeEvent<HTMLSelectElement>) => {
     const newTheme: Themes = ev.target.value as Themes
     if (newTheme !== activeTheme) {
@@ -63,10 +66,14 @@ export default function Themed({ children }: ThemedProps) {
     }
   }
 
+  useEffect(() => {
+    setActiveTheme(getPersistedTheme())
+  }, [])
+
   return (
-    <ThemeProvider theme={themes[activeTheme]}>
+    <ThemeProvider theme={theme}>
       <Head>
-        <link href={themes[activeTheme].fonts.title.href} rel='stylesheet' />
+        <link href={theme.fonts.title.href} rel='stylesheet' />
       </Head>
       <Global styles={globalStyles} />
       <Background>

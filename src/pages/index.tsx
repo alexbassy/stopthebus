@@ -1,13 +1,14 @@
 import React, { useState, SyntheticEvent, useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useRouter } from 'next/router'
 import { persistGameConfig } from '@/helpers/persistGame'
 import * as random from '@/helpers/random'
 import { Input, Button, H2, Spacing } from '@/components/visual'
 import PageTitle from '@/components/PageTitle'
 import FormControl from '@/components/FormControl'
+import Themed from '@/components/Themed'
 
 export default function Home() {
-  const history = useHistory()
+  const router = useRouter()
   const [gameID, setGameID] = useState<string>('')
   const [newGameID, setNewGameID] = useState<string>('')
 
@@ -19,18 +20,18 @@ export default function Home() {
     ev.preventDefault()
     const sanitised = gameID.trim().toLowerCase()
     if (sanitised.length) {
-      history.push(`/game/${gameID}`)
+      router.push(`/game/${gameID}`)
     }
   }
 
   const handleCreateGame = (ev: SyntheticEvent<HTMLFormElement>) => {
     ev.preventDefault()
     persistGameConfig(newGameID)
-    history.push(`/game/${newGameID}`)
+    router.push(`/game/${newGameID}`)
   }
 
   return (
-    <div>
+    <Themed>
       <PageTitle />
       <H2>Join a game</H2>
       <form onSubmit={handleJoinGame}>
@@ -67,6 +68,6 @@ export default function Home() {
         <Spacing b={1} />
         <Button>Create game</Button>
       </form>
-    </div>
+    </Themed>
   )
 }

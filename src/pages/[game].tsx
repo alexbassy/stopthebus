@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
+import { useRouter } from 'next/router'
 import { readGameConfig, clearPersistedGameConfig } from '@/helpers/persistGame'
 import { getUserSessionID, getUserSession } from '@/helpers/getUserSession'
 import log from '@/helpers/log'
@@ -37,7 +37,9 @@ const defaultGameState: GameState = {
 }
 
 export default function Game() {
-  const { gameID }: GameParams = useParams()
+  const {
+    query: { game: gameID },
+  } = useRouter()
   const [isConnected, setIsConnected] = useState<boolean>(false)
 
   // Each of these states represents a top level property on the room
@@ -50,9 +52,9 @@ export default function Game() {
   const hasGameConfig = gameConfig !== null
 
   const getPayload = useCallback(
-    (payload?: any): Payload => {
+    (payload?: any): Payload | null => {
       return {
-        gameID,
+        gameID: gameID as string,
         payload,
       }
     },
@@ -242,6 +244,7 @@ export default function Game() {
       break
     case GameStage.PRE:
     default:
+      // eslint-disable-next-line react/display-name
       Component = () => <NewGame onChange={setGameConfig} />
   }
 

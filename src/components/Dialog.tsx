@@ -20,9 +20,9 @@ const Modal = styled(motion.div)`
   max-width: 300px;
   border-radius: 8px;
   padding: 1rem;
-  background: ${(props) => props.theme.colours.dark};
+  background: ${(props) => props.theme?.colours?.dark};
   text-align: center;
-  color: ${(props) => props.theme.colours.text};
+  color: ${(props) => props.theme?.colours?.text};
 `
 
 interface DialogProps {

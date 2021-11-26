@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Link as RouterLink } from 'react-router-dom'
+import RouterLink from 'next/link'
 import styled from '@emotion/styled'
 
 export const globalStyles = css`
@@ -28,7 +28,7 @@ export const globalStyles = css`
 export const Background = styled('div')`
   width: 100%;
   min-height: 100%;
-  background-color: ${(props) => props.theme.colours.pageBackground};
+  background-color: ${(props) => props.theme?.colours?.pageBackground};
   padding: 1px 0;
 
   @media screen and (max-width: 768px) {
@@ -41,12 +41,12 @@ export const GameWrapper = styled('div')`
   flex-direction: column;
   max-width: 760px;
   margin: 2rem auto 0;
-  background: ${(props) => props.theme.colours.gameBackground};
-  font-family: ${(props) => props.theme.fonts.body.name};
+  background: ${(props) => props.theme?.colours?.gameBackground};
+  font-family: ${(props) => props.theme?.fonts.body.name};
   padding: 0.5rem;
   color: #fff;
   font-size: 120%;
-  border: 10px solid ${(props) => props.theme.colours.gameBorder};
+  border: 10px solid ${(props) => props.theme?.colours?.gameBorder};
 
   @media screen and (max-width: 768px) {
     min-height: 100%;
@@ -77,7 +77,7 @@ interface InputProps {
   grow?: boolean
 }
 
-export const Input = styled<'input', InputProps>('input')`
+export const Input = styled.input<InputProps>`
   font-size: 1.1rem;
   padding: 0.75rem;
   -webkit-appearance: none;
@@ -88,8 +88,8 @@ export const Input = styled<'input', InputProps>('input')`
   color: ${(props) =>
     props.readOnly ? `rgb(220, 220, 220)` : `rgb(255 255 255)`};
   outline: none;
-  box-shadow: 0 0 0 0 ${(props) => props.theme.colours.pink};
-  background-color: ${(props) => props.theme.colours.inputBackground};
+  box-shadow: 0 0 0 0 ${(props) => props.theme?.colours?.pink};
+  background-color: ${(props) => props.theme?.colours?.inputBackground};
   transition: box-shadow 0.25s ease;
   width: ${(props) => (props.grow ? '100%' : 'auto')};
 
@@ -98,7 +98,7 @@ export const Input = styled<'input', InputProps>('input')`
   }
 
   :focus {
-    box-shadow: 0 0 0 3px ${(props) => props.theme.colours.pink};
+    box-shadow: 0 0 0 3px ${(props) => props.theme?.colours?.pink};
   }
 `
 
@@ -109,7 +109,7 @@ export const Checkbox = styled<'input'>('input')`
   border: none;
   box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
   border-radius: 2px;
-  background-color: ${(props) => props.theme.colours.inputBackground};
+  background-color: ${(props) => props.theme?.colours?.inputBackground};
   width: 1.5rem;
   height: 1.5rem;
   vertical-align: middle;
@@ -126,7 +126,7 @@ export const Checkbox = styled<'input'>('input')`
 
   :focus {
     outline: none;
-    box-shadow: 0 0 0 2px ${(props) => props.theme.colours.pink};
+    box-shadow: 0 0 0 2px ${(props) => props.theme?.colours?.pink};
   }
 
   :active {
@@ -144,7 +144,7 @@ export const Select = styled<'select'>('select')`
   border: none;
   box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
   border-radius: 2px;
-  background-color: ${(props) => props.theme.colours.inputBackground};
+  background-color: ${(props) => props.theme?.colours?.inputBackground};
   background-image: url('data:image/svg+xml;utf8,${DownArrow}');
   background-position: center right 0.5rem;
   background-repeat: no-repeat;
@@ -154,7 +154,7 @@ export const Select = styled<'select'>('select')`
 
   :focus {
     outline: none;
-    box-shadow: 0 0 0 2px ${(props) => props.theme.colours.pink};
+    box-shadow: 0 0 0 2px ${(props) => props.theme?.colours?.pink};
   }
 
   :active {
@@ -170,7 +170,7 @@ export const Button = styled<'button', ButtonProps>('button')`
   -webkit-appearance: none;
   font-size: ${(props) => (props.large ? '1.25rem' : '1rem')};
   padding: 0.75rem;
-  background: ${(props) => props.theme.colours.buttonBackground};
+  background: ${(props) => props.theme?.colours?.buttonBackground};
   font-family: inherit;
   font-weight: 500;
   color: #fff;
@@ -182,7 +182,7 @@ export const Button = styled<'button', ButtonProps>('button')`
   }
 
   :active {
-    box-shadow: 0 0 0 2px ${(props) => props.theme.colours.pink};
+    box-shadow: 0 0 0 2px ${(props) => props.theme?.colours?.pink};
   }
 `
 
