@@ -1,4 +1,5 @@
 import React, { useState, SyntheticEvent, useEffect } from 'react'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { persistGameConfig } from '@/helpers/persistGame'
 import * as random from '@/helpers/random'
@@ -24,14 +25,19 @@ export default function Home() {
     }
   }
 
-  const handleCreateGame = (ev: SyntheticEvent<HTMLFormElement>) => {
+  const handleCreateGame = async (ev: SyntheticEvent<HTMLFormElement>) => {
     ev.preventDefault()
     persistGameConfig(newGameID)
-    router.push(`/game/${newGameID}`)
+    const requestBody = JSON.stringify({ id: newGameID })
+    await fetch('/api/create-game', { method: 'post', body: requestBody })
+    // router.push(`/game/${newGameID}`)
   }
 
   return (
     <Themed>
+      <Head>
+        <title>Start or join - Stop the bus</title>
+      </Head>
       <PageTitle />
       <H2>Join a game</H2>
       <form onSubmit={handleJoinGame}>
