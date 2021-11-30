@@ -10,6 +10,7 @@ declare module '@emotion/react' {
       title: ThemeFont
       body: ThemeFont
     }
+    props?: { [prop: string]: any }
     colours: {
       orange?: string
       pink?: string
