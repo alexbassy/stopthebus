@@ -40,8 +40,7 @@ export interface GameConfig {
  */
 
 export interface Player {
-  id?: string
-  uuid: string
+  id: string
   name?: string
   colour?: string
 }

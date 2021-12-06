@@ -1,10 +1,4 @@
-import {
-  Room,
-  GameConfig,
-  Scores,
-  GameRound,
-  FinalScores,
-} from '@/typings/game'
+import { Room, GameConfig, Scores, GameRound, FinalScores } from '@/typings/game'
 import log from '../helpers/log'
 
 export const getWords = (string: string) => string.trim().split(' ')
@@ -56,35 +50,32 @@ export const getInitialScores = (room: Room): Scores | undefined => {
 
   const votes: Scores = {}
 
-  const groupedAnswers = Object.values(answers).reduce<GroupedAnswers>(
-    (accum, answers) => {
-      categories.forEach((category) => {
-        if (!accum[category]) {
-          accum[category] = {}
-        }
+  const groupedAnswers = Object.values(answers).reduce<GroupedAnswers>((accum, answers) => {
+    categories.forEach((category) => {
+      if (!accum[category]) {
+        accum[category] = {}
+      }
 
-        const answer = sanitiseAnswer(answers[category])
+      const answer = sanitiseAnswer(answers[category])
 
-        if (accum[category][answer]) {
-          accum[category][answer] += 1
-        } else {
-          accum[category][answer] = 1
-        }
-      })
-      return accum
-    },
-    {}
-  )
+      if (accum[category][answer]) {
+        accum[category][answer] += 1
+      } else {
+        accum[category][answer] = 1
+      }
+    })
+    return accum
+  }, {})
 
   room.players.forEach(
     (player) =>
       categories.map((category) => {
-        if (!votes[player.uuid]) votes[player.uuid] = {}
-        const answer = sanitiseAnswer(answers?.[player.uuid]?.[category])
-        votes[player.uuid][category] = scoreAnswer(room.config, letter, answer)
+        if (!votes[player.id]) votes[player.id] = {}
+        const answer = sanitiseAnswer(answers?.[player.id]?.[category])
+        votes[player.id][category] = scoreAnswer(room.config, letter, answer)
 
         if (groupedAnswers[category][answer] > 1) {
-          votes[player.uuid][category] = 0
+          votes[player.id][category] = 0
         }
 
         return votes

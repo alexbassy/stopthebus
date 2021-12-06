@@ -1,5 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import getSupabaseClient from '@/client/supabase'
+import { assertMethod, getGameName, getGameOwner } from '@/helpers/api/validation'
+import log from '@/helpers/log'
 import { GameConfig, GameState, Players, Rooms } from '@/typings/supabase'
 import { SupabaseClient } from '@supabase/supabase-js'
 import type { NextApiRequest, NextApiResponse } from 'next'
@@ -36,16 +38,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data | ErrorResponse>
 ) {
-  const gameID = req.body.name || req.query.name
-  const ownerID = req.body.owner || req.query.owner
-
-  if (!gameID) {
-    res.status(400).json({ message: 'Game ID required' })
+  if (!assertMethod('POST', { req, res })) {
+    return
   }
 
-  if (!ownerID) {
-    res.status(400).json({ message: 'Owner ID required' })
-  }
+  const [name, nameError] = getGameName({ req, res })
+  if (nameError) return
+
+  const [owner, ownerError] = getGameOwner({ req, res })
+  if (ownerError) return
 
   const start = Date.now()
 
@@ -55,10 +56,9 @@ export default async function handler(
     createGameConfig(supabase),
     createGameState(supabase),
   ])
-  console.log(gameConfig)
 
   if (gameConfig.error) {
-    console.error(gameConfig.error)
+    log.e(gameConfig.error)
     return res.status(400).json({ message: JSON.stringify(gameConfig.error) })
   }
 
@@ -67,14 +67,12 @@ export default async function handler(
     return res.status(400).json({ message: JSON.stringify(gameState.error) })
   }
 
-  console.log(gameState)
-
   const { data: game, error: gameError } = await supabase.from<Rooms>('rooms').insert([
     {
-      name: gameID,
+      name,
       gameState: gameState.data?.[0].id,
       gameConfig: gameConfig.data?.[0].id,
-      players: [ownerID],
+      players: [owner],
     },
   ])
 

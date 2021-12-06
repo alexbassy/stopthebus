@@ -7,36 +7,55 @@ import { Input, Button, H2, Spacing } from '@/components/visual'
 import PageTitle from '@/components/PageTitle'
 import FormControl from '@/components/FormControl'
 import Themed from '@/components/Themed'
+import { createGameWithID } from '@/client/rest'
+import { Player } from '@/typings/game'
+import { getUserSession } from '@/helpers/getPersistedPlayer'
+import { APP_ROUTES } from '@/client/api-routes'
+import log from '@/helpers/log'
 
 export default function Home() {
   const router = useRouter()
+  const [player, setPlayer] = useState<Player>()
   const [gameID, setGameID] = useState<string>('')
   const [newGameID, setNewGameID] = useState<string>('')
 
   useEffect(() => {
     setNewGameID(random.getGameName())
+    setPlayer(getUserSession())
   }, [])
 
   const handleJoinGame = (ev: SyntheticEvent<HTMLFormElement>) => {
     ev.preventDefault()
     const sanitised = gameID.trim().toLowerCase()
     if (sanitised.length) {
-      router.push(`/game/${gameID}`)
+      router.push(APP_ROUTES.game(gameID))
     }
   }
 
   const handleCreateGame = async (ev: SyntheticEvent<HTMLFormElement>) => {
     ev.preventDefault()
-    persistGameConfig(newGameID)
-    const requestBody = JSON.stringify({ id: newGameID })
-    await fetch('/api/create-game', { method: 'post', body: requestBody })
-    // router.push(`/game/${newGameID}`)
+
+    console.log({ player })
+
+    if (!player?.id) {
+      alert('Failed to create player ID. Please try again.')
+      return
+    }
+
+    try {
+      const response = await createGameWithID(newGameID, player.id)
+      console.log({ response })
+      router.push(APP_ROUTES.game(newGameID))
+    } catch (e) {
+      log.e(e)
+      alert('Sorry, something went wrong')
+    }
   }
 
   return (
     <Themed>
       <Head>
-        <title>Start or join - Stop the bus</title>
+        <title>Start or join - Stop the Bus</title>
       </Head>
       <PageTitle />
       <H2>Join a game</H2>
@@ -64,10 +83,7 @@ export default function Home() {
             aria-label='New game name'
             readOnly
           />
-          <Button
-            type='button'
-            onClick={() => setNewGameID(random.getGameName())}
-          >
+          <Button type='button' onClick={() => setNewGameID(random.getGameName())}>
             Change
           </Button>
         </FormControl>

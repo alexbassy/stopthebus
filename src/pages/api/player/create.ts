@@ -17,7 +17,11 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data | ErrorResponse>
 ) {
-  const name = req.body.name || req.query.name
+  if (req.method !== 'POST') {
+    return res.status(405).end()
+  }
+
+  const name = req.body.name
 
   const supabase = getSupabaseClient()
 

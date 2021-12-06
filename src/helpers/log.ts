@@ -1,12 +1,6 @@
-import * as dotenv from 'dotenv'
+const LOGGING_ENV = process.env.LOGGING_LEVEL || process.env.NEXT_PUBLIC_LOGGING_LEVEL
 
-dotenv.config()
-
-const LOGGING_ENV =
-  process.env.REACT_APP_LOGGING_LEVEL || process.env.LOGGING_LEVEL
-
-const LOGGING_LEVEL =
-  LOGGING_ENV === 'debug' ? 2 : LOGGING_ENV === 'errors' ? 1 : 0
+const LOGGING_LEVEL = LOGGING_ENV === 'debug' ? 2 : LOGGING_ENV === 'errors' ? 1 : 0
 
 const isDebugging = LOGGING_LEVEL === 2
 const isProd = LOGGING_LEVEL === 1

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Player as PlayerType } from '@/typings/game'
-import { getUserSessionID } from '@/helpers/getUserSession'
+import { getUserSessionID } from '@/helpers/getPersistedPlayer'
 import styled from '@emotion/styled'
 import { Spacing, Lighter } from './visual'
 
@@ -22,12 +22,12 @@ interface WrapperProps {
   small?: boolean
 }
 
-const Wrapper = styled<'div', WrapperProps>('div')`
+const Wrapper = styled.div<WrapperProps>`
   display: ${(props) => (props.inline ? 'inline-block' : 'block')};
   font-size: ${(props) => (props.small ? '0.75rem' : 'inherit')};
 `
 
-export const Pin = styled<'span', PinProps>('span')`
+export const Pin = styled.span<PinProps>`
   --size: ${(props) => (props.small ? '0.5rem' : '1rem')};
   display: inline-block;
   width: var(--size);
@@ -42,10 +42,8 @@ export default function Player(props: PlayerProps) {
     <Wrapper inline={props.inline} small={props.small}>
       <Pin colour={props.colour} small={props.small} />
       <Spacing r={props.small ? 0.25 : 0.5} inline />
-      {props.name || props.uuid}{' '}
-      {props.showMe && !props.inline && props.uuid === sessionID && (
-        <Lighter> (me)</Lighter>
-      )}
+      {props.name || props.id}{' '}
+      {props.showMe && !props.inline && props.id === sessionID && <Lighter> (me)</Lighter>}
     </Wrapper>
   )
 }

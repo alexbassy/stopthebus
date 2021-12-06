@@ -51,11 +51,11 @@ function Lanes(props: LanesProps) {
     <Wrapper>
       {game.players.map((player) => {
         const numPlayers = game.players.length
-        const currentQuestion = game?.opponentProgress?.[player.uuid] ?? 0
+        const currentQuestion = game?.opponentProgress?.[player.id] ?? 0
         const playerOffset = props.questionPositions[currentQuestion]
         return (
           <PlayerPinWrapper
-            key={player.uuid}
+            key={player.id}
             count={numPlayers}
             style={{
               transform: `translateY(${playerOffset + currentQuestion}px)`,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import { readGameConfig, clearPersistedGameConfig } from '@/helpers/persistGame'
-import { getUserSessionID, getUserSession } from '@/helpers/getUserSession'
+import { getUserSessionID, getUserSession } from '@/helpers/getPersistedPlayer'
 import log from '@/helpers/log'
 import { ClientEvent, ServerEvent, Payload } from '@/typings/socket-events'
 import {
@@ -21,9 +21,9 @@ import GameEnd from '@/components/GameEnd'
 import PageTitle from '@/components/PageTitle'
 import { ExternalLink } from '@/components/visual'
 import GameName from '@/components/GameName'
-import useSocketIO, { SocketCallbacks } from '../hooks/useSocketIO'
-import GameContext from '../contexts/GameContext'
-import EmitterContext from '../contexts/EmitterContext'
+import useSocketIO, { SocketCallbacks } from '../../hooks/useSocketIO'
+import GameContext from '../../contexts/GameContext'
+import EmitterContext from '../../contexts/EmitterContext'
 
 const sessionID = getUserSessionID()
 
@@ -37,9 +37,8 @@ const defaultGameState: GameState = {
 }
 
 export default function Game() {
-  const {
-    query: { game: gameID },
-  } = useRouter()
+  const { query } = useRouter()
+  const { id: gameID } = query
   const [isConnected, setIsConnected] = useState<boolean>(false)
 
   // Each of these states represents a top level property on the room
@@ -84,10 +83,7 @@ export default function Game() {
         setGameState(room.state)
       },
 
-      [ServerEvent.OPPONENT_CURRENT_CATEGORY]: (
-        _socket,
-        progress: OpponentProgress
-      ) => {
+      [ServerEvent.OPPONENT_CURRENT_CATEGORY]: (_socket, progress: OpponentProgress) => {
         console.log({ progress })
         setOpponentProgress((currentProgress) => ({
           ...currentProgress,
@@ -103,10 +99,7 @@ export default function Game() {
         setPlayers(players)
       },
 
-      [ServerEvent.GAME_CONFIG]: (
-        _socket,
-        newGameConfig: GameConfig | null
-      ) => {
+      [ServerEvent.GAME_CONFIG]: (_socket, newGameConfig: GameConfig | null) => {
         if (newGameConfig === null) {
           setGameConfig(null)
           return
@@ -209,8 +202,7 @@ export default function Game() {
         <GameName />
         <p>Sorry, the game does not exist.</p>
         <p>
-          Please refresh the page or{' '}
-          <ExternalLink href='/'>create a new game</ExternalLink>
+          Please refresh the page or <ExternalLink href='/'>create a new game</ExternalLink>
         </p>
       </>
     )

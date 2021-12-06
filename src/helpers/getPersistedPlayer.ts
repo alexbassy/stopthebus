@@ -1,25 +1,29 @@
 import { nanoid } from 'nanoid'
 import { Player } from '@/typings/game'
-import * as random from '../helpers/random'
+import * as random from './random'
 
 const ID_LENGTH = 8
-const LOCAL_STORAGE_KEY = 'session'
+const LEGACY_KEY = 'session'
+const LOCAL_STORAGE_KEY = 'player'
 
 export function getUserSession(): Player {
+  // Clear old version of player payload
+  localStorage.removeItem(LEGACY_KEY)
+
   const persisted = localStorage.getItem(LOCAL_STORAGE_KEY)
 
   if (persisted) {
-    const parsed = JSON.parse(persisted)
+    const parsed = JSON.parse(persisted) as Player
 
     // Switched to 'nanoid' package. If the local storage has
     // a long UUID, discard it.
-    if (parsed.uuid.length === ID_LENGTH) {
+    if (parsed.id.length === ID_LENGTH) {
       return parsed
     }
   }
 
   const user: Player = {
-    uuid: nanoid(ID_LENGTH),
+    id: nanoid(ID_LENGTH),
     name: random.getPlayerName(),
   }
 
@@ -29,7 +33,7 @@ export function getUserSession(): Player {
 }
 
 export function getUserSessionID(): string {
-  return getUserSession().uuid
+  return getUserSession().id
 }
 
 export function updatePersistedUserName(name: string): void {

@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback } from 'react'
 import io from 'socket.io-client'
 import { ClientEvent, ServerEvent, Payload } from '@/typings/socket-events'
-import { getUserSession } from '@/helpers/getUserSession'
+import { getUserSession } from '@/helpers/getPersistedPlayer'
 import log from '@/helpers/log'
 
 export type SocketCallback = {
@@ -30,10 +30,7 @@ interface SocketHook {
 const logEvents = true
 const session = getUserSession()
 
-export default function useSocket({
-  callbacks,
-  getPayload,
-}: SocketHooksArgs): SocketHook {
+export default function useSocket({ callbacks, getPayload }: SocketHooksArgs): SocketHook {
   const socketRef = useRef<SocketIOClient.Socket>()
   const socket = socketRef.current
 

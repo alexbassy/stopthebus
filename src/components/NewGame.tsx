@@ -8,10 +8,7 @@ import React, {
 } from 'react'
 import Head from 'next/head'
 import { ENGLISH_LETTERS } from '@/constants/letters'
-import {
-  getUserSessionID,
-  updatePersistedUserName,
-} from '@/helpers/getUserSession'
+import { getUserSessionID, updatePersistedUserName } from '@/helpers/getPersistedPlayer'
 import { range } from '@/helpers/util'
 import { GameConfig, GameMode, GameStage } from '@/typings/game'
 import { ClientEvent } from '@/typings/socket-events'
@@ -64,9 +61,7 @@ export default function NewGame(props: NewGameProps) {
     props.onChange((gameConfig) => {
       const newLetters = new Set(gameConfig?.letters)
 
-      newLetters.has(letter)
-        ? newLetters.delete(letter)
-        : newLetters.add(letter)
+      newLetters.has(letter) ? newLetters.delete(letter) : newLetters.add(letter)
 
       const newGameConfig = {
         ...gameConfig,
@@ -152,7 +147,7 @@ export default function NewGame(props: NewGameProps) {
   }
 
   const { config, players, state } = game
-  const currentPlayer = players.find((player) => player.uuid === sessionID)
+  const currentPlayer = players.find((player) => player.id === sessionID)
 
   if (!currentPlayer) return null
 
@@ -213,7 +208,7 @@ export default function NewGame(props: NewGameProps) {
           <List>
             {players &&
               players.map((player) => (
-                <Item key={player.uuid}>
+                <Item key={player.id}>
                   <Player {...player} showMe />
                 </Item>
               ))}
@@ -236,11 +231,7 @@ export default function NewGame(props: NewGameProps) {
         <div aria-hidden style={{ display: 'none' }}>
           <label>
             Play mode{' '}
-            <Select
-              value={config?.mode}
-              onBlur={handleModeChange}
-              onChange={handleModeChange}
-            >
+            <Select value={config?.mode} onBlur={handleModeChange} onChange={handleModeChange}>
               <option value={GameMode.RACE}>Race</option>
               <option value={GameMode.TIMER}>Timer</option>
             </Select>

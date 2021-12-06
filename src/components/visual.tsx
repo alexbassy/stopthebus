@@ -85,8 +85,7 @@ export const Input = styled.input<InputProps>`
   border: none;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
-  color: ${(props) =>
-    props.readOnly ? `rgb(220, 220, 220)` : `rgb(255 255 255)`};
+  color: ${(props) => (props.readOnly ? `rgb(220, 220, 220)` : `rgb(255 255 255)`)};
   outline: none;
   box-shadow: 0 0 0 0 ${(props) => props.theme?.colours?.pink};
   background-color: ${(props) => props.theme?.colours?.inputBackground};
@@ -166,7 +165,7 @@ interface ButtonProps {
   large?: boolean
 }
 
-export const Button = styled<'button', ButtonProps>('button')`
+export const Button = styled.button<ButtonProps>`
   -webkit-appearance: none;
   font-size: ${(props) => (props.large ? '1.25rem' : '1rem')};
   padding: 0.75rem;
@@ -202,7 +201,7 @@ interface ListProps {
   stackOnMobile?: boolean
 }
 
-export const List = styled<'ul', ListProps>('ul')`
+export const List = styled.ul<ListProps>`
   list-style: none;
   padding-left: 0;
   ${(props) =>
@@ -228,7 +227,7 @@ interface ListItemProps {
   inline?: boolean
 }
 
-export const Item = styled<'li', ListItemProps>('li')`
+export const Item = styled.li<ListItemProps>`
   display: ${(props) => (props.inline ? 'inline-block' : 'block')};
 `
 

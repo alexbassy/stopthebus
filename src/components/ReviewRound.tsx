@@ -64,19 +64,17 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
     return null
   }
 
-  const handleVote = (playerID: string, category: string) => (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
-    const payload: PlayerVote = {
-      playerID,
-      category,
-      value: event.target.checked,
+  const handleVote =
+    (playerID: string, category: string) => (event: ChangeEvent<HTMLInputElement>) => {
+      const payload: PlayerVote = {
+        playerID,
+        category,
+        value: event.target.checked,
+      }
+      emit(ClientEvent.VOTE_ANSWER, payload)
     }
-    emit(ClientEvent.VOTE_ANSWER, payload)
-  }
 
-  const getPlayer = (uuid: string) =>
-    game.players.find((player) => uuid === player.uuid)
+  const getPlayer = (id: string) => game.players.find((player) => id === player.id)
 
   return (
     <Table>
@@ -148,13 +146,10 @@ export default function ReviewRound() {
   const isLastRound = state.rounds.length + 1 === config.rounds
 
   const playerWhoEndedRound =
-    players.find(({ uuid }) => uuid === round.endedByPlayer)?.name ||
-    round.endedByPlayer
+    players.find(({ id }) => id === round.endedByPlayer)?.name || round.endedByPlayer
 
   const RoundDuration =
-    roundDuration === 0 ? null : (
-      <span> in {Math.floor(roundDuration / 1000)}s</span>
-    )
+    roundDuration === 0 ? null : <span> in {Math.floor(roundDuration / 1000)}s</span>
 
   return (
     <div>
@@ -180,9 +175,7 @@ export default function ReviewRound() {
         )
       })}
 
-      <Button onClick={handleNextRoundClick}>
-        {isLastRound ? 'Finish game' : 'Next round'}
-      </Button>
+      <Button onClick={handleNextRoundClick}>{isLastRound ? 'Finish game' : 'Next round'}</Button>
 
       <Dialog>
         {!isLastRound && state.stage === GameStage.NEXT_STARTING && (

@@ -5,6 +5,7 @@ import { Item, List, ExternalLink, Spacing } from './visual'
 import Player from './Player'
 import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
+import { APP_ROUTES } from '@/client/api-routes'
 
 export default function ReviewRound() {
   const emit = useContext(EmitterContext)
@@ -29,9 +30,7 @@ export default function ReviewRound() {
       </Head>
       <List>
         {sortedScores.map(([playerID, score], index) => {
-          const playerData = players.find(
-            ({ uuid }) => uuid === playerID
-          ) as PlayerType
+          const playerData = players.find(({ id }) => id === playerID) as PlayerType
 
           if (index === 0) {
             return (
@@ -52,7 +51,7 @@ export default function ReviewRound() {
           )
         })}
       </List>
-      <ExternalLink href={`/game/${state.nextGameID}`}>
+      <ExternalLink href={APP_ROUTES.game(state.nextGameID as string)}>
         Play another game
       </ExternalLink>
     </div>
