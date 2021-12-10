@@ -1,6 +1,7 @@
 export const API_ROUTES = {
   createGame: '/api/game/create',
-  getGame: '/api/game/get',
+  joinGame: '/api/game/join',
+  leaveGame: '/api/game/leave',
 }
 
 export const APP_ROUTES = {

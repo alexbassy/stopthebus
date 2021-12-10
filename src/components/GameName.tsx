@@ -72,9 +72,14 @@ export default function GameName(props: GameNameProps) {
   } = useRouter()
   const game = useContext(GameContext)
   const gameID = game && game.config ? game.config.id : paramsGameID
-  const hasShareAPI = Boolean(window.navigator.share)
 
   const handleShareClick = async (event: SyntheticEvent<HTMLButtonElement>) => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const hasShareAPI = Boolean(window.navigator.share)
+
     const gameURL = window.location.href
     if (!hasShareAPI) {
       await navigator.clipboard.writeText(gameURL)
@@ -108,8 +113,7 @@ export default function GameName(props: GameNameProps) {
     <BorderedName>
       <Title>{game.config.name} </Title>
       <ShareButton type='button' onClick={handleShareClick}>
-        Share game (
-        {hasShareAPI ? 'opens share dialog' : 'copies URL to clipboard'})
+        Share game ({hasShareAPI ? 'opens share dialog' : 'copies URL to clipboard'})
       </ShareButton>
     </BorderedName>
   )

@@ -3,7 +3,6 @@ import { useRouter } from 'next/router'
 import { readGameConfig, clearPersistedGameConfig } from '@/helpers/persistGame'
 import { getUserSessionID, getUserSession } from '@/helpers/getPersistedPlayer'
 import log from '@/helpers/log'
-import { ClientEvent, ServerEvent, Payload } from '@/typings/socket-events'
 import {
   Player,
   GameConfig,
@@ -21,11 +20,8 @@ import GameEnd from '@/components/GameEnd'
 import PageTitle from '@/components/PageTitle'
 import { ExternalLink } from '@/components/visual'
 import GameName from '@/components/GameName'
-import useSocketIO, { SocketCallbacks } from '../../hooks/useSocketIO'
 import GameContext from '../../contexts/GameContext'
 import EmitterContext from '../../contexts/EmitterContext'
-
-const sessionID = getUserSessionID()
 
 interface GameParams {
   gameID: string
@@ -48,132 +44,16 @@ export default function Game() {
   const [players, setPlayers] = useState<Player[]>()
   const [opponentProgress, setOpponentProgress] = useState<OpponentProgress>()
 
-  const hasGameConfig = gameConfig !== null
+  // First connect to the game.
+  useEffect(() => {}, [gameID])
 
-  const getPayload = useCallback(
-    (payload?: any): Payload | null => {
-      return {
-        gameID: gameID as string,
-        payload,
-      }
-    },
-    [gameID]
-  )
-
-  const callbacks: SocketCallbacks = useMemo(
-    () => ({
-      [ClientEvent.CONNECT]: () => {
-        setIsConnected(true)
-      },
-
-      [ClientEvent.DISCONNECT]: () => {
-        log.d('Gone inactive')
-        setIsConnected(false)
-      },
-
-      [ServerEvent.GAME_NOT_FOUND]: () => {
-        setGameConfig(null)
-      },
-
-      [ServerEvent.JOINED_GAME]: (socket, room: Room) => {
-        const session = getUserSession()
-        socket.emit(ClientEvent.UPDATE_NICKNAME, getPayload(session.name))
-        setPlayers(room.players)
-        setGameConfig(room.config)
-        setGameState(room.state)
-      },
-
-      [ServerEvent.OPPONENT_CURRENT_CATEGORY]: (_socket, progress: OpponentProgress) => {
-        console.log({ progress })
-        setOpponentProgress((currentProgress) => ({
-          ...currentProgress,
-          ...progress,
-        }))
-      },
-
-      [ServerEvent.PLAYER_JOINED_GAME]: (_socket, players: Player[]) => {
-        setPlayers(players)
-      },
-
-      [ServerEvent.PLAYER_LEFT]: (_socket, players: Player[]) => {
-        setPlayers(players)
-      },
-
-      [ServerEvent.GAME_CONFIG]: (_socket, newGameConfig: GameConfig | null) => {
-        if (newGameConfig === null) {
-          setGameConfig(null)
-          return
-        }
-
-        if (!hasGameConfig || newGameConfig.lastAuthor !== sessionID) {
-          setGameConfig(newGameConfig)
-          clearPersistedGameConfig()
-        } else {
-          log.r('GAME_CONFIG', 'Not setting because client is last author')
-        }
-      },
-
-      [ServerEvent.ROUND_STARTING]: (_socket, newGameState: GameState) => {
-        setGameState(newGameState)
-      },
-
-      [ServerEvent.GAME_STATE_CHANGE]: (_socket, newGameState: GameState) => {
-        setGameState(newGameState)
-      },
-
-      [ServerEvent.ROUND_STARTED]: (_socket, newGameState: GameState) => {
-        setGameState(newGameState)
-      },
-
-      [ServerEvent.SEND_ANSWERS]: (_socket, playerAnswers: RoundResults) => {
-        setAnswers(playerAnswers)
-      },
-
-      [ServerEvent.ROUND_ENDING]: (_socket, newGameState: GameState) => {
-        setGameState(newGameState)
-      },
-
-      [ServerEvent.ROUND_ENDED]: (_socket, newGameState: GameState) => {
-        setGameState(newGameState)
-        setOpponentProgress({})
-      },
-
-      [ServerEvent.UPDATE_VOTES]: (socket, newVotes: Scores) => {
-        setGameState((currentGameState) => {
-          const newGameState: GameState = { ...currentGameState }
-
-          if (!newGameState.currentRound) {
-            return currentGameState
-          }
-
-          newGameState.currentRound.scores = newVotes
-          return newGameState
-        })
-      },
-    }),
-    [hasGameConfig, getPayload]
-  )
-
-  const { socket, isInitialised, emit } = useSocketIO({ callbacks, getPayload })
-
-  const createOrJoinGame = useCallback(() => {
-    if (!isInitialised) return
-
-    const persistedGameConfig = readGameConfig()
-    const isCorrect = persistedGameConfig?.id === gameID
-
-    if (persistedGameConfig && isCorrect && !gameConfig) {
-      setGameConfig(persistedGameConfig)
-      emit(ClientEvent.REQUEST_CREATE_GAME, persistedGameConfig)
-      clearPersistedGameConfig()
-    } else if (!gameConfig) {
-      emit(ClientEvent.REQUEST_JOIN_GAME)
-    }
-  }, [emit, gameID, isInitialised, gameConfig])
-
-  useEffect(() => {
-    if (socket && isConnected) createOrJoinGame()
-  }, [socket, isConnected, createOrJoinGame])
+  // REMOVED
+  // when connected to socket (change this to realtime connection), create or join game
+  // -> get player config (will generate if needed, returns player id)
+  // -> read game config from api client
+  // -> join the game (new api route needed which adds player to config)
+  // ---> add `visibilitychange` listener which removes user from game
+  // ->
 
   if (!isConnected) {
     return (
