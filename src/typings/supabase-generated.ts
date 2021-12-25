@@ -12,6 +12,105 @@ export interface paths {
       };
     };
   };
+  "/game": {
+    get: {
+      parameters: {
+        query: {
+          id?: parameters["rowFilter.game.id"];
+          createdAt?: parameters["rowFilter.game.createdAt"];
+          config?: parameters["rowFilter.game.config"];
+          state?: parameters["rowFilter.game.state"];
+          players?: parameters["rowFilter.game.players"];
+          /** Filtering Columns */
+          select?: parameters["select"];
+          /** Ordering */
+          order?: parameters["order"];
+          /** Limiting and Pagination */
+          offset?: parameters["offset"];
+          /** Limiting and Pagination */
+          limit?: parameters["limit"];
+        };
+        header: {
+          /** Limiting and Pagination */
+          Range?: parameters["range"];
+          /** Limiting and Pagination */
+          "Range-Unit"?: parameters["rangeUnit"];
+          /** Preference */
+          Prefer?: parameters["preferCount"];
+        };
+      };
+      responses: {
+        /** OK */
+        200: {
+          schema: definitions["game"][];
+        };
+        /** Partial Content */
+        206: unknown;
+      };
+    };
+    post: {
+      parameters: {
+        body: {
+          /** game */
+          game?: definitions["game"];
+        };
+        query: {
+          /** Filtering Columns */
+          select?: parameters["select"];
+        };
+        header: {
+          /** Preference */
+          Prefer?: parameters["preferReturn"];
+        };
+      };
+      responses: {
+        /** Created */
+        201: unknown;
+      };
+    };
+    delete: {
+      parameters: {
+        query: {
+          id?: parameters["rowFilter.game.id"];
+          createdAt?: parameters["rowFilter.game.createdAt"];
+          config?: parameters["rowFilter.game.config"];
+          state?: parameters["rowFilter.game.state"];
+          players?: parameters["rowFilter.game.players"];
+        };
+        header: {
+          /** Preference */
+          Prefer?: parameters["preferReturn"];
+        };
+      };
+      responses: {
+        /** No Content */
+        204: never;
+      };
+    };
+    patch: {
+      parameters: {
+        query: {
+          id?: parameters["rowFilter.game.id"];
+          createdAt?: parameters["rowFilter.game.createdAt"];
+          config?: parameters["rowFilter.game.config"];
+          state?: parameters["rowFilter.game.state"];
+          players?: parameters["rowFilter.game.players"];
+        };
+        body: {
+          /** game */
+          game?: definitions["game"];
+        };
+        header: {
+          /** Preference */
+          Prefer?: parameters["preferReturn"];
+        };
+      };
+      responses: {
+        /** No Content */
+        204: never;
+      };
+    };
+  };
   "/gameConfig": {
     get: {
       parameters: {
@@ -540,6 +639,18 @@ export interface paths {
 }
 
 export interface definitions {
+  /** A whole ass game */
+  game: {
+    /**
+     * Note:
+     * This is a Primary Key.<pk/>
+     */
+    id: string;
+    createdAt?: string;
+    config: string;
+    state: string;
+    players: string;
+  };
   gameConfig: {
     /**
      * Note:
@@ -640,6 +751,13 @@ export interface parameters {
   offset: string;
   /** Limiting and Pagination */
   limit: string;
+  /** game */
+  "body.game": definitions["game"];
+  "rowFilter.game.id": string;
+  "rowFilter.game.createdAt": string;
+  "rowFilter.game.config": string;
+  "rowFilter.game.state": string;
+  "rowFilter.game.players": string;
   /** gameConfig */
   "body.gameConfig": definitions["gameConfig"];
   "rowFilter.gameConfig.id": string;

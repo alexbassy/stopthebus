@@ -1,8 +1,8 @@
 import getSupabaseClient from '@/client/supabase'
 import httpStatuses from '@/constants/http-codes'
-import { assertMethod, getGameName, getGamePlayer } from '@/helpers/api/validation'
+import { assertMethod, getGameId, getGamePlayer } from '@/helpers/api/validation'
 import log from '@/helpers/log'
-import { GameConfig, GameState, Players, Rooms } from '@/typings/supabase'
+import { Game, GameConfig, GameState, Players, Rooms } from '@/typings/supabase'
 import { SupabaseClient } from '@supabase/supabase-js'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
@@ -15,8 +15,8 @@ type Data = {
 
 type ErrorResponse = any
 
-function getRoom(client: SupabaseClient, name: string) {
-  return client.from<Rooms>('room').select().eq('name', name).single()
+function getGame(client: SupabaseClient, id: string) {
+  return client.from<Game>('game').select().eq('id', id).single()
 }
 
 export default async function handler(
@@ -27,7 +27,7 @@ export default async function handler(
     return
   }
 
-  const [name, nameError] = getGameName({ req, res })
+  const [name, nameError] = getGameId({ req, res })
   if (nameError) return
 
   const [player, playerError] = getGamePlayer({ req, res })
@@ -37,20 +37,22 @@ export default async function handler(
 
   const supabase = getSupabaseClient()
 
-  const [room] = await Promise.all([getRoom(supabase, name)])
+  const room = await getGame(supabase, name)
 
   if (room.error) {
     log.e(room.error)
-    return res.status(400).json({ message: JSON.stringify(room.error) })
+    return res.status(400).json(room.error)
   }
 
-  const players = (room.data.players || []) as string[]
+  const players = JSON.parse(room.data.players || '[]') as Players[]
 
-  if (!players.includes(player)) {
+  if (!players.find((gamePlayer) => gamePlayer.id === player)) {
     try {
-      const newPlayers = [...new Set<string>(players)]
-      await supabase.from<Rooms>('rooms').update({ players: newPlayers }).match({ name })
-      return res.status(httpStatuses.ACCEPTED).end()
+      players.push({ id: player })
+      await supabase
+        .from<Game>('game')
+        .update({ players: JSON.stringify(players) })
+        .match({ name })
     } catch (e) {
       return res.status(httpStatuses.BAD_REQUEST).json({ message: e })
     } finally {
@@ -59,5 +61,10 @@ export default async function handler(
   }
 
   log.d(`Took ${Date.now() - start}ms to check player is in room`)
-  return res.status(httpStatuses.OK).end()
+  return res.json({
+    ...room.data,
+    config: JSON.parse(room.data.config),
+    state: JSON.parse(room.data.state),
+    players,
+  })
 }

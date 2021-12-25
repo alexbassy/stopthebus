@@ -1,15 +1,10 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { readGameConfig, clearPersistedGameConfig } from '@/helpers/persistGame'
-import { getUserSessionID, getUserSession } from '@/helpers/getPersistedPlayer'
-import log from '@/helpers/log'
 import {
   Player,
   GameConfig,
   GameState,
   GameStage,
-  Room,
-  Scores,
   RoundResults,
   OpponentProgress,
 } from '@/typings/game'
@@ -21,10 +16,12 @@ import PageTitle from '@/components/PageTitle'
 import { ExternalLink } from '@/components/visual'
 import GameName from '@/components/GameName'
 import GameContext from '../../contexts/GameContext'
-import EmitterContext from '../../contexts/EmitterContext'
+import { joinGameWithID } from '@/client/rest'
+import { getUserSessionID } from '@/helpers/getPersistedPlayer'
+import { Players } from '@/typings/supabase'
 
 interface GameParams {
-  gameID: string
+  gameId: string
 }
 
 const defaultGameState: GameState = {
@@ -34,18 +31,32 @@ const defaultGameState: GameState = {
 
 export default function Game() {
   const { query } = useRouter()
-  const { id: gameID } = query
-  const [isConnected, setIsConnected] = useState<boolean>(false)
+  const { id: gameId } = query
+  const [hasGame, setHasGame] = useState<boolean>(false)
 
   // Each of these states represents a top level property on the room
   const [gameState, setGameState] = useState<GameState>(defaultGameState)
   const [gameConfig, setGameConfig] = useState<GameConfig | null | undefined>()
   const [answers, setAnswers] = useState<RoundResults>()
-  const [players, setPlayers] = useState<Player[]>()
+  const [players, setPlayers] = useState<Players>()
   const [opponentProgress, setOpponentProgress] = useState<OpponentProgress>()
 
   // First connect to the game.
-  useEffect(() => {}, [gameID])
+  useEffect(() => {
+    async function join() {
+      if (typeof gameId !== 'string') return
+      const playerId = getUserSessionID()
+      console.log({ playerId })
+      const response = await joinGameWithID(gameId, playerId)
+      setGameConfig(response.config)
+      setGameState(response.state)
+      setPlayers(response.players)
+      setHasGame(true)
+      console.log(response)
+    }
+
+    join()
+  }, [gameId])
 
   // REMOVED
   // when connected to socket (change this to realtime connection), create or join game
@@ -55,7 +66,7 @@ export default function Game() {
   // ---> add `visibilitychange` listener which removes user from game
   // ->
 
-  if (!isConnected) {
+  if (!hasGame) {
     return (
       <>
         <PageTitle />
@@ -65,7 +76,7 @@ export default function Game() {
     )
   }
 
-  if (!isConnected && gameConfig === null) {
+  if (!hasGame && gameConfig === null) {
     return (
       <>
         <PageTitle />
@@ -75,7 +86,7 @@ export default function Game() {
     )
   }
 
-  if (isConnected && gameConfig === null) {
+  if (hasGame && gameConfig === null) {
     return (
       <>
         <PageTitle />
@@ -93,6 +104,7 @@ export default function Game() {
   }
 
   const gameContextValue = {
+    id: gameId,
     config: gameConfig,
     state: gameState,
     players: players || [],
@@ -121,12 +133,10 @@ export default function Game() {
   }
 
   return (
-    <EmitterContext.Provider value={emit}>
-      <GameContext.Provider value={gameContextValue}>
-        <PageTitle isInGame={gameState.stage !== GameStage.PRE} />
-        <GameName isShareable={gameState.stage === GameStage.PRE} />
-        <Component />
-      </GameContext.Provider>
-    </EmitterContext.Provider>
+    <GameContext.Provider value={gameContextValue}>
+      <PageTitle isInGame={gameState.stage !== GameStage.PRE} />
+      <GameName isShareable={gameState.stage === GameStage.PRE} />
+      <Component />
+    </GameContext.Provider>
   )
 }

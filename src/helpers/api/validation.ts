@@ -19,7 +19,6 @@ function getRequestPropertyOrReject(
   { req, res }: Handler
 ): [string, boolean] {
   const property = req.body[propertyName]
-  console.log({ propertyName, property, body: req.body })
   if (!property) {
     res.status(400).json({ message: `${propertyName.toString()} required` })
     return ['', true]
@@ -27,8 +26,8 @@ function getRequestPropertyOrReject(
   return [property as string, false]
 }
 
-export function getGameName(handler: Handler): [string] | [string, boolean] {
-  return getRequestPropertyOrReject('name', handler)
+export function getGameId(handler: Handler): [string] | [string, boolean] {
+  return getRequestPropertyOrReject('id', handler)
 }
 
 export function getGameOwner(handler: Handler): [string] | [string, boolean] {
@@ -36,5 +35,5 @@ export function getGameOwner(handler: Handler): [string] | [string, boolean] {
 }
 
 export function getGamePlayer(handler: Handler): [string] | [string, boolean] {
-  return getRequestPropertyOrReject('player', handler)
+  return getRequestPropertyOrReject('playerId', handler)
 }

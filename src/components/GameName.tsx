@@ -1,4 +1,4 @@
-import React, { useContext, SyntheticEvent } from 'react'
+import React, { useContext, SyntheticEvent, useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { css } from '@emotion/react'
 import log from '@/helpers/log'
@@ -71,14 +71,17 @@ export default function GameName(props: GameNameProps) {
     query: { game: paramsGameID },
   } = useRouter()
   const game = useContext(GameContext)
+  const [hasShareAPI, setHasShareAPI] = useState(false)
   const gameID = game && game.config ? game.config.id : paramsGameID
+
+  useEffect(() => {
+    setHasShareAPI(Boolean(window.navigator.share))
+  }, [])
 
   const handleShareClick = async (event: SyntheticEvent<HTMLButtonElement>) => {
     if (typeof window === 'undefined') {
       return
     }
-
-    const hasShareAPI = Boolean(window.navigator.share)
 
     const gameURL = window.location.href
     if (!hasShareAPI) {
@@ -111,7 +114,7 @@ export default function GameName(props: GameNameProps) {
 
   return (
     <BorderedName>
-      <Title>{game.config.name} </Title>
+      <Title>{game.id} </Title>
       <ShareButton type='button' onClick={handleShareClick}>
         Share game ({hasShareAPI ? 'opens share dialog' : 'copies URL to clipboard'})
       </ShareButton>

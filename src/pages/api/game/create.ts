@@ -1,8 +1,9 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import getSupabaseClient from '@/client/supabase'
-import { assertMethod, getGameName, getGameOwner } from '@/helpers/api/validation'
+import { assertMethod, getGameId, getGameOwner } from '@/helpers/api/validation'
 import log from '@/helpers/log'
-import { GameConfig, GameState, Players, Rooms } from '@/typings/supabase'
+import { GameStage } from '@/typings/game'
+import { Game, GameConfig, GameState, Players, Rooms } from '@/typings/supabase'
 import { SupabaseClient } from '@supabase/supabase-js'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
@@ -15,23 +16,23 @@ type Data = {
 
 type ErrorResponse = any
 
-function createGameConfig(client: SupabaseClient) {
-  return client.from<GameConfig>('gameConfig').insert([
-    {
-      categories: [],
-      numRounds: 3,
-      mode: 'timer',
-      durationMs: 0,
-      alliteration: false,
-      letters: 'abcdefghijklmnopqrstuvwxyz',
-    },
-  ])
+function createGameConfig(): Partial<GameConfig> {
+  return {
+    categories: [],
+    numRounds: 3,
+    mode: 'timer',
+    durationMs: 0,
+    alliteration: false,
+    letters: 'abcdefghijklmnopqrstuvwxyz',
+  }
 }
 
 // function getPlayer(client: SupabaseClient)
 
-function createGameState(client: SupabaseClient) {
-  return client.from<GameState>('gameStates').insert([{}])
+function createGameState(): Partial<GameState> {
+  return {
+    stage: GameStage.PRE,
+  }
 }
 
 export default async function handler(
@@ -42,7 +43,7 @@ export default async function handler(
     return
   }
 
-  const [name, nameError] = getGameName({ req, res })
+  const [name, nameError] = getGameId({ req, res })
   if (nameError) return
 
   const [owner, ownerError] = getGameOwner({ req, res })
@@ -52,27 +53,17 @@ export default async function handler(
 
   const supabase = getSupabaseClient()
 
-  const [gameConfig, gameState] = await Promise.all([
-    createGameConfig(supabase),
-    createGameState(supabase),
-  ])
+  const gameConfig = createGameConfig()
+  const gameState = createGameState()
 
-  if (gameConfig.error) {
-    log.e(gameConfig.error)
-    return res.status(400).json({ message: JSON.stringify(gameConfig.error) })
-  }
+  const players = [owner]
 
-  if (gameState.error) {
-    console.error(gameState.error)
-    return res.status(400).json({ message: JSON.stringify(gameState.error) })
-  }
-
-  const { data: game, error: gameError } = await supabase.from<Rooms>('rooms').insert([
+  const { data: game, error: gameError } = await supabase.from<Game>('game').insert([
     {
-      name,
-      gameState: gameState.data?.[0].id,
-      gameConfig: gameConfig.data?.[0].id,
-      players: [owner],
+      id: name,
+      state: JSON.stringify(gameState),
+      config: JSON.stringify(gameConfig),
+      players: JSON.stringify(players),
     },
   ])
 
@@ -80,16 +71,7 @@ export default async function handler(
     return res.status(400).json({ message: JSON.stringify(gameError) })
   }
 
-  return res.status(201).send(
-    JSON.stringify(
-      {
-        game: game?.[0],
-        gameState: gameState.data[0],
-        gameConfig: gameConfig.data[0],
-        duration: Date.now() - start,
-      },
-      null,
-      2
-    )
-  )
+  console.log({ game })
+
+  return res.status(201).json(game?.[0])
 }

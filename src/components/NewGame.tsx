@@ -41,10 +41,10 @@ interface NewGameProps {
 
 export default function NewGame(props: NewGameProps) {
   const [nickname, setNickname] = useState<string>('')
-  const emit = useContext(EmitterContext)
+  const emit = (...args: any) => console.log(...args)
   const game = useContext(GameContext)
 
-  if (!game || !emit) return null
+  if (!game) return null
 
   const handleCategoryChange = (categories: string[]) => {
     props.onChange((gameConfig) => {
@@ -147,7 +147,9 @@ export default function NewGame(props: NewGameProps) {
   }
 
   const { config, players, state } = game
-  const currentPlayer = players.find((player) => player.id === sessionID)
+  const currentPlayer = players.find((player) => player.id === getUserSessionID())
+
+  console.log({ players, currentPlayer })
 
   if (!currentPlayer) return null
 
