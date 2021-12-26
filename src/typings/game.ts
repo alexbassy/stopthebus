@@ -3,6 +3,7 @@
  */
 
 import { QueueEvent } from './socket-events'
+import { Players } from './supabase'
 
 export interface QueueJob {
   id?: string
@@ -128,7 +129,7 @@ export interface GameRound {
 export interface Room {
   state: GameState
   config: GameConfig
-  players: Player[]
+  players: Players[]
 }
 
 export interface Rooms {

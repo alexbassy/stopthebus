@@ -37,30 +37,36 @@ const gameConfig$ = allMulti$.pipe(
   accumulate()
 )
 
-const room$ = allMulti$.pipe(
-  filter((payload) => payload.table === 'room'),
+const game$ = allMulti$.pipe(
+  filter((payload) => payload.table === 'game'),
   accumulate()
 )
 
 const allBuffer$ = all$.pipe(accumulate())
 
-const [useGameState] = bind(gameStates$, [])
+const [useGame] = bind(game$, [])
 
-const [useGameConfig] = bind(gameConfig$, [])
+// const [useGameState] = bind(gameStates$, [])
+
+// const [useGameConfig] = bind(gameConfig$, [])
 
 const DebugPage: React.FC = (props) => {
-  const gameStateLog = useGameState()
-  const gameConfigLog = useGameConfig()
+  // const gameStateLog = useGameState()
+  // const gameConfigLog = useGameConfig()
+  const gameLog = useGame()
 
   console.log('rerendered')
 
   return (
     <div>
+      <h2>Game</h2>
+      <pre>{JSON.stringify(gameLog, null, 2)}</pre>
+
       <h2>Game states</h2>
-      <pre>{JSON.stringify(gameStateLog, null, 2)}</pre>
+      <pre>{JSON.stringify([], null, 2)}</pre>
 
       <h2>Game configs</h2>
-      <pre>{JSON.stringify(gameConfigLog, null, 2)}</pre>
+      <pre>{JSON.stringify([], null, 2)}</pre>
     </div>
   )
 }

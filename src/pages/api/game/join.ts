@@ -44,15 +44,12 @@ export default async function handler(
     return res.status(400).json(room.error)
   }
 
-  const players = JSON.parse(room.data.players || '[]') as Players[]
+  const players = (room.data.players || []) as Players[]
 
   if (!players.find((gamePlayer) => gamePlayer.id === player)) {
     try {
       players.push({ id: player })
-      await supabase
-        .from<Game>('game')
-        .update({ players: JSON.stringify(players) })
-        .match({ name })
+      await supabase.from('game').update({ players }).match({ name })
     } catch (e) {
       return res.status(httpStatuses.BAD_REQUEST).json({ message: e })
     } finally {
@@ -63,8 +60,8 @@ export default async function handler(
   log.d(`Took ${Date.now() - start}ms to check player is in room`)
   return res.json({
     ...room.data,
-    config: JSON.parse(room.data.config),
-    state: JSON.parse(room.data.state),
+    config: room.data.config,
+    state: room.data.state,
     players,
   })
 }

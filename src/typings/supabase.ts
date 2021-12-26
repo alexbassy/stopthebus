@@ -12,5 +12,5 @@ export type IGame = {
   id: string
   config: appTypes.GameConfig
   state: appTypes.GameState
-  players: Players
+  players: Players[]
 }

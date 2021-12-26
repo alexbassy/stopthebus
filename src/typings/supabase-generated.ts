@@ -111,528 +111,63 @@ export interface paths {
       };
     };
   };
-  "/gameConfig": {
-    get: {
+  "/rpc/game_update_letters": {
+    post: {
       parameters: {
-        query: {
-          id?: parameters["rowFilter.gameConfig.id"];
-          createdAt?: parameters["rowFilter.gameConfig.createdAt"];
-          categories?: parameters["rowFilter.gameConfig.categories"];
-          numRounds?: parameters["rowFilter.gameConfig.numRounds"];
-          mode?: parameters["rowFilter.gameConfig.mode"];
-          durationMs?: parameters["rowFilter.gameConfig.durationMs"];
-          alliteration?: parameters["rowFilter.gameConfig.alliteration"];
-          letters?: parameters["rowFilter.gameConfig.letters"];
-          lastAuthor?: parameters["rowFilter.gameConfig.lastAuthor"];
-          /** Filtering Columns */
-          select?: parameters["select"];
-          /** Ordering */
-          order?: parameters["order"];
-          /** Limiting and Pagination */
-          offset?: parameters["offset"];
-          /** Limiting and Pagination */
-          limit?: parameters["limit"];
+        body: {
+          args: {
+            game_id: string;
+            new_letters: string;
+          };
         };
         header: {
-          /** Limiting and Pagination */
-          Range?: parameters["range"];
-          /** Limiting and Pagination */
-          "Range-Unit"?: parameters["rangeUnit"];
           /** Preference */
-          Prefer?: parameters["preferCount"];
+          Prefer?: parameters["preferParams"];
         };
       };
       responses: {
         /** OK */
-        200: {
-          schema: definitions["gameConfig"][];
-        };
-        /** Partial Content */
-        206: unknown;
-      };
-    };
-    post: {
-      parameters: {
-        body: {
-          /** gameConfig */
-          gameConfig?: definitions["gameConfig"];
-        };
-        query: {
-          /** Filtering Columns */
-          select?: parameters["select"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** Created */
-        201: unknown;
-      };
-    };
-    delete: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.gameConfig.id"];
-          createdAt?: parameters["rowFilter.gameConfig.createdAt"];
-          categories?: parameters["rowFilter.gameConfig.categories"];
-          numRounds?: parameters["rowFilter.gameConfig.numRounds"];
-          mode?: parameters["rowFilter.gameConfig.mode"];
-          durationMs?: parameters["rowFilter.gameConfig.durationMs"];
-          alliteration?: parameters["rowFilter.gameConfig.alliteration"];
-          letters?: parameters["rowFilter.gameConfig.letters"];
-          lastAuthor?: parameters["rowFilter.gameConfig.lastAuthor"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** No Content */
-        204: never;
-      };
-    };
-    patch: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.gameConfig.id"];
-          createdAt?: parameters["rowFilter.gameConfig.createdAt"];
-          categories?: parameters["rowFilter.gameConfig.categories"];
-          numRounds?: parameters["rowFilter.gameConfig.numRounds"];
-          mode?: parameters["rowFilter.gameConfig.mode"];
-          durationMs?: parameters["rowFilter.gameConfig.durationMs"];
-          alliteration?: parameters["rowFilter.gameConfig.alliteration"];
-          letters?: parameters["rowFilter.gameConfig.letters"];
-          lastAuthor?: parameters["rowFilter.gameConfig.lastAuthor"];
-        };
-        body: {
-          /** gameConfig */
-          gameConfig?: definitions["gameConfig"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** No Content */
-        204: never;
+        200: unknown;
       };
     };
   };
-  "/gameRound": {
-    get: {
+  "/rpc/game_update_stage": {
+    post: {
       parameters: {
-        query: {
-          id?: parameters["rowFilter.gameRound.id"];
-          createdAt?: parameters["rowFilter.gameRound.createdAt"];
-          letter?: parameters["rowFilter.gameRound.letter"];
-          timeStarted?: parameters["rowFilter.gameRound.timeStarted"];
-          timeEnded?: parameters["rowFilter.gameRound.timeEnded"];
-          endedByPlayer?: parameters["rowFilter.gameRound.endedByPlayer"];
-          answers?: parameters["rowFilter.gameRound.answers"];
-          scores?: parameters["rowFilter.gameRound.scores"];
-          /** Filtering Columns */
-          select?: parameters["select"];
-          /** Ordering */
-          order?: parameters["order"];
-          /** Limiting and Pagination */
-          offset?: parameters["offset"];
-          /** Limiting and Pagination */
-          limit?: parameters["limit"];
+        body: {
+          args: {
+            game_id: string;
+            new_stage: string;
+          };
         };
         header: {
-          /** Limiting and Pagination */
-          Range?: parameters["range"];
-          /** Limiting and Pagination */
-          "Range-Unit"?: parameters["rangeUnit"];
           /** Preference */
-          Prefer?: parameters["preferCount"];
+          Prefer?: parameters["preferParams"];
         };
       };
       responses: {
         /** OK */
-        200: {
-          schema: definitions["gameRound"][];
-        };
-        /** Partial Content */
-        206: unknown;
-      };
-    };
-    post: {
-      parameters: {
-        body: {
-          /** gameRound */
-          gameRound?: definitions["gameRound"];
-        };
-        query: {
-          /** Filtering Columns */
-          select?: parameters["select"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** Created */
-        201: unknown;
-      };
-    };
-    delete: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.gameRound.id"];
-          createdAt?: parameters["rowFilter.gameRound.createdAt"];
-          letter?: parameters["rowFilter.gameRound.letter"];
-          timeStarted?: parameters["rowFilter.gameRound.timeStarted"];
-          timeEnded?: parameters["rowFilter.gameRound.timeEnded"];
-          endedByPlayer?: parameters["rowFilter.gameRound.endedByPlayer"];
-          answers?: parameters["rowFilter.gameRound.answers"];
-          scores?: parameters["rowFilter.gameRound.scores"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** No Content */
-        204: never;
-      };
-    };
-    patch: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.gameRound.id"];
-          createdAt?: parameters["rowFilter.gameRound.createdAt"];
-          letter?: parameters["rowFilter.gameRound.letter"];
-          timeStarted?: parameters["rowFilter.gameRound.timeStarted"];
-          timeEnded?: parameters["rowFilter.gameRound.timeEnded"];
-          endedByPlayer?: parameters["rowFilter.gameRound.endedByPlayer"];
-          answers?: parameters["rowFilter.gameRound.answers"];
-          scores?: parameters["rowFilter.gameRound.scores"];
-        };
-        body: {
-          /** gameRound */
-          gameRound?: definitions["gameRound"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** No Content */
-        204: never;
+        200: unknown;
       };
     };
   };
-  "/gameStates": {
-    get: {
+  "/rpc/game_update_mode": {
+    post: {
       parameters: {
-        query: {
-          id?: parameters["rowFilter.gameStates.id"];
-          createdAt?: parameters["rowFilter.gameStates.createdAt"];
-          stage?: parameters["rowFilter.gameStates.stage"];
-          rounds?: parameters["rowFilter.gameStates.rounds"];
-          currentRound?: parameters["rowFilter.gameStates.currentRound"];
-          finalScores?: parameters["rowFilter.gameStates.finalScores"];
-          nextGameID?: parameters["rowFilter.gameStates.nextGameID"];
-          nextLetter?: parameters["rowFilter.gameStates.nextLetter"];
-          /** Filtering Columns */
-          select?: parameters["select"];
-          /** Ordering */
-          order?: parameters["order"];
-          /** Limiting and Pagination */
-          offset?: parameters["offset"];
-          /** Limiting and Pagination */
-          limit?: parameters["limit"];
+        body: {
+          args: {
+            game_id: string;
+            new_mode: string;
+          };
         };
         header: {
-          /** Limiting and Pagination */
-          Range?: parameters["range"];
-          /** Limiting and Pagination */
-          "Range-Unit"?: parameters["rangeUnit"];
           /** Preference */
-          Prefer?: parameters["preferCount"];
+          Prefer?: parameters["preferParams"];
         };
       };
       responses: {
         /** OK */
-        200: {
-          schema: definitions["gameStates"][];
-        };
-        /** Partial Content */
-        206: unknown;
-      };
-    };
-    post: {
-      parameters: {
-        body: {
-          /** gameStates */
-          gameStates?: definitions["gameStates"];
-        };
-        query: {
-          /** Filtering Columns */
-          select?: parameters["select"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** Created */
-        201: unknown;
-      };
-    };
-    delete: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.gameStates.id"];
-          createdAt?: parameters["rowFilter.gameStates.createdAt"];
-          stage?: parameters["rowFilter.gameStates.stage"];
-          rounds?: parameters["rowFilter.gameStates.rounds"];
-          currentRound?: parameters["rowFilter.gameStates.currentRound"];
-          finalScores?: parameters["rowFilter.gameStates.finalScores"];
-          nextGameID?: parameters["rowFilter.gameStates.nextGameID"];
-          nextLetter?: parameters["rowFilter.gameStates.nextLetter"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** No Content */
-        204: never;
-      };
-    };
-    patch: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.gameStates.id"];
-          createdAt?: parameters["rowFilter.gameStates.createdAt"];
-          stage?: parameters["rowFilter.gameStates.stage"];
-          rounds?: parameters["rowFilter.gameStates.rounds"];
-          currentRound?: parameters["rowFilter.gameStates.currentRound"];
-          finalScores?: parameters["rowFilter.gameStates.finalScores"];
-          nextGameID?: parameters["rowFilter.gameStates.nextGameID"];
-          nextLetter?: parameters["rowFilter.gameStates.nextLetter"];
-        };
-        body: {
-          /** gameStates */
-          gameStates?: definitions["gameStates"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** No Content */
-        204: never;
-      };
-    };
-  };
-  "/players": {
-    get: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.players.id"];
-          createdAt?: parameters["rowFilter.players.createdAt"];
-          name?: parameters["rowFilter.players.name"];
-          colour?: parameters["rowFilter.players.colour"];
-          /** Filtering Columns */
-          select?: parameters["select"];
-          /** Ordering */
-          order?: parameters["order"];
-          /** Limiting and Pagination */
-          offset?: parameters["offset"];
-          /** Limiting and Pagination */
-          limit?: parameters["limit"];
-        };
-        header: {
-          /** Limiting and Pagination */
-          Range?: parameters["range"];
-          /** Limiting and Pagination */
-          "Range-Unit"?: parameters["rangeUnit"];
-          /** Preference */
-          Prefer?: parameters["preferCount"];
-        };
-      };
-      responses: {
-        /** OK */
-        200: {
-          schema: definitions["players"][];
-        };
-        /** Partial Content */
-        206: unknown;
-      };
-    };
-    post: {
-      parameters: {
-        body: {
-          /** players */
-          players?: definitions["players"];
-        };
-        query: {
-          /** Filtering Columns */
-          select?: parameters["select"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** Created */
-        201: unknown;
-      };
-    };
-    delete: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.players.id"];
-          createdAt?: parameters["rowFilter.players.createdAt"];
-          name?: parameters["rowFilter.players.name"];
-          colour?: parameters["rowFilter.players.colour"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** No Content */
-        204: never;
-      };
-    };
-    patch: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.players.id"];
-          createdAt?: parameters["rowFilter.players.createdAt"];
-          name?: parameters["rowFilter.players.name"];
-          colour?: parameters["rowFilter.players.colour"];
-        };
-        body: {
-          /** players */
-          players?: definitions["players"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** No Content */
-        204: never;
-      };
-    };
-  };
-  "/rooms": {
-    get: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.rooms.id"];
-          createdAt?: parameters["rowFilter.rooms.createdAt"];
-          gameState?: parameters["rowFilter.rooms.gameState"];
-          gameConfig?: parameters["rowFilter.rooms.gameConfig"];
-          players?: parameters["rowFilter.rooms.players"];
-          name?: parameters["rowFilter.rooms.name"];
-          /** Filtering Columns */
-          select?: parameters["select"];
-          /** Ordering */
-          order?: parameters["order"];
-          /** Limiting and Pagination */
-          offset?: parameters["offset"];
-          /** Limiting and Pagination */
-          limit?: parameters["limit"];
-        };
-        header: {
-          /** Limiting and Pagination */
-          Range?: parameters["range"];
-          /** Limiting and Pagination */
-          "Range-Unit"?: parameters["rangeUnit"];
-          /** Preference */
-          Prefer?: parameters["preferCount"];
-        };
-      };
-      responses: {
-        /** OK */
-        200: {
-          schema: definitions["rooms"][];
-        };
-        /** Partial Content */
-        206: unknown;
-      };
-    };
-    post: {
-      parameters: {
-        body: {
-          /** rooms */
-          rooms?: definitions["rooms"];
-        };
-        query: {
-          /** Filtering Columns */
-          select?: parameters["select"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** Created */
-        201: unknown;
-      };
-    };
-    delete: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.rooms.id"];
-          createdAt?: parameters["rowFilter.rooms.createdAt"];
-          gameState?: parameters["rowFilter.rooms.gameState"];
-          gameConfig?: parameters["rowFilter.rooms.gameConfig"];
-          players?: parameters["rowFilter.rooms.players"];
-          name?: parameters["rowFilter.rooms.name"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** No Content */
-        204: never;
-      };
-    };
-    patch: {
-      parameters: {
-        query: {
-          id?: parameters["rowFilter.rooms.id"];
-          createdAt?: parameters["rowFilter.rooms.createdAt"];
-          gameState?: parameters["rowFilter.rooms.gameState"];
-          gameConfig?: parameters["rowFilter.rooms.gameConfig"];
-          players?: parameters["rowFilter.rooms.players"];
-          name?: parameters["rowFilter.rooms.name"];
-        };
-        body: {
-          /** rooms */
-          rooms?: definitions["rooms"];
-        };
-        header: {
-          /** Preference */
-          Prefer?: parameters["preferReturn"];
-        };
-      };
-      responses: {
-        /** No Content */
-        204: never;
+        200: unknown;
       };
     };
   };
@@ -650,83 +185,6 @@ export interface definitions {
     config: string;
     state: string;
     players: string;
-  };
-  gameConfig: {
-    /**
-     * Note:
-     * This is a Primary Key.<pk/>
-     */
-    id: string;
-    createdAt: string;
-    categories?: unknown[];
-    numRounds?: number;
-    mode: "race" | "timer";
-    durationMs?: number;
-    alliteration: boolean;
-    letters?: string;
-    lastAuthor?: string;
-  };
-  gameRound: {
-    /**
-     * Note:
-     * This is a Primary Key.<pk/>
-     */
-    id: string;
-    createdAt?: string;
-    letter?: string;
-    timeStarted?: string;
-    timeEnded?: string;
-    endedByPlayer?: string;
-    answers?: string;
-    scores?: string;
-  };
-  /** The state of a game which might be in progress */
-  gameStates: {
-    /**
-     * Note:
-     * This is a Primary Key.<pk/>
-     */
-    id: string;
-    createdAt?: string;
-    stage:
-      | "pre"
-      | "starting"
-      | "active"
-      | "ending"
-      | "review"
-      | "next_starting"
-      | "finished";
-    rounds?: unknown[];
-    /**
-     * Note:
-     * This is a Foreign Key to `gameRound.id`.<fk table='gameRound' column='id'/>
-     */
-    currentRound?: string;
-    finalScores?: string;
-    nextGameID?: string;
-    nextLetter?: string;
-  };
-  players: {
-    /**
-     * Note:
-     * This is a Primary Key.<pk/>
-     */
-    id: string;
-    createdAt?: string;
-    name?: string;
-    colour?: string;
-  };
-  rooms: {
-    /**
-     * Note:
-     * This is a Primary Key.<pk/>
-     */
-    id: string;
-    createdAt: string;
-    gameState: string;
-    gameConfig: string;
-    players?: unknown[];
-    name: string;
   };
 }
 
@@ -758,51 +216,6 @@ export interface parameters {
   "rowFilter.game.config": string;
   "rowFilter.game.state": string;
   "rowFilter.game.players": string;
-  /** gameConfig */
-  "body.gameConfig": definitions["gameConfig"];
-  "rowFilter.gameConfig.id": string;
-  "rowFilter.gameConfig.createdAt": string;
-  "rowFilter.gameConfig.categories": string;
-  "rowFilter.gameConfig.numRounds": string;
-  "rowFilter.gameConfig.mode": string;
-  "rowFilter.gameConfig.durationMs": string;
-  "rowFilter.gameConfig.alliteration": string;
-  "rowFilter.gameConfig.letters": string;
-  "rowFilter.gameConfig.lastAuthor": string;
-  /** gameRound */
-  "body.gameRound": definitions["gameRound"];
-  "rowFilter.gameRound.id": string;
-  "rowFilter.gameRound.createdAt": string;
-  "rowFilter.gameRound.letter": string;
-  "rowFilter.gameRound.timeStarted": string;
-  "rowFilter.gameRound.timeEnded": string;
-  "rowFilter.gameRound.endedByPlayer": string;
-  "rowFilter.gameRound.answers": string;
-  "rowFilter.gameRound.scores": string;
-  /** gameStates */
-  "body.gameStates": definitions["gameStates"];
-  "rowFilter.gameStates.id": string;
-  "rowFilter.gameStates.createdAt": string;
-  "rowFilter.gameStates.stage": string;
-  "rowFilter.gameStates.rounds": string;
-  "rowFilter.gameStates.currentRound": string;
-  "rowFilter.gameStates.finalScores": string;
-  "rowFilter.gameStates.nextGameID": string;
-  "rowFilter.gameStates.nextLetter": string;
-  /** players */
-  "body.players": definitions["players"];
-  "rowFilter.players.id": string;
-  "rowFilter.players.createdAt": string;
-  "rowFilter.players.name": string;
-  "rowFilter.players.colour": string;
-  /** rooms */
-  "body.rooms": definitions["rooms"];
-  "rowFilter.rooms.id": string;
-  "rowFilter.rooms.createdAt": string;
-  "rowFilter.rooms.gameState": string;
-  "rowFilter.rooms.gameConfig": string;
-  "rowFilter.rooms.players": string;
-  "rowFilter.rooms.name": string;
 }
 
 export interface operations {}

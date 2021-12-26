@@ -31,9 +31,7 @@ import Player from './Player'
 import Dialog from './Dialog'
 import Countdown from './Countdown'
 import GameContext from '../contexts/GameContext'
-import EmitterContext from '../contexts/EmitterContext'
-
-const sessionID = getUserSessionID()
+import Letters from '@/components/new-game/Letters'
 
 interface NewGameProps {
   onChange: Dispatch<SetStateAction<GameConfig | null | undefined>>
@@ -53,23 +51,6 @@ export default function NewGame(props: NewGameProps) {
         categories,
       }
       emit(ClientEvent.GAME_CONFIG, newGameConfig)
-      return newGameConfig as GameConfig
-    })
-  }
-
-  const handleLetterChange = (letter: string) => () => {
-    props.onChange((gameConfig) => {
-      const newLetters = new Set(gameConfig?.letters)
-
-      newLetters.has(letter) ? newLetters.delete(letter) : newLetters.add(letter)
-
-      const newGameConfig = {
-        ...gameConfig,
-        letters: [...newLetters].join(''),
-      }
-
-      emit(ClientEvent.GAME_CONFIG, newGameConfig)
-
       return newGameConfig as GameConfig
     })
   }
@@ -180,31 +161,7 @@ export default function NewGame(props: NewGameProps) {
         </Description>
       </Spacing>
       <Grid columns={[2, 1]} stackOnMobile>
-        <section>
-          <H3>Letters</H3>
-          <List>
-            {config &&
-              ENGLISH_LETTERS.map((letter) => {
-                return (
-                  <Item key={letter} inline>
-                    <Spacing r={0.75} b={0.75}>
-                      <label>
-                        <Flex yCentre style={{ width: '3.15rem' }}>
-                          <Checkbox
-                            type='checkbox'
-                            value={letter}
-                            checked={config?.letters?.includes(letter)}
-                            onChange={handleLetterChange(letter)}
-                          />
-                          {letter.toUpperCase()}
-                        </Flex>
-                      </label>
-                    </Spacing>
-                  </Item>
-                )
-              })}
-          </List>
-        </section>
+        <Letters />
         <section>
           <H3>Players</H3>
           <List>

@@ -44,7 +44,6 @@ export default function Home() {
 
     try {
       const response = await createGameWithID(newGameID, player.id)
-      console.log({ response })
       router.push(APP_ROUTES.game(newGameID))
     } catch (e) {
       log.e(e)

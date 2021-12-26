@@ -20,10 +20,10 @@ function createGameConfig(): Partial<GameConfig> {
   return {
     categories: [],
     numRounds: 3,
-    mode: 'timer',
+    mode: 'race',
     durationMs: 0,
     alliteration: false,
-    letters: 'abcdefghijklmnopqrstuvwxyz',
+    letters: 'abcdefghijklmnoprstuvwyz',
   }
 }
 
@@ -56,14 +56,14 @@ export default async function handler(
   const gameConfig = createGameConfig()
   const gameState = createGameState()
 
-  const players = [owner]
+  const players = [{ id: owner }]
 
-  const { data: game, error: gameError } = await supabase.from<Game>('game').insert([
+  const { data: game, error: gameError } = await supabase.from('game').insert([
     {
       id: name,
-      state: JSON.stringify(gameState),
-      config: JSON.stringify(gameConfig),
-      players: JSON.stringify(players),
+      state: gameState,
+      config: gameConfig,
+      players: players,
     },
   ])
 
