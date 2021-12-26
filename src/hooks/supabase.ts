@@ -2,8 +2,8 @@ import getSupabaseClient from '@/client/supabase'
 import { IGame } from '@/typings/supabase'
 import { bind } from '@react-rxjs/core'
 import { SupabaseRealtimePayload } from '@supabase/supabase-js'
-import { map, merge, Observable, of, share, startWith, tap } from 'rxjs'
-import { filter, mergeMap, switchMapTo } from 'rxjs/operators'
+import { map, merge, Observable, of, share, tap } from 'rxjs'
+import { filter } from 'rxjs/operators'
 
 type Payload = SupabaseRealtimePayload<any>
 
@@ -52,6 +52,8 @@ class Manager {
 
   gameId!: string
 
+  sharedGameSubscription$!: Observable<IGame>
+
   setId(gameId: string) {
     if (typeof gameId !== 'string') return
     console.log('gameid is', gameId)
@@ -65,15 +67,17 @@ class Manager {
 
   get gameSubscription$() {
     if (!this.gameId) return of(null)
-    return subscribeToGame(this.gameId)
+    if (!this.sharedGameSubscription$) {
+      this.sharedGameSubscription$ = subscribeToGame(this.gameId).pipe(share())
+    }
+    return this.sharedGameSubscription$
   }
 
   get game$() {
     return merge(this.gameSubscription$, this.fetchGame$).pipe(
       tap((value) => {
         console.log({ value })
-      }),
-      share()
+      })
     )
   }
 
@@ -87,8 +91,14 @@ class Manager {
   get gameConfigLetters$() {
     return this.gameConfig$.pipe(map((config) => config.letters.split('')))
   }
+
+  get gameConfigAlliteration$() {
+    return this.gameConfig$.pipe(map((config) => config.alliteration))
+  }
 }
 
 export const manager = new Manager()
 
 export const [useGameConfigLetters] = bind(() => manager.gameConfigLetters$, [])
+
+export const [useGameConfigAlliteration] = bind(() => manager.gameConfigAlliteration$, false)

@@ -32,6 +32,7 @@ import Dialog from './Dialog'
 import Countdown from './Countdown'
 import GameContext from '../contexts/GameContext'
 import Letters from '@/components/new-game/Letters'
+import Alliteration from './new-game/Alliteration'
 
 interface NewGameProps {
   onChange: Dispatch<SetStateAction<GameConfig | null | undefined>>
@@ -223,16 +224,7 @@ export default function NewGame(props: NewGameProps) {
             ))}
           </Select>
         </div>
-        <div>
-          <label>
-            <Checkbox
-              type='checkbox'
-              checked={config?.scoreWithAlliteration}
-              onChange={handleAlliterationChange}
-            />{' '}
-            Points for alliteration
-          </label>
-        </div>
+        <Alliteration />
       </section>
       <Spacing b={2} />
 

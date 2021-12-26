@@ -38,7 +38,6 @@ export default function Game() {
   const [hasGame, setHasGame] = useState<boolean>(false)
 
   useEffect(() => {
-    console.log('mounted')
     if (gameId !== manager.gameId) {
       manager.setId(gameId)
     }

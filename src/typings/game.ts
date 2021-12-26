@@ -33,7 +33,7 @@ export interface GameConfig {
   letters: string
   created: number
   lastAuthor?: string
-  scoreWithAlliteration: boolean
+  alliteration: boolean
 }
 
 /**
