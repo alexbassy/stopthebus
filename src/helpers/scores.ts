@@ -1,4 +1,4 @@
-import { Room, GameConfig, Scores, GameRound, FinalScores } from '@/typings/game'
+import { Game, GameConfig, Scores, GameRound, FinalScores } from '@/typings/game'
 import log from '../helpers/log'
 
 export const getWords = (string: string) => string.trim().split(' ')
@@ -14,7 +14,7 @@ export const scoreAnswer = (
 ) => {
   if (!input) return 0
   const answer = input.trim().toLowerCase()
-  const { scoreWithAlliteration } = gameConfig
+  const { alliteration: scoreWithAlliteration } = gameConfig
   const isValidFirstCharacter = answer.startsWith(letter)
   const isOnlyLetter = answer === letter
   const words = getWords(answer)
@@ -38,7 +38,7 @@ interface GroupedAnswers {
   [categoryName: string]: { [answer: string]: number }
 }
 
-export const getInitialScores = (room: Room): Scores | undefined => {
+export const getInitialScores = (room: Game): Scores | undefined => {
   const { categories } = room.config
   const { currentRound } = room.state
   const { answers, letter } = currentRound ?? {}

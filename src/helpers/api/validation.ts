@@ -1,4 +1,5 @@
 import GameName from '@/components/GameName'
+import { Player } from '@/typings/game'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 interface Handler {
@@ -37,7 +38,7 @@ export function getGameOwner(handler: Handler) {
 }
 
 export function getGamePlayer(handler: Handler) {
-  return getRequestPropertyOrReject<string>('playerId', handler)
+  return getRequestPropertyOrReject<Player>('player', handler)
 }
 
 export function getIsJoining(handler: Handler) {

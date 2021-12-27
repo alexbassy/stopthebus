@@ -1,7 +1,7 @@
 import { createContext } from 'react'
-import { Room, RoundResults, OpponentProgress } from '@/typings/game'
+import { Game, RoundResults, OpponentProgress } from '@/typings/game'
 
-interface IGameContext extends Room {
+interface IGameContext extends Game {
   id: string
   answers?: RoundResults
   opponentProgress?: OpponentProgress

@@ -2,16 +2,9 @@ import getSupabaseClient from '@/client/supabase'
 import httpStatuses from '@/constants/http-codes'
 import { assertMethod, getGameId, getGamePlayer, getIsJoining } from '@/helpers/api/validation'
 import log from '@/helpers/log'
-import { Game, GameConfig, GameState, Players, Rooms } from '@/typings/supabase'
+import { Game, Player } from '@/typings/game'
 import { SupabaseClient } from '@supabase/supabase-js'
 import type { NextApiRequest, NextApiResponse } from 'next'
-
-type Data = {
-  game: Rooms
-  gameConfig: GameConfig
-  gameState: GameState
-  players: Players[]
-}
 
 type ErrorResponse = any
 
@@ -21,7 +14,7 @@ function getGame(client: SupabaseClient, id: string) {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data | ErrorResponse>
+  res: NextApiResponse<Game | ErrorResponse>
 ) {
   if (!assertMethod('POST', { req, res })) {
     return
@@ -40,25 +33,31 @@ export default async function handler(
 
   const supabase = getSupabaseClient()
 
-  const room = await getGame(supabase, name)
+  const game = await getGame(supabase, name)
 
-  if (room.error) {
-    log.e(room.error)
-    return res.status(400).json(room.error)
+  if (game.error) {
+    log.e(game.error)
+    return res.status(400).json(game.error)
   }
 
-  let players = (room.data.players || []) as Players[]
+  let players = (game.data.players || []) as Player[]
 
-  const isInGame = players.find((gamePlayer) => gamePlayer.id === player)
+  const isInGame = players.find((gamePlayer) => gamePlayer.id === player.id)
 
   const isValidAction = (!isInGame && isJoining) || (isInGame && !isJoining)
   if (isValidAction) {
+    const newPlayer: Player = {
+      id: player.id,
+      colour: player.colour,
+      name: player.name,
+    }
+
     players = isJoining
-      ? [...players, { id: player }]
-      : players.filter((gamePlayer) => gamePlayer.id !== player)
+      ? [...players, newPlayer]
+      : players.filter((gamePlayer) => gamePlayer.id !== player.id)
 
     try {
-      console.log(isJoining ? 'adding' : 'removing', player, 'in room')
+      console.log(isJoining ? 'adding' : 'removing', player, 'in game')
       await supabase.from('game').update({ players }).match({ id: name })
     } catch (e) {
       return res.status(httpStatuses.BAD_REQUEST).json({ message: e })
@@ -68,9 +67,9 @@ export default async function handler(
   }
 
   return res.json({
-    ...room.data,
-    config: room.data.config,
-    state: room.data.state,
+    ...game.data,
+    config: game.data.config,
+    state: game.data.state,
     players,
   })
 }

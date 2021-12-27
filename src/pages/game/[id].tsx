@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/router'
 import {
   Player,
   GameConfig,
@@ -17,13 +16,12 @@ import { ExternalLink } from '@/components/visual'
 import GameName from '@/components/GameName'
 import GameContext from '../../contexts/GameContext'
 import { joinGameWithID, leaveGameWithID } from '@/client/rest'
-import { getUserSessionID } from '@/helpers/getPersistedPlayer'
-import { Players } from '@/typings/supabase'
+import { getUserSession } from '@/helpers/getPersistedPlayer'
 import Themed from '@/components/Themed'
 import { Subscribe } from '@react-rxjs/core'
 import { manager } from '@/hooks/supabase'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
-import { debounceTime, filter, fromEvent, iif, map, mergeMap, of, startWith, Subject } from 'rxjs'
+import { fromEvent, map, of, startWith } from 'rxjs'
 
 interface GameParams {
   gameId: string
@@ -43,14 +41,13 @@ export default function Game() {
   const [gameState, setGameState] = useState<GameState>()
   const [gameConfig, setGameConfig] = useState<GameConfig | null | undefined>()
   const [answers, setAnswers] = useState<RoundResults>()
-  const [players, setPlayers] = useState<Players[]>()
+  const [players, setPlayers] = useState<Player[]>()
   const [opponentProgress, setOpponentProgress] = useState<OpponentProgress>()
 
   const joinGame = useCallback(async () => {
-    if (hasJoined) return
-    const playerId = getUserSessionID()
-    if (typeof gameId !== 'string') return
-    const response = await joinGameWithID(gameId, playerId)
+    if (typeof gameId !== 'string' || hasJoined) return
+    const player = getUserSession()
+    const response = await joinGameWithID(gameId, player)
     setGameConfig(response.config)
     setGameState(response.state)
     setPlayers(response.players)
@@ -59,13 +56,12 @@ export default function Game() {
 
   const leaveGame = useCallback(() => {
     if (!hasJoined) return
-    const playerId = getUserSessionID()
-    leaveGameWithID(gameId, playerId)
+    const player = getUserSession()
+    leaveGameWithID(gameId, player)
     setHasJoined(false)
   }, [gameId, hasJoined])
 
   const visibility$ = useMemo(() => {
-    console.log('visibility$')
     if (typeof document === 'undefined') return of(false)
     return fromEvent(document, 'visibilitychange').pipe(
       startWith(false),
@@ -75,16 +71,9 @@ export default function Game() {
 
   // Join/leave game when visibility changes
   useEffect(() => {
-    console.log('useEffect onVisibilityChange')
-    const onVisibilityChange = visibility$.subscribe((isHidden) => {
-      if (isHidden) {
-        console.log('Hidden, leaving game')
-        leaveGame()
-      } else {
-        console.log('Shown, joining game')
-        joinGame()
-      }
-    })
+    const onVisibilityChange = visibility$.subscribe((isHidden) =>
+      isHidden ? leaveGame() : joinGame()
+    )
 
     return () => {
       onVisibilityChange.unsubscribe()
@@ -143,7 +132,7 @@ export default function Game() {
 
   let Component
 
-  switch (gameState.stage) {
+  switch (gameState?.stage) {
     case GameStage.ACTIVE:
     case GameStage.ENDING:
       Component = ActiveRound
@@ -165,8 +154,8 @@ export default function Game() {
     <Themed>
       <GameContext.Provider value={gameContextValue}>
         <Subscribe>
-          <PageTitle isInGame={gameState.stage !== GameStage.PRE} />
-          <GameName isShareable={gameState.stage === GameStage.PRE} />
+          <PageTitle isInGame={gameState?.stage !== GameStage.PRE} />
+          <GameName isShareable={gameState?.stage === GameStage.PRE} />
           <Component />
         </Subscribe>
       </GameContext.Provider>

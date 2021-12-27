@@ -1,14 +1,11 @@
-import { updateAlliteration } from '@/client/functions'
-import { useGameConfigAlliteration } from '@/hooks/supabase'
-import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
+import { manager, useGameConfigAlliteration } from '@/hooks/supabase'
 import { Checkbox } from '@/components/visual'
 
 const Alliteration: React.FC = () => {
-  const gameId = useGameIdFromRoute()
   const isAlliterationRewarded = useGameConfigAlliteration()
 
   const handleChange = () => {
-    updateAlliteration(gameId, !isAlliterationRewarded)
+    manager.setGameConfigAlliteration(!isAlliterationRewarded)
   }
 
   return (

@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid'
 import { Player } from '@/typings/game'
 import * as random from './random'
+import { COLOUR_VALUES } from '@/constants/colours'
 
 const ID_LENGTH = 8
 const LEGACY_KEY = 'session'
@@ -25,6 +26,7 @@ export function getUserSession(): Player {
   const user: Player = {
     id: nanoid(ID_LENGTH),
     name: random.getPlayerName(),
+    colour: random.getValue(COLOUR_VALUES),
   }
 
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(user))

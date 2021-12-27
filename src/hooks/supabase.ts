@@ -1,19 +1,22 @@
 import getSupabaseClient from '@/client/supabase'
-import { IGame } from '@/typings/supabase'
+import { Game } from '@/typings/game'
 import { bind } from '@react-rxjs/core'
-import { SupabaseRealtimePayload } from '@supabase/supabase-js'
+import { PostgrestError, SupabaseClient, SupabaseRealtimePayload } from '@supabase/supabase-js'
 import { map, merge, Observable, of, share, tap } from 'rxjs'
 import { filter } from 'rxjs/operators'
 
-type Payload = SupabaseRealtimePayload<any>
+enum DatabaseFunctions {
+  UpdateLetters = 'game_update_letters',
+  UpdateAlliteration = 'game_update_alliteration',
+}
 
 function fetchGame(id: string) {
-  return new Observable<IGame>((subscriber) => {
+  return new Observable<Game>((subscriber) => {
     const supabase = getSupabaseClient()
 
     try {
       supabase
-        .from<IGame>(`game`)
+        .from<Game>(`game`)
         .select()
         .eq('id', id)
         .limit(1)
@@ -28,10 +31,10 @@ function fetchGame(id: string) {
 }
 
 const subscribeToGame = (id: string) => {
-  return new Observable<IGame>((subscriber) => {
+  return new Observable<Game>((subscriber) => {
     const supabase = getSupabaseClient()
     const realtimeSubscription = supabase
-      .from<IGame>(`game:id=eq.${id}`)
+      .from<Game>(`game:id=eq.${id}`)
       .on('*', (payload) => {
         subscriber.next(payload.new)
       })
@@ -45,20 +48,27 @@ const subscribeToGame = (id: string) => {
 
 class Manager {
   constructor() {
-    console.log('instantiated')
+    this.client = getSupabaseClient()
   }
 
   gameId!: string
 
-  sharedGameRequest$!: Observable<IGame>
+  client!: SupabaseClient
 
-  sharedGameSubscription$!: Observable<IGame>
+  sharedGameRequest$!: Observable<Game>
+
+  sharedGameSubscription$!: Observable<Game>
 
   setId(gameId: string) {
     if (typeof gameId !== 'string') return
     this.gameId = gameId
   }
 
+  logError(error: PostgrestError) {
+    console.error(error)
+  }
+
+  // Multicasted game rest request
   get fetchGame$() {
     if (!this.gameId) return of(null)
     if (!this.sharedGameRequest$) {
@@ -67,6 +77,7 @@ class Manager {
     return this.sharedGameRequest$
   }
 
+  // Multicasted game update subscription
   get gameSubscription$() {
     if (!this.gameId) return of(null)
     if (!this.sharedGameSubscription$) {
@@ -75,6 +86,7 @@ class Manager {
     return this.sharedGameSubscription$
   }
 
+  // Emit the game object (rest) and any updates to follow (websocket)
   get game$() {
     return merge(this.gameSubscription$, this.fetchGame$).pipe(filter(Boolean))
   }
@@ -93,8 +105,28 @@ class Manager {
     return this.gameConfig$.pipe(map((config) => config.letters.split('')))
   }
 
+  async setGameConfigLetters(letters: string[]) {
+    const { error } = await this.client.rpc(DatabaseFunctions.UpdateLetters, {
+      game_id: this.gameId,
+      new_letters: letters.join(''),
+    })
+    if (error) {
+      this.logError(error)
+    }
+  }
+
   get gameConfigAlliteration$() {
     return this.gameConfig$.pipe(map((config) => config.alliteration))
+  }
+
+  async setGameConfigAlliteration(alliteration: boolean) {
+    const { error } = await this.client.rpc(DatabaseFunctions.UpdateAlliteration, {
+      game_id: this.gameId,
+      new_alliteration: alliteration,
+    })
+    if (error) {
+      this.logError(error)
+    }
   }
 
   // GAME STATE

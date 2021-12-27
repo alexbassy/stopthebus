@@ -1,24 +1,15 @@
-import { updateLetters } from '@/client/functions'
-import { useGameConfigLetters } from '@/hooks/supabase'
-import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
+import { manager, useGameConfigLetters } from '@/hooks/supabase'
 import { Checkbox, H3, Item, List, Spacing } from '@/components/visual'
 import { ENGLISH_LETTERS } from '@/constants/letters'
 import { Flex } from '@/components/Grid'
 
 const Letters: React.FC = (props) => {
-  const gameId = useGameIdFromRoute()
   const gameLetters = useGameConfigLetters()
 
   const handleChange = (letter: string) => () => {
     const newLetters = new Set(gameLetters)
-
-    if (newLetters.has(letter)) {
-      newLetters.delete(letter)
-    } else {
-      newLetters.add(letter)
-    }
-
-    updateLetters(gameId, [...newLetters])
+    newLetters.has(letter) ? newLetters.delete(letter) : newLetters.add(letter)
+    manager.setGameConfigLetters([...newLetters])
   }
 
   return (

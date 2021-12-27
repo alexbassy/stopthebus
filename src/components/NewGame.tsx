@@ -95,19 +95,6 @@ export default function NewGame(props: NewGameProps) {
     })
   }
 
-  const handleAlliterationChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const isChecked = event.target.checked
-    props.onChange((gameConfig) => {
-      if (!gameConfig) return gameConfig
-      const newGameConfig: GameConfig = {
-        ...gameConfig,
-        scoreWithAlliteration: isChecked,
-      }
-      emit(ClientEvent.GAME_CONFIG, newGameConfig)
-      return newGameConfig
-    })
-  }
-
   const handleStartGameClick = (event: SyntheticEvent<HTMLButtonElement>) => {
     if (!game.config.categories.length) {
       alert('Please choose some categories to play with first')
@@ -131,8 +118,6 @@ export default function NewGame(props: NewGameProps) {
 
   const { config, players, state } = game
   const currentPlayer = players ? players.find((player) => player.id === getUserSessionID()) : null
-
-  console.log({ players, currentPlayer })
 
   if (!currentPlayer) return null
 

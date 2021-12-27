@@ -3,7 +3,6 @@
  */
 
 import { QueueEvent } from './socket-events'
-import { Players } from './supabase'
 
 export interface QueueJob {
   id?: string
@@ -126,12 +125,13 @@ export interface GameRound {
  * TOP LEVEL TYPES
  */
 
-export interface Room {
+export interface Game {
+  id: string
   state: GameState
   config: GameConfig
-  players: Players[]
+  players: Player[]
 }
 
-export interface Rooms {
-  [x: string]: Room
+export interface Games {
+  [x: string]: Game
 }
