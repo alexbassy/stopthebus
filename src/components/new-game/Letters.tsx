@@ -9,8 +9,6 @@ const Letters: React.FC = (props) => {
   const gameId = useGameIdFromRoute()
   const gameLetters = useGameConfigLetters()
 
-  console.log({ gameId, gameLetters })
-
   const handleChange = (letter: string) => () => {
     const newLetters = new Set(gameLetters)
 

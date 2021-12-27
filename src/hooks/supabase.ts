@@ -19,7 +19,6 @@ function fetchGame(id: string) {
         .limit(1)
         .single()
         .then((response) => {
-          console.log('response', response)
           subscriber.next(response.data ?? undefined)
         })
     } catch (err) {
@@ -34,7 +33,6 @@ const subscribeToGame = (id: string) => {
     const realtimeSubscription = supabase
       .from<IGame>(`game:id=eq.${id}`)
       .on('*', (payload) => {
-        console.log('Change received', payload)
         subscriber.next(payload.new)
       })
       .subscribe()
@@ -52,17 +50,21 @@ class Manager {
 
   gameId!: string
 
+  sharedGameRequest$!: Observable<IGame>
+
   sharedGameSubscription$!: Observable<IGame>
 
   setId(gameId: string) {
     if (typeof gameId !== 'string') return
-    console.log('gameid is', gameId)
     this.gameId = gameId
   }
 
   get fetchGame$() {
     if (!this.gameId) return of(null)
-    return fetchGame(this.gameId)
+    if (!this.sharedGameRequest$) {
+      this.sharedGameRequest$ = fetchGame(this.gameId).pipe(share())
+    }
+    return this.sharedGameRequest$
   }
 
   get gameSubscription$() {
@@ -74,18 +76,17 @@ class Manager {
   }
 
   get game$() {
-    return merge(this.gameSubscription$, this.fetchGame$).pipe(
-      tap((value) => {
-        console.log({ value })
-      })
-    )
+    return merge(this.gameSubscription$, this.fetchGame$).pipe(filter(Boolean))
   }
 
+  // GAME PLAYERS
+  get gamePlayers$() {
+    return this.game$.pipe(map((game) => game.players))
+  }
+
+  // GAME CONFIG
   get gameConfig$() {
-    return this.game$.pipe(
-      filter(Boolean),
-      map((game) => game.config)
-    )
+    return this.game$.pipe(map((game) => game.config))
   }
 
   get gameConfigLetters$() {
@@ -95,10 +96,17 @@ class Manager {
   get gameConfigAlliteration$() {
     return this.gameConfig$.pipe(map((config) => config.alliteration))
   }
+
+  // GAME STATE
 }
 
 export const manager = new Manager()
 
-export const [useGameConfigLetters] = bind(() => manager.gameConfigLetters$, [])
+// GAME PLAYERS
+export const [useGamePlayers] = bind(() => manager.gamePlayers$, [])
 
+// GAME CONFIG
+export const [useGameConfigLetters] = bind(() => manager.gameConfigLetters$, [])
 export const [useGameConfigAlliteration] = bind(() => manager.gameConfigAlliteration$, false)
+
+// GAME STATE

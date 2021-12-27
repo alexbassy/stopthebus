@@ -14,26 +14,32 @@ export function assertMethod(method: 'GET' | 'POST', { req, res }: Handler): boo
   return true
 }
 
-function getRequestPropertyOrReject(
+function getRequestPropertyOrReject<T>(
   propertyName: keyof Handler['req']['body'],
   { req, res }: Handler
-): [string, boolean] {
+): [T] | [T, boolean] {
   const property = req.body[propertyName]
-  if (!property) {
+
+  if (typeof property === 'undefined' || property == null) {
     res.status(400).json({ message: `${propertyName.toString()} required` })
-    return ['', true]
+    return [null as unknown as T, true]
   }
-  return [property as string, false]
+
+  return [property as T, false]
 }
 
-export function getGameId(handler: Handler): [string] | [string, boolean] {
-  return getRequestPropertyOrReject('id', handler)
+export function getGameId(handler: Handler) {
+  return getRequestPropertyOrReject<string>('id', handler)
 }
 
-export function getGameOwner(handler: Handler): [string] | [string, boolean] {
-  return getRequestPropertyOrReject('owner', handler)
+export function getGameOwner(handler: Handler) {
+  return getRequestPropertyOrReject<string>('owner', handler)
 }
 
-export function getGamePlayer(handler: Handler): [string] | [string, boolean] {
-  return getRequestPropertyOrReject('playerId', handler)
+export function getGamePlayer(handler: Handler) {
+  return getRequestPropertyOrReject<string>('playerId', handler)
+}
+
+export function getIsJoining(handler: Handler) {
+  return getRequestPropertyOrReject<boolean>('isJoining', handler)
 }

@@ -33,6 +33,7 @@ import Countdown from './Countdown'
 import GameContext from '../contexts/GameContext'
 import Letters from '@/components/new-game/Letters'
 import Alliteration from './new-game/Alliteration'
+import Players from './new-game/Players'
 
 interface NewGameProps {
   onChange: Dispatch<SetStateAction<GameConfig | null | undefined>>
@@ -129,7 +130,7 @@ export default function NewGame(props: NewGameProps) {
   }
 
   const { config, players, state } = game
-  const currentPlayer = players.find((player) => player.id === getUserSessionID())
+  const currentPlayer = players ? players.find((player) => player.id === getUserSessionID()) : null
 
   console.log({ players, currentPlayer })
 
@@ -163,19 +164,9 @@ export default function NewGame(props: NewGameProps) {
       </Spacing>
       <Grid columns={[2, 1]} stackOnMobile>
         <Letters />
-        <section>
-          <H3>Players</H3>
-          <List>
-            {players &&
-              players.map((player) => (
-                <Item key={player.id}>
-                  <Player {...player} showMe />
-                </Item>
-              ))}
-          </List>
-        </section>
+        <Players />
       </Grid>
-      <section>
+      <section id='categories'>
         <H3>
           Categories
           <Lighter> ({config?.categories?.length ?? 0} selected)</Lighter>
@@ -197,7 +188,7 @@ export default function NewGame(props: NewGameProps) {
             </Select>
           </label>
         </div>
-        <div>
+        <div id='mode-timer'>
           {config?.mode === GameMode.TIMER && (
             <label>
               Time (seconds){' '}
@@ -209,7 +200,7 @@ export default function NewGame(props: NewGameProps) {
             </label>
           )}
         </div>
-        <div>
+        <div id='numRounds'>
           <label htmlFor='game-number-rounds'>Number of rounds </label>
           <Select
             id='game-number-rounds'

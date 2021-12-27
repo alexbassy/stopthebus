@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import {
   Player,
@@ -16,26 +16,22 @@ import PageTitle from '@/components/PageTitle'
 import { ExternalLink } from '@/components/visual'
 import GameName from '@/components/GameName'
 import GameContext from '../../contexts/GameContext'
-import { joinGameWithID } from '@/client/rest'
+import { joinGameWithID, leaveGameWithID } from '@/client/rest'
 import { getUserSessionID } from '@/helpers/getPersistedPlayer'
 import { Players } from '@/typings/supabase'
 import Themed from '@/components/Themed'
 import { Subscribe } from '@react-rxjs/core'
 import { manager } from '@/hooks/supabase'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
+import { debounceTime, filter, fromEvent, iif, map, mergeMap, of, startWith, Subject } from 'rxjs'
 
 interface GameParams {
   gameId: string
 }
 
-const defaultGameState: GameState = {
-  stage: GameStage.PRE,
-  rounds: [],
-}
-
 export default function Game() {
   const gameId = useGameIdFromRoute()
-  const [hasGame, setHasGame] = useState<boolean>(false)
+  const [hasJoined, setHasJoined] = useState<boolean>(false)
 
   useEffect(() => {
     if (gameId !== manager.gameId) {
@@ -44,28 +40,56 @@ export default function Game() {
   }, [gameId])
 
   // Each of these states represents a top level property on the room
-  const [gameState, setGameState] = useState<GameState>(defaultGameState)
+  const [gameState, setGameState] = useState<GameState>()
   const [gameConfig, setGameConfig] = useState<GameConfig | null | undefined>()
   const [answers, setAnswers] = useState<RoundResults>()
   const [players, setPlayers] = useState<Players[]>()
   const [opponentProgress, setOpponentProgress] = useState<OpponentProgress>()
 
-  // First connect to the game.
-  useEffect(() => {
-    async function join() {
-      if (typeof gameId !== 'string') return
-      const playerId = getUserSessionID()
-      console.log({ playerId })
-      const response = await joinGameWithID(gameId, playerId)
-      setGameConfig(response.config)
-      setGameState(response.state)
-      setPlayers(response.players)
-      setHasGame(true)
-      console.log(response)
-    }
+  const joinGame = useCallback(async () => {
+    if (hasJoined) return
+    const playerId = getUserSessionID()
+    if (typeof gameId !== 'string') return
+    const response = await joinGameWithID(gameId, playerId)
+    setGameConfig(response.config)
+    setGameState(response.state)
+    setPlayers(response.players)
+    setHasJoined(true)
+  }, [gameId, hasJoined])
 
-    join()
-  }, [gameId])
+  const leaveGame = useCallback(() => {
+    if (!hasJoined) return
+    const playerId = getUserSessionID()
+    leaveGameWithID(gameId, playerId)
+    setHasJoined(false)
+  }, [gameId, hasJoined])
+
+  const visibility$ = useMemo(() => {
+    console.log('visibility$')
+    if (typeof document === 'undefined') return of(false)
+    return fromEvent(document, 'visibilitychange').pipe(
+      startWith(false),
+      map(() => document.visibilityState === 'hidden')
+    )
+  }, [])
+
+  // Join/leave game when visibility changes
+  useEffect(() => {
+    console.log('useEffect onVisibilityChange')
+    const onVisibilityChange = visibility$.subscribe((isHidden) => {
+      if (isHidden) {
+        console.log('Hidden, leaving game')
+        leaveGame()
+      } else {
+        console.log('Shown, joining game')
+        joinGame()
+      }
+    })
+
+    return () => {
+      onVisibilityChange.unsubscribe()
+    }
+  }, [gameId, joinGame, leaveGame, visibility$])
 
   // REMOVED
   // when connected to socket (change this to realtime connection), create or join game
@@ -75,7 +99,7 @@ export default function Game() {
   // ---> add `visibilitychange` listener which removes user from game
   // ->
 
-  if (!hasGame) {
+  if (!hasJoined) {
     return (
       <Themed>
         <PageTitle />
@@ -85,7 +109,7 @@ export default function Game() {
     )
   }
 
-  if (!hasGame && gameConfig === null) {
+  if (!hasJoined && gameConfig === null) {
     return (
       <Themed>
         <PageTitle />
@@ -95,7 +119,7 @@ export default function Game() {
     )
   }
 
-  if (hasGame && gameConfig === null) {
+  if (hasJoined && gameConfig === null) {
     return (
       <Themed>
         <PageTitle />
