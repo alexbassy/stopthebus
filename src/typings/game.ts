@@ -26,7 +26,7 @@ export interface GameConfig {
   id: string
   name: string
   categories: string[]
-  rounds: number
+  numRounds: number
   mode: GameMode
   time?: number
   letters: string

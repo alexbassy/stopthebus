@@ -1,14 +1,16 @@
 import getSupabaseClient from '@/client/supabase'
 import { Game } from '@/typings/game'
 import { bind } from '@react-rxjs/core'
-import { PostgrestError, SupabaseClient, SupabaseRealtimePayload } from '@supabase/supabase-js'
-import { map, merge, Observable, of, share, tap } from 'rxjs'
+import { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
+import { map, merge, Observable, of, share } from 'rxjs'
 import { filter } from 'rxjs/operators'
 
 enum DatabaseFunctions {
-  UpdateLetters = 'game_update_letters',
-  UpdateAlliteration = 'game_update_alliteration',
   UpdatePlayerName = 'game_player_update_name',
+  UpdateLetters = 'game_update_letters',
+  UpdateRounds = 'game_update_rounds',
+  UpdateAlliteration = 'game_update_alliteration',
+  UpdateCategories = 'game_update_categories',
 }
 
 function fetchGame(id: string) {
@@ -127,6 +129,34 @@ class Manager {
     }
   }
 
+  get gameConfigCategories$() {
+    return this.gameConfig$.pipe(map((config) => config.categories))
+  }
+
+  async setGameConfigCategories(categories: string[]) {
+    const { error } = await this.client.rpc(DatabaseFunctions.UpdateCategories, {
+      game_id: this.gameId,
+      new_categories: categories,
+    })
+    if (error) {
+      this.logError(error)
+    }
+  }
+
+  get gameConfigRounds$() {
+    return this.gameConfig$.pipe(map((config) => config.numRounds))
+  }
+
+  async setGameConfigRounds(rounds: number) {
+    const { error } = await this.client.rpc(DatabaseFunctions.UpdateRounds, {
+      game_id: this.gameId,
+      new_rounds: rounds,
+    })
+    if (error) {
+      this.logError(error)
+    }
+  }
+
   get gameConfigAlliteration$() {
     return this.gameConfig$.pipe(map((config) => config.alliteration))
   }
@@ -151,6 +181,8 @@ export const [useGamePlayers] = bind(() => manager.gamePlayers$, [])
 
 // GAME CONFIG
 export const [useGameConfigLetters] = bind(() => manager.gameConfigLetters$, [])
+export const [useGameConfigCategories] = bind(() => manager.gameConfigCategories$, [])
+export const [useGameConfigRounds] = bind(() => manager.gameConfigRounds$, 0)
 export const [useGameConfigAlliteration] = bind(() => manager.gameConfigAlliteration$, false)
 
 // GAME STATE

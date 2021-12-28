@@ -26,7 +26,7 @@ import {
   Description,
 } from './visual'
 import FormControl from './FormControl'
-import CategoriesList from './CategoriesList'
+import CategoriesList from './new-game/CategoriesList'
 import Player from './Player'
 import Dialog from './Dialog'
 import Countdown from './Countdown'
@@ -37,6 +37,8 @@ import Players from './new-game/Players'
 import PlayerName from './new-game/PlayerName'
 import usePlayer from '@/hooks/usePlayer'
 import CurrentPlayer from './new-game/CurrentPlayer'
+import { useGameConfigCategories } from '@/hooks/supabase'
+import RaceRounds from './new-game/RaceRounds'
 
 interface NewGameProps {
   onChange: Dispatch<SetStateAction<GameConfig | null | undefined>>
@@ -45,20 +47,8 @@ interface NewGameProps {
 export default function NewGame(props: NewGameProps) {
   const emit = (...args: any) => console.log(...args)
   const game = useContext(GameContext)
-  const player = usePlayer()
 
   if (!game) return null
-
-  const handleCategoryChange = (categories: string[]) => {
-    props.onChange((gameConfig) => {
-      const newGameConfig = {
-        ...gameConfig,
-        categories,
-      }
-      emit(ClientEvent.GAME_CONFIG, newGameConfig)
-      return newGameConfig as GameConfig
-    })
-  }
 
   const handleModeChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value
@@ -79,19 +69,6 @@ export default function NewGame(props: NewGameProps) {
       const newGameConfig = {
         ...gameConfig,
         time: value * 1000,
-      }
-      emit(ClientEvent.GAME_CONFIG, newGameConfig)
-      return newGameConfig
-    })
-  }
-
-  const handleRoundCountChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value
-    props.onChange((gameConfig) => {
-      if (!gameConfig) return gameConfig
-      const newGameConfig: GameConfig = {
-        ...gameConfig,
-        rounds: Number(value),
       }
       emit(ClientEvent.GAME_CONFIG, newGameConfig)
       return newGameConfig
@@ -128,18 +105,11 @@ export default function NewGame(props: NewGameProps) {
         <Letters />
         <Players />
       </Grid>
-      <section id='categories'>
-        <H3>
-          Categories
-          <Lighter> ({config?.categories?.length ?? 0} selected)</Lighter>
-        </H3>
-        <CategoriesList
-          selectedCategories={config?.categories || []}
-          onChange={handleCategoryChange}
-        />
-      </section>
+
+      <CategoriesList />
+
       <section>
-        <H3>Mode</H3>
+        {/* <H3>Mode</H3>
         <p>You can race against each other, or with a time limit</p>
         <div aria-hidden style={{ display: 'none' }}>
           <label>
@@ -161,22 +131,10 @@ export default function NewGame(props: NewGameProps) {
               />
             </label>
           )}
-        </div>
-        <div id='numRounds'>
-          <label htmlFor='game-number-rounds'>Number of rounds </label>
-          <Select
-            id='game-number-rounds'
-            value={config?.rounds}
-            onBlur={handleRoundCountChange}
-            onChange={handleRoundCountChange}
-          >
-            {range(1, 10).map((val) => (
-              <option key={val} value={val}>
-                {val}
-              </option>
-            ))}
-          </Select>
-        </div>
+        </div> */}
+        <Spacing b={2} />
+        <RaceRounds />
+        <Spacing b={2} />
         <Alliteration />
       </section>
       <Spacing b={2} />
