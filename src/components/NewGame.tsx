@@ -34,15 +34,18 @@ import GameContext from '../contexts/GameContext'
 import Letters from '@/components/new-game/Letters'
 import Alliteration from './new-game/Alliteration'
 import Players from './new-game/Players'
+import PlayerName from './new-game/PlayerName'
+import usePlayer from '@/hooks/usePlayer'
+import CurrentPlayer from './new-game/CurrentPlayer'
 
 interface NewGameProps {
   onChange: Dispatch<SetStateAction<GameConfig | null | undefined>>
 }
 
 export default function NewGame(props: NewGameProps) {
-  const [nickname, setNickname] = useState<string>('')
   const emit = (...args: any) => console.log(...args)
   const game = useContext(GameContext)
+  const player = usePlayer()
 
   if (!game) return null
 
@@ -103,15 +106,6 @@ export default function NewGame(props: NewGameProps) {
     emit(ClientEvent.START_ROUND)
   }
 
-  const handleNicknameChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setNickname(event.target.value)
-  }
-
-  const handleNickNameUpdate = (event: SyntheticEvent<HTMLButtonElement>) => {
-    updatePersistedUserName(nickname)
-    emit(ClientEvent.UPDATE_NICKNAME, nickname)
-  }
-
   const handleCancelStartGame = () => {
     emit(ClientEvent.CANCEL_START_ROUND)
   }
@@ -127,26 +121,9 @@ export default function NewGame(props: NewGameProps) {
         <title>New Game - Stop The Bus</title>
       </Head>
       <Spacing y={1}>
-        Welcome, <Player {...currentPlayer} inline />!
+        <CurrentPlayer />
       </Spacing>
-      <FormControl>
-        <Input
-          type='text'
-          value={nickname}
-          onChange={handleNicknameChange}
-          placeholder='Enter your nickname'
-          aria-label='Nickname'
-          aria-describedby='nickname-description'
-        />
-        <Button type='button' onClick={handleNickNameUpdate}>
-          Update
-        </Button>
-      </FormControl>
-      <Spacing t={0.5}>
-        <Description id='nickname-description'>
-          Enter a nickname for other players to see you by.
-        </Description>
-      </Spacing>
+      <PlayerName />
       <Grid columns={[2, 1]} stackOnMobile>
         <Letters />
         <Players />

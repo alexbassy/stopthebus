@@ -1,13 +1,9 @@
 import { useGamePlayers } from '@/hooks/supabase'
-import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 import { H3, Item, List } from '@/components/visual'
 import Player from '@/components/Player'
 
-const Players: React.FC = (props) => {
-  const gameId = useGameIdFromRoute()
+const Players: React.FC = () => {
   const gamePlayers = useGamePlayers()
-
-  console.log({ gamePlayers })
 
   return (
     <section>

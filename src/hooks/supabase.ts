@@ -8,6 +8,7 @@ import { filter } from 'rxjs/operators'
 enum DatabaseFunctions {
   UpdateLetters = 'game_update_letters',
   UpdateAlliteration = 'game_update_alliteration',
+  UpdatePlayerName = 'game_player_update_name',
 }
 
 function fetchGame(id: string) {
@@ -94,6 +95,17 @@ class Manager {
   // GAME PLAYERS
   get gamePlayers$() {
     return this.game$.pipe(map((game) => game.players))
+  }
+
+  async setGamePlayerName(playerId: string, newName: string) {
+    const { error } = await this.client.rpc(DatabaseFunctions.UpdatePlayerName, {
+      game_id: this.gameId,
+      player_id: playerId,
+      new_name: newName,
+    })
+    if (error) {
+      this.logError(error)
+    }
   }
 
   // GAME CONFIG

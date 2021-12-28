@@ -41,8 +41,8 @@ export interface GameConfig {
 
 export interface Player {
   id: string
-  name?: string
-  colour?: string
+  name: string
+  colour: string
 }
 
 /**
