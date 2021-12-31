@@ -15,7 +15,7 @@ export function assertMethod(method: 'GET' | 'POST', { req, res }: Handler): boo
   return true
 }
 
-function getRequestPropertyOrReject<T>(
+export function getRequestPropertyOrReject<T>(
   propertyName: keyof Handler['req']['body'],
   { req, res }: Handler
 ): [T] | [T, boolean] {

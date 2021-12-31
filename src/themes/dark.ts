@@ -1,4 +1,4 @@
-import { Theme } from './type'
+import { Theme } from '@emotion/react'
 
 const palette = {
   orange: '#FF9770',
@@ -15,8 +15,7 @@ const dark: Theme = {
   fonts: {
     title: {
       name: 'Raleway, sans-serif',
-      href:
-        'https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Raleway:wght@700&display=swap',
+      href: 'https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Raleway:wght@700&display=swap',
     },
     body: {
       name: '"Sora"',

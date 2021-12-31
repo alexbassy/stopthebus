@@ -1,17 +1,11 @@
+import { setLetters } from '@/client/rest'
 import getSupabaseClient from '@/client/supabase'
-import { Game } from '@/typings/game'
-import { bind } from '@react-rxjs/core'
+import { DatabaseFunctions } from '@/constants/database-functions'
+import { Game, GameStage } from '@/typings/game'
+import { bind, shareLatest } from '@react-rxjs/core'
 import { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
-import { map, merge, Observable, of, share } from 'rxjs'
-import { filter } from 'rxjs/operators'
-
-enum DatabaseFunctions {
-  UpdatePlayerName = 'game_player_update_name',
-  UpdateLetters = 'game_update_letters',
-  UpdateRounds = 'game_update_rounds',
-  UpdateAlliteration = 'game_update_alliteration',
-  UpdateCategories = 'game_update_categories',
-}
+import { map, merge, Observable, of, share, Subject } from 'rxjs'
+import { distinct, filter, pairwise, switchMap, takeUntil } from 'rxjs/operators'
 
 function fetchGame(id: string) {
   return new Observable<Game>((subscriber) => {
@@ -75,7 +69,7 @@ class Manager {
   get fetchGame$() {
     if (!this.gameId) return of(null)
     if (!this.sharedGameRequest$) {
-      this.sharedGameRequest$ = fetchGame(this.gameId).pipe(share())
+      this.sharedGameRequest$ = fetchGame(this.gameId).pipe(shareLatest())
     }
     return this.sharedGameRequest$
   }
@@ -120,13 +114,7 @@ class Manager {
   }
 
   async setGameConfigLetters(letters: string[]) {
-    const { error } = await this.client.rpc(DatabaseFunctions.UpdateLetters, {
-      game_id: this.gameId,
-      new_letters: letters.join(''),
-    })
-    if (error) {
-      this.logError(error)
-    }
+    setLetters(this.gameId, letters.join(''))
   }
 
   get gameConfigCategories$() {
@@ -172,6 +160,44 @@ class Manager {
   }
 
   // GAME STATE
+  get gameState$() {
+    return this.game$.pipe(map((game) => game.state))
+  }
+
+  timer$ = new Subject<boolean>()
+
+  get gameStateStage$() {
+    return this.gameState$.pipe(
+      map((state) => state.stage),
+      distinct(),
+      pairwise(),
+      switchMap(([oldStage, newStage]) => {
+        if (oldStage === GameStage.PRE && newStage === GameStage.ACTIVE) {
+          const delay$ = this.timer$.pipe(
+            map(() => newStage),
+            takeUntil(this.timer$)
+          )
+          this.timer$.next(true)
+          return delay$
+        }
+        this.timer$.next(false)
+        return of(newStage)
+      })
+    )
+  }
+
+  // GAME CURRENT ROUND
+  get gameRound$() {
+    return this.game$.pipe(map((game) => game.currentRound))
+  }
+
+  get gameRoundTimeStarted$() {
+    return this.gameRound$.pipe(map((round) => round?.timeStarted ?? 0))
+  }
+
+  get gameRoundLetter$() {
+    return this.gameRound$.pipe(map((round) => round?.letter))
+  }
 }
 
 export const manager = new Manager()
@@ -186,3 +212,8 @@ export const [useGameConfigRounds] = bind(() => manager.gameConfigRounds$, 0)
 export const [useGameConfigAlliteration] = bind(() => manager.gameConfigAlliteration$, false)
 
 // GAME STATE
+export const [useGameStateStage] = bind(() => manager.gameStateStage$, null)
+
+// GAME ROUNDS
+export const [useGameRoundTimeStarted] = bind(() => manager.gameRoundTimeStarted$, null)
+export const [useGameRoundLetter] = bind(() => manager.gameRoundLetter$, null)

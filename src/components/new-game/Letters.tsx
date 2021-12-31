@@ -3,7 +3,7 @@ import { Checkbox, H3, Item, List, Spacing } from '@/components/visual'
 import { ENGLISH_LETTERS } from '@/constants/letters'
 import { Flex } from '@/components/Grid'
 
-const Letters: React.FC = (props) => {
+const Letters: React.FC = () => {
   const gameLetters = useGameConfigLetters()
 
   const handleChange = (letter: string) => () => {

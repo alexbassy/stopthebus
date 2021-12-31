@@ -1,4 +1,4 @@
-import { GameConfig } from '@/typings/supabase'
+import { GameConfig } from '@/typings/game'
 import { Observable } from 'rxjs'
 import getSupabaseClient from './supabase'
 

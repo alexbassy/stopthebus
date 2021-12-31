@@ -53,20 +53,11 @@ export enum GameStage {
   // Still on the config screen, game not started yet
   PRE = 'pre',
 
-  // Someone has just clicked the “start game” button
-  STARTING = 'starting',
-
   // Game is in progress, players are typing answers
   ACTIVE = 'active',
 
-  // Game is in progress but one player has finished the round
-  ENDING = 'ending',
-
   // Round has finished, players are reviewing/scoring
   REVIEW = 'review',
-
-  // Non-initial round is about to begin; review round screen is shown
-  NEXT_STARTING = 'NEXT_STARTING',
 
   // Game has finished, scores are revealed
   FINISHED = 'finished',
@@ -89,11 +80,8 @@ export interface FinalScores {
 
 export interface GameState {
   stage: GameStage
-  rounds: GameRound[]
-  currentRound?: GameRound
   finalScores?: FinalScores
   nextGameID?: string
-  nextLetter?: string
 }
 
 export interface RoundResults {
@@ -113,7 +101,7 @@ export interface Scores {
 }
 
 export interface GameRound {
-  letter?: string
+  letter: string
   timeStarted: number // Time the round started
   timeEnded?: number // The time the round ended, more applicable for races
   endedByPlayer?: string // The player who ended the round
@@ -129,6 +117,8 @@ export interface Game {
   id: string
   state: GameState
   config: GameConfig
+  currentRound: GameRound | null
+  previousRounds: GameRound[] | null
   players: Player[]
 }
 

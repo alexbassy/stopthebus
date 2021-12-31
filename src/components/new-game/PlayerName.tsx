@@ -2,18 +2,16 @@ import { manager } from '@/hooks/supabase'
 import { Button, Description, Input, Spacing } from '@/components/visual'
 import FormControl from '@/components/FormControl'
 import { useState } from 'react'
-import {
-  getUserSession,
-  getUserSessionID,
-  updatePersistedUserName,
-} from '@/helpers/getPersistedPlayer'
+import { updatePersistedUserName } from '@/helpers/getPersistedPlayer'
+import usePlayer from '@/hooks/usePlayer'
 
 const PlayerName: React.FC = () => {
+  const player = usePlayer()
   const [username, setUsername] = useState('')
 
   const handleSubmit = async () => {
-    const playerId = getUserSessionID()
-    await manager.setGamePlayerName(playerId, username)
+    if (!player?.id) return
+    await manager.setGamePlayerName(player.id, username)
     updatePersistedUserName(username)
     setUsername('')
   }

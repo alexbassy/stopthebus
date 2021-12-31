@@ -1,4 +1,4 @@
-import { Theme } from './type'
+import { Theme } from '@emotion/react'
 
 const palette = {
   orange: '#FF9770',

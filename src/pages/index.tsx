@@ -1,7 +1,6 @@
 import React, { useState, SyntheticEvent, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { persistGameConfig } from '@/helpers/persistGame'
 import * as random from '@/helpers/random'
 import { Input, Button, H2, Spacing } from '@/components/visual'
 import PageTitle from '@/components/PageTitle'
@@ -35,15 +34,13 @@ export default function Home() {
   const handleCreateGame = async (ev: SyntheticEvent<HTMLFormElement>) => {
     ev.preventDefault()
 
-    console.log({ player })
-
     if (!player?.id) {
       alert('Failed to create player ID. Please try again.')
       return
     }
 
     try {
-      const response = await createGameWithID(newGameID, player.id)
+      await createGameWithID(newGameID, player.id)
       router.push(APP_ROUTES.game(newGameID))
     } catch (e) {
       log.e(e)

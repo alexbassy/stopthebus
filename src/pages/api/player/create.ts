@@ -1,21 +1,14 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import getSupabaseClient from '@/client/supabase'
-import { GameConfig, GameState, Players, Rooms } from '@/typings/supabase'
+import { Player } from '@/typings/game'
 import * as random from '@/helpers/random'
 import type { NextApiRequest, NextApiResponse } from 'next'
-
-type Data = {
-  game: Rooms
-  gameConfig: GameConfig
-  gameState: GameState
-  players: Players[]
-}
 
 type ErrorResponse = any
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data | ErrorResponse>
+  res: NextApiResponse<Player | ErrorResponse>
 ) {
   if (req.method !== 'POST') {
     return res.status(405).end()
@@ -25,18 +18,16 @@ export default async function handler(
 
   const supabase = getSupabaseClient()
 
-  const { data: player, error: playerError } = await supabase.from<Players>('players').insert([
+  const { data: player, error: playerError } = await supabase.from<Player>('players').insert([
     {
       name: name || random.getPlayerName(),
     },
   ])
 
-  console.log(player)
-
   if (playerError) {
-    console.error(playerError)
+    console.error('Error', playerError)
     return res.status(400).json({ message: JSON.stringify(playerError.message) })
   }
 
-  return res.status(201).send(JSON.stringify({ player }, null, 2))
+  return res.status(201).json(player)
 }

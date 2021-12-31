@@ -60,3 +60,15 @@ export function leaveGameWithID(id: string, player: Player): boolean {
   const blob = new Blob([JSON.stringify(body)], { type: 'application/json; charset=UTF-8' })
   return navigator.sendBeacon(API_ROUTES.joinGame, blob)
 }
+
+export function startGameWithID(id: string): Promise<void> {
+  return httpRequest(API_ROUTES.startGame, { id })
+}
+
+export function cancelStartGameWithID(id: string): Promise<void> {
+  return httpRequest(API_ROUTES.cancelStartGame, { id })
+}
+
+export function setLetters(id: string, letters: string): Promise<void> {
+  return httpRequest(API_ROUTES.functionSetLetters, { id, letters })
+}

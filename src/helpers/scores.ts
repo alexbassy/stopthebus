@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Game, GameConfig, Scores, GameRound, FinalScores } from '@/typings/game'
 import log from '../helpers/log'
 

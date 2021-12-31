@@ -3,12 +3,11 @@ import Head from 'next/head'
 import { Player as PlayerType } from '@/typings/game'
 import { Item, List, ExternalLink, Spacing } from './visual'
 import Player from './Player'
-import EmitterContext from '../contexts/EmitterContext'
 import GameContext from '../contexts/GameContext'
 import { APP_ROUTES } from '@/client/api-routes'
 
 export default function ReviewRound() {
-  const emit = useContext(EmitterContext)
+  const emit = (...args: any[]) => console.log(...args)
   const game = useContext(GameContext)
 
   if (!game || !emit) return null

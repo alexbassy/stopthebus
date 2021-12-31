@@ -2,9 +2,9 @@ import React from 'react'
 import Head from 'next/head'
 import PageTitle from '@/components/PageTitle'
 import { ExternalLink, Spacing } from '@/components/visual'
-import styled from '@/components/styled'
+import styled from '@emotion/styled'
 
-const StyledLink = styled<'a'>('a')`
+const StyledLink = styled.a`
   font-weight: bold;
 `.withComponent(ExternalLink)
 

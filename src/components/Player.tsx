@@ -1,16 +1,14 @@
 import React from 'react'
 import { Player as PlayerType } from '@/typings/game'
-import { getUserSessionID } from '@/helpers/getPersistedPlayer'
 import styled from '@emotion/styled'
 import { Spacing, Lighter } from './visual'
+import usePlayer from '@/hooks/usePlayer'
 
 interface PlayerProps extends PlayerType {
   inline?: boolean
   small?: boolean
   showMe?: boolean
 }
-
-const sessionID = getUserSessionID()
 
 interface PinProps {
   colour?: string
@@ -38,12 +36,13 @@ export const Pin = styled.span<PinProps>`
 `
 
 export default function Player(props: PlayerProps) {
+  const player = usePlayer()
   return (
     <Wrapper inline={props.inline} small={props.small}>
       <Pin colour={props.colour} small={props.small} />
       <Spacing r={props.small ? 0.25 : 0.5} inline />
       {props.name || props.id}{' '}
-      {props.showMe && !props.inline && props.id === sessionID && <Lighter> (me)</Lighter>}
+      {props.showMe && !props.inline && props.id === player?.id && <Lighter> (me)</Lighter>}
     </Wrapper>
   )
 }

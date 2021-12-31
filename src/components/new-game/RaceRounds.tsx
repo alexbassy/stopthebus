@@ -8,7 +8,6 @@ const RaceRounds: React.FC = () => {
 
   const handleRoundCountChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const value = Number(event.target.value)
-    console.log({ rounds, value })
     if (value === rounds || rounds === 0) {
       return
     }
