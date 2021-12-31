@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { css } from '@emotion/react'
+import isPropValid from '@emotion/is-prop-valid'
 import styled from '@emotion/styled'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -26,7 +27,9 @@ interface TextProps {
   isLarger?: boolean
 }
 
-const Text = styled(motion.p)<TextProps>`
+const Text = styled(motion.p, {
+  shouldForwardProp: (propName) => isPropValid(propName),
+})<TextProps>`
   font-size: ${(props) => (props.isLarger ? 30 : 20)}vw;
   font-weight: ${(props) => (props.isLarger ? 600 : 400)};
   color: #fff;

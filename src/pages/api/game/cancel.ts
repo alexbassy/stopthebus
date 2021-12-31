@@ -13,10 +13,10 @@ function getGame(client: SupabaseClient, id: string) {
   return client.from<Game>('game').select().eq('id', id).single()
 }
 
-function getNewRounds(previousRounds: GameRound[] | null): [GameRound | null, GameRound[]] {
+function getNewRounds(previousRounds: GameRound[] | null): [GameRound | null, GameRound[] | null] {
   const newPreviousRounds = [...(previousRounds || [])]
   const currentRound = newPreviousRounds.pop() || null
-  return [currentRound, newPreviousRounds]
+  return [currentRound, newPreviousRounds.length ? newPreviousRounds : null]
 }
 
 export default async function handler(

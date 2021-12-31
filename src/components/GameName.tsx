@@ -105,11 +105,7 @@ export default function GameName(props: GameNameProps) {
   }
 
   if (!game || !game.config) {
-    return (
-      <Spacing y={1}>
-        <Title>{paramsGameID}</Title>
-      </Spacing>
-    )
+    return <Title>{paramsGameID}</Title>
   }
 
   return (

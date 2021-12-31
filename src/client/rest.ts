@@ -38,6 +38,11 @@ async function httpRequest<T>(route: string, body: Record<any, any>): Promise<T>
       'content-type': 'application/json',
     },
   })
+
+  if (!(data.headers.get('Content-Type') ?? '').includes('application/json')) {
+    return data as any
+  }
+
   const response = await data.json()
   if (!data.ok) {
     throw refineError(response)

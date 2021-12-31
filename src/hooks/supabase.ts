@@ -4,8 +4,8 @@ import { DatabaseFunctions } from '@/constants/database-functions'
 import { Game, GameStage } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
 import { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
-import { map, merge, Observable, of, share, Subject } from 'rxjs'
-import { distinct, filter, pairwise, switchMap, takeUntil } from 'rxjs/operators'
+import { map, merge, Observable, of, share, Subject, timer } from 'rxjs'
+import { distinct, filter, pairwise, startWith, switchMap, takeUntil, tap } from 'rxjs/operators'
 
 function fetchGame(id: string) {
   return new Observable<Game>((subscriber) => {
@@ -164,23 +164,34 @@ class Manager {
     return this.game$.pipe(map((game) => game.state))
   }
 
-  timer$ = new Subject<boolean>()
+  cancelTimer$ = new Subject<boolean>()
 
+  // When stage is set to active, the consumer
   get gameStateStage$() {
     return this.gameState$.pipe(
       map((state) => state.stage),
-      distinct(),
+      // Pairwise emits in twos, so we need to kick it off
+      startWith(null),
+      // Allow previous and next values to be compared
       pairwise(),
       switchMap(([oldStage, newStage]) => {
-        if (oldStage === GameStage.PRE && newStage === GameStage.ACTIVE) {
-          const delay$ = this.timer$.pipe(
-            map(() => newStage),
-            takeUntil(this.timer$)
+        // If the round is being started, delay the `stage` update to the view
+        // layer so that the countdown can be shown
+        const isStartingRound =
+          (oldStage === GameStage.PRE || oldStage === GameStage.REVIEW) &&
+          newStage === GameStage.ACTIVE
+        if (isStartingRound) {
+          const delay$ = timer(3000).pipe(
+            takeUntil(this.cancelTimer$),
+            map(() => newStage)
           )
-          this.timer$.next(true)
           return delay$
         }
-        this.timer$.next(false)
+
+        // If cancelling the start of the round, kill the timer
+        if (oldStage === GameStage.ACTIVE) {
+          this.cancelTimer$.next(true)
+        }
         return of(newStage)
       })
     )

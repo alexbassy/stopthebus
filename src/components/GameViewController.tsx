@@ -10,20 +10,21 @@ import GameName from '@/components/GameName'
 const GameViewController: React.FC = () => {
   const gameStateStage = useGameStateStage()
 
+  console.log({ gameStateStage })
+
   let Component
 
   switch (gameStateStage) {
-    // case GameStage.ACTIVE:
-    //   Component = ActiveRound
-    //   break
-    // case GameStage.REVIEW:
-    //   Component = ReviewRound
-    //   break
-    // case GameStage.FINISHED:
-    //   Component = GameEnd
-    //   break
+    case GameStage.ACTIVE:
+      Component = ActiveRound
+      break
+    case GameStage.REVIEW:
+      Component = ReviewRound
+      break
+    case GameStage.FINISHED:
+      Component = GameEnd
+      break
     case GameStage.PRE:
-    default:
       Component = NewGame
   }
 
@@ -31,7 +32,7 @@ const GameViewController: React.FC = () => {
     <>
       <PageTitle isInGame={gameStateStage !== GameStage.PRE} />
       <GameName isShareable={gameStateStage === GameStage.PRE} />
-      <Component />
+      {Component ? <Component /> : null}
     </>
   )
 }
