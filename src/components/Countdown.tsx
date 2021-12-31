@@ -28,7 +28,7 @@ interface TextProps {
 }
 
 const Text = styled(motion.p, {
-  shouldForwardProp: (propName) => isPropValid(propName),
+  shouldForwardProp: (propName: string) => isPropValid(propName),
 })<TextProps>`
   font-size: ${(props) => (props.isLarger ? 30 : 20)}vw;
   font-weight: ${(props) => (props.isLarger ? 600 : 400)};
