@@ -30,4 +30,4 @@ const n = (name: string) => ({
   d: (...rest: any) => d(`[${name}]`, ...rest),
 })
 
-export default { s, n, e, r, d }
+export default { n, e, r, d, s }

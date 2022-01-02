@@ -1,11 +1,7 @@
 import { Game, Player } from '@/typings/game'
 import API_ROUTES from './api-routes'
 
-const errorMessages = {
-  [42703]: 'There’s no room by that name here.',
-}
-
-class RequestError extends Error {
+export class RequestError extends Error {
   constructor(errorData: any) {
     super()
     this.errorData = errorData
@@ -13,24 +9,24 @@ class RequestError extends Error {
   errorData: any
 }
 
-class GameNotFoundError extends RequestError {
+export class GameNotFoundError extends RequestError {
   message = 'There’s no room by that name here.'
 }
 
-class UnknownRequestError extends RequestError {
+export class UnknownRequestError extends RequestError {
   message = `Something went wrong. Code ${this.errorData.code}.`
 }
 
-function refineError(errorData: any) {
-  switch (errorData.code) {
-    case '42703':
+function refineError(errorData: Response) {
+  switch (errorData.status) {
+    case 404:
       return new GameNotFoundError(errorData)
     default:
       return new UnknownRequestError(errorData)
   }
 }
 
-async function httpRequest<T>(route: string, body: Record<any, any>): Promise<T> {
+async function httpRequest<T = any>(route: string, body: Record<any, any>): Promise<T> {
   const data = await fetch(route, {
     method: 'post',
     body: JSON.stringify(body),
@@ -39,14 +35,15 @@ async function httpRequest<T>(route: string, body: Record<any, any>): Promise<T>
     },
   })
 
+  if (!data.ok) {
+    throw refineError(data)
+  }
+
   if (!(data.headers.get('Content-Type') ?? '').includes('application/json')) {
-    return data as any
+    return data as unknown as T
   }
 
   const response = await data.json()
-  if (!data.ok) {
-    throw refineError(response)
-  }
   return response
 }
 

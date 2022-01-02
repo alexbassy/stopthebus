@@ -3,7 +3,7 @@ import { GameConfig, OpponentProgress } from '@/typings/game'
 import PageTitle from '@/components/PageTitle'
 import { ExternalLink } from '@/components/visual'
 import GameName from '@/components/GameName'
-import { joinGameWithID, leaveGameWithID } from '@/client/rest'
+import { joinGameWithID, leaveGameWithID, RequestError } from '@/client/rest'
 import Themed from '@/components/Themed'
 import { Subscribe } from '@react-rxjs/core'
 import { manager } from '@/hooks/supabase'
@@ -16,6 +16,7 @@ export default function Game() {
   const gameId = useGameIdFromRoute()
   const player = usePlayer()
   const [hasJoined, setHasJoined] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string>()
 
   useEffect(() => {
     if (gameId !== manager.gameId) {
@@ -28,9 +29,16 @@ export default function Game() {
 
   const joinGame = useCallback(async () => {
     if (typeof gameId !== 'string' || hasJoined || !player) return
-    const response = await joinGameWithID(gameId, player)
-    setGameConfig(response.config)
-    setHasJoined(true)
+    try {
+      await joinGameWithID(gameId, player)
+      setHasJoined(true)
+    } catch (error) {
+      if (error instanceof RequestError) {
+        setErrorMessage(error.message)
+      } else {
+        setErrorMessage('Something went wrong')
+      }
+    }
   }, [gameId, hasJoined, player])
 
   const leaveGame = useCallback(() => {
@@ -58,35 +66,25 @@ export default function Game() {
     }
   }, [gameId, joinGame, leaveGame, visibility$])
 
+  if (errorMessage) {
+    return (
+      <Themed>
+        <PageTitle />
+        <GameName />
+        <p>{errorMessage}</p>
+        <p>
+          Please refresh the page or <ExternalLink href='/'>create a new game</ExternalLink>
+        </p>
+      </Themed>
+    )
+  }
+
   if (!hasJoined) {
     return (
       <Themed>
         <PageTitle />
         <GameName />
         <p>Connecting…</p>
-      </Themed>
-    )
-  }
-
-  if (!hasJoined && gameConfig === null) {
-    return (
-      <Themed>
-        <PageTitle />
-        <GameName />
-        <p>Sorry! You disconnected from the server. Please refresh the page.</p>
-      </Themed>
-    )
-  }
-
-  if (hasJoined && gameConfig === null) {
-    return (
-      <Themed>
-        <PageTitle />
-        <GameName />
-        <p>Sorry, the game does not exist.</p>
-        <p>
-          Please refresh the page or <ExternalLink href='/'>create a new game</ExternalLink>
-        </p>
       </Themed>
     )
   }

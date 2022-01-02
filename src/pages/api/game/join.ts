@@ -37,7 +37,7 @@ export default async function handler(
 
   if (game.error) {
     log.e(game.error)
-    return res.status(400).json(game.error)
+    return res.status(httpStatuses.NOT_FOUND).end()
   }
 
   let players = (game.data.players || []) as Player[]
@@ -66,10 +66,5 @@ export default async function handler(
     }
   }
 
-  return res.json({
-    ...game.data,
-    config: game.data.config,
-    state: game.data.state,
-    players,
-  })
+  return res.status(httpStatuses.ACCEPTED).end()
 }
