@@ -4,8 +4,6 @@ export const API_ROUTES = {
   leaveGame: '/api/game/leave',
   startGame: '/api/game/start',
   cancelStartGame: '/api/game/cancel',
-
-  functionSetLetters: '/api/functions/game_update_letters',
 }
 
 export const APP_ROUTES = {

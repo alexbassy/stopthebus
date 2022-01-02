@@ -1,11 +1,10 @@
-import { setLetters } from '@/client/rest'
 import getSupabaseClient from '@/client/supabase'
 import { DatabaseFunctions } from '@/constants/database-functions'
 import { Game, GameStage } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
 import { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
 import { map, merge, Observable, of, share, Subject, timer } from 'rxjs'
-import { distinct, filter, pairwise, startWith, switchMap, takeUntil, tap } from 'rxjs/operators'
+import { filter, pairwise, startWith, switchMap, takeUntil } from 'rxjs/operators'
 
 function fetchGame(id: string) {
   return new Observable<Game>((subscriber) => {
@@ -114,7 +113,13 @@ class Manager {
   }
 
   async setGameConfigLetters(letters: string[]) {
-    setLetters(this.gameId, letters.join(''))
+    const { error } = await this.client.rpc(DatabaseFunctions.UpdateLetters, {
+      game_id: this.gameId,
+      new_letters: letters.join(''),
+    })
+    if (error) {
+      this.logError(error)
+    }
   }
 
   get gameConfigCategories$() {
@@ -181,11 +186,10 @@ class Manager {
           (oldStage === GameStage.PRE || oldStage === GameStage.REVIEW) &&
           newStage === GameStage.ACTIVE
         if (isStartingRound) {
-          const delay$ = timer(3000).pipe(
+          return timer(3000).pipe(
             takeUntil(this.cancelTimer$),
             map(() => newStage)
           )
-          return delay$
         }
 
         // If cancelling the start of the round, kill the timer

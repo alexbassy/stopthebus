@@ -73,7 +73,3 @@ export function startGameWithID(id: string): Promise<void> {
 export function cancelStartGameWithID(id: string): Promise<void> {
   return httpRequest(API_ROUTES.cancelStartGame, { id })
 }
-
-export function setLetters(id: string, letters: string): Promise<void> {
-  return httpRequest(API_ROUTES.functionSetLetters, { id, letters })
-}
