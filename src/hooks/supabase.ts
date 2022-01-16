@@ -43,13 +43,9 @@ const subscribeToGame = (id: string) => {
 }
 
 class Manager {
-  constructor() {
-    this.client = getSupabaseClient()
-  }
-
   gameId!: string
 
-  client!: SupabaseClient
+  client = getSupabaseClient()
 
   sharedGameRequest$!: Observable<Game>
 
@@ -77,7 +73,7 @@ class Manager {
   get gameSubscription$() {
     if (!this.gameId) return of(null)
     if (!this.sharedGameSubscription$) {
-      this.sharedGameSubscription$ = subscribeToGame(this.gameId).pipe(share())
+      this.sharedGameSubscription$ = subscribeToGame(this.gameId).pipe(shareLatest())
     }
     return this.sharedGameSubscription$
   }

@@ -2,7 +2,7 @@ import getSupabaseClient from '@/client/supabase'
 import httpStatuses from '@/constants/http-codes'
 import { assertMethod, getGameId, getGamePlayer, getIsJoining } from '@/helpers/api/validation'
 import log from '@/helpers/log'
-import { Game, Player } from '@/typings/game'
+import { Game, GameStage, Player } from '@/typings/game'
 import { SupabaseClient } from '@supabase/supabase-js'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
@@ -43,6 +43,15 @@ export default async function handler(
   let players = (game.data.players || []) as Player[]
 
   const isInGame = players.find((gamePlayer) => gamePlayer.id === player.id)
+
+  console.log(
+    player.id,
+    players.map((p) => p.id)
+  )
+
+  if (!isInGame && game.data.state.stage !== GameStage.PRE) {
+    return res.status(httpStatuses.FORBIDDEN).end()
+  }
 
   const isValidAction = (!isInGame && isJoining) || (isInGame && !isJoining)
   if (isValidAction) {

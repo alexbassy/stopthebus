@@ -6,11 +6,14 @@ import ReviewRound from '@/components/ReviewRound'
 import GameEnd from '@/components/GameEnd'
 import PageTitle from '@/components/PageTitle'
 import GameName from '@/components/GameName'
+import EntryController from './new-game/EntryController'
 
 const GameViewController: React.FC = () => {
   const gameStateStage = useGameStateStage()
 
-  console.log({ gameStateStage })
+  if (!gameStateStage) {
+    return null
+  }
 
   let Component
 
@@ -32,7 +35,7 @@ const GameViewController: React.FC = () => {
     <>
       <PageTitle isInGame={gameStateStage !== GameStage.PRE} />
       <GameName isShareable={gameStateStage === GameStage.PRE} />
-      {Component ? <Component /> : null}
+      <EntryController>{Component ? <Component /> : null}</EntryController>
     </>
   )
 }

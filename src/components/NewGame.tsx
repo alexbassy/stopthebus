@@ -1,21 +1,21 @@
 import React from 'react'
 import Head from 'next/head'
-import { Grid } from './Grid'
-import { Button, Spacing } from './visual'
-import CategoriesList from './new-game/CategoriesList'
-import Dialog from './Dialog'
-import Countdown from './Countdown'
+import { Grid } from '@/components/Grid'
+import { Button, Spacing } from '@/components/visual'
+import Dialog from '@/components/Dialog'
+import Countdown from '@/components/Countdown'
+import Alliteration from '@/components/new-game/Alliteration'
+import CategoriesList from '@/components/new-game/CategoriesList'
+import CurrentPlayer from '@/components/new-game/CurrentPlayer'
 import Letters from '@/components/new-game/Letters'
-import Alliteration from './new-game/Alliteration'
-import Players from './new-game/Players'
-import PlayerName from './new-game/PlayerName'
-import CurrentPlayer from './new-game/CurrentPlayer'
+import PlayerName from '@/components/new-game/PlayerName'
+import Players from '@/components/new-game/Players'
 import {
   useGameConfigCategories,
   useGameRoundLetter,
   useGameRoundTimeStarted,
 } from '@/hooks/supabase'
-import RaceRounds from './new-game/RaceRounds'
+import RaceRounds from '@/components/new-game/RaceRounds'
 import { cancelStartGameWithID, startGameWithID } from '@/client/rest'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 import usePlayer from '@/hooks/usePlayer'
@@ -42,7 +42,7 @@ export default function NewGame() {
   if (!currentPlayer) return null
 
   return (
-    <div>
+    <>
       <Head>
         <title>New Game - Stop The Bus</title>
       </Head>
@@ -102,6 +102,6 @@ export default function NewGame() {
           />
         )}
       </Dialog>
-    </div>
+    </>
   )
 }

@@ -1,3 +1,4 @@
+import httpStatuses from '@/constants/http-codes'
 import { Game, Player } from '@/typings/game'
 import API_ROUTES from './api-routes'
 
@@ -13,14 +14,20 @@ export class GameNotFoundError extends RequestError {
   message = 'There’s no room by that name here.'
 }
 
+export class GameAlreadyStartedError extends RequestError {
+  message = 'The game has already started. Please create a new one.'
+}
+
 export class UnknownRequestError extends RequestError {
   message = `Something went wrong. Code ${this.errorData.code}.`
 }
 
 function refineError(errorData: Response) {
   switch (errorData.status) {
-    case 404:
+    case httpStatuses.NOT_FOUND:
       return new GameNotFoundError(errorData)
+    case httpStatuses.FORBIDDEN:
+      return new GameAlreadyStartedError(errorData)
     default:
       return new UnknownRequestError(errorData)
   }
