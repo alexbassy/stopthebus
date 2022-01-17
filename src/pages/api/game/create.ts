@@ -1,11 +1,9 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import getSupabaseClient from '@/client/supabase'
 import { assertMethod, getGameId, getGameOwner } from '@/helpers/api/validation'
-import log from '@/helpers/log'
-import { GameMode, GameStage } from '@/typings/game'
-import { Game, GameConfig, GameState, Player } from '@/typings/game'
-import { SupabaseClient } from '@supabase/supabase-js'
+import { Game, GameMode, GameResponse, GameStage } from '@/typings/game'
+import { GameConfig, GameState } from '@/typings/game'
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { serverClient, q } from '@/client/fauna'
 
 type ErrorResponse = any
 
@@ -39,24 +37,24 @@ export default async function handler(
   const [owner, ownerError] = getGameOwner({ req, res })
   if (ownerError) return
 
-  const supabase = getSupabaseClient()
-
   const gameConfig = createGameConfig()
   const gameState = createGameState()
 
   const players = [{ id: owner }]
 
-  const { data: game, error: gameError } = await supabase.from('game').insert([
-    {
-      id: name,
-      state: gameState,
-      config: gameConfig,
-      players: players,
-    },
-  ])
+  const response = await serverClient.query<GameResponse>(
+    q.Create(q.Collection('game'), {
+      data: {
+        id: name,
+        state: gameState,
+        config: gameConfig,
+        players: players,
+      },
+    })
+  )
 
-  if (gameError) {
-    return res.status(400).json({ message: JSON.stringify(gameError) })
+  if (!response.ref) {
+    return res.status(400).json({ message: JSON.stringify(response) })
   }
 
   return res.status(201).end()

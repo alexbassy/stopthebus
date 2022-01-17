@@ -1,69 +1,60 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { fromEvent, map, of, startWith } from 'rxjs'
+import { distinctUntilChanged, fromEvent, map, of, startWith } from 'rxjs'
 import { joinGameWithID, leaveGameWithID, RequestError } from '@/client/rest'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 import usePlayer from '@/hooks/usePlayer'
-import { useGameStateStage } from '@/hooks/supabase'
+import { JoinState, manager, useGameStateStage, useJoinState } from '@/hooks/supabase'
 import { GameStage } from '@/typings/game'
 
 const EntryController: React.FC = (props) => {
   const gameId = useGameIdFromRoute()
   const player = usePlayer()
+  const joinState = useJoinState()
   const gameStateStage = useGameStateStage()
   const [hasJoined, setHasJoined] = useState<boolean>(false)
   const [errorMessage, setErrorMessage] = useState<string>()
-  const hasGameStarted = gameStateStage !== GameStage.PRE
+  const hasGameStarted = gameStateStage !== null && gameStateStage !== GameStage.PRE
 
-  console.log('EntryController')
+  console.log('EntryController', { gameStateStage, hasGameStarted, errorMessage, hasJoined })
 
   const joinGame = useCallback(async () => {
-    console.log('joinGame')
-    if (!gameId || hasJoined || !player) return
+    console.log({ joinState, gameId })
+    if (!gameId || !player || joinState !== JoinState.NotRequested) return
     try {
       await joinGameWithID(gameId, player)
+      manager.setJoinState(JoinState.CanJoin)
       setHasJoined(true)
     } catch (error) {
-      if (error instanceof RequestError) {
-        setErrorMessage(error.message)
-      } else {
-        setErrorMessage('Something went wrong')
-      }
+      setErrorMessage(error instanceof RequestError ? error.message : 'Something went wrong')
     }
-  }, [gameId, hasJoined, player])
+  }, [gameId, joinState, player])
 
   const leaveGame = useCallback(() => {
-    console.log('leaveGame')
-    if (!hasJoined || !player) return
+    if (!hasJoined || !player || hasGameStarted) return
     leaveGameWithID(gameId, player)
     setHasJoined(false)
-  }, [gameId, hasJoined, player])
-
-  const visibility$ = useMemo(() => {
-    if (typeof document === 'undefined') return of(false)
-    return fromEvent(document, 'visibilitychange').pipe(
-      startWith(false),
-      map(() => document.visibilityState === 'hidden')
-    )
-  }, [])
+    manager.setJoinState(JoinState.NotRequested)
+  }, [gameId, hasJoined, player, hasGameStarted])
 
   // Join/leave game when visibility changes
   useEffect(() => {
-    if (hasGameStarted) return
+    // Do not leave game when in play, so it is possible to reenter
+    if (hasGameStarted || typeof document === 'undefined') return
 
-    const onVisibilityChange = visibility$.subscribe((isHidden) =>
-      isHidden ? leaveGame() : joinGame()
+    const visibility$ = fromEvent(document, 'visibilitychange').pipe(
+      startWith(false),
+      map(() => document.visibilityState === 'hidden'),
+      distinctUntilChanged()
     )
+
+    const onVisibilityChange = visibility$.subscribe((isHidden) => {
+      isHidden ? leaveGame() : joinGame()
+    })
 
     return () => {
       onVisibilityChange.unsubscribe()
     }
-  }, [gameId, joinGame, leaveGame, visibility$, hasGameStarted])
-
-  useEffect(() => {
-    if (hasGameStarted) {
-      joinGame()
-    }
-  })
+  }, [joinGame, leaveGame, hasGameStarted])
 
   if (errorMessage) {
     return <p>{errorMessage}</p>
@@ -72,6 +63,8 @@ const EntryController: React.FC = (props) => {
   if (!hasJoined) {
     return <p>Connecting…</p>
   }
+
+  console.log('render children', props.children)
 
   return <>{props.children}</>
 }

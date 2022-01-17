@@ -1,49 +1,68 @@
 import getSupabaseClient from '@/client/supabase'
 import { DatabaseFunctions } from '@/constants/database-functions'
-import { Game, GameStage } from '@/typings/game'
+import { Game, GameConfig, GameStage } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
-import { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
-import { map, merge, Observable, of, share, Subject, timer } from 'rxjs'
-import { filter, pairwise, startWith, switchMap, takeUntil } from 'rxjs/operators'
+import { PostgrestError } from '@supabase/supabase-js'
+import { from, map, merge, Observable, of, ReplaySubject, Subject, timer } from 'rxjs'
+import {
+  distinctUntilChanged,
+  filter,
+  mapTo,
+  pairwise,
+  startWith,
+  switchMap,
+  takeUntil,
+  tap,
+} from 'rxjs/operators'
+import { browserClient, q } from '@/client/fauna'
+
+export enum JoinState {
+  NotRequested,
+  Requested,
+  CanJoin,
+  CannotJoin,
+}
+
+type GameResponse = {
+  ref: typeof q.Ref
+  ts: number
+  data: Game
+}
 
 function fetchGame(id: string) {
-  return new Observable<Game>((subscriber) => {
-    const supabase = getSupabaseClient()
-
+  return new Observable<GameResponse>((subscriber) => {
     try {
-      supabase
-        .from<Game>(`game`)
-        .select()
-        .eq('id', id)
-        .limit(1)
-        .single()
-        .then((response) => {
-          subscriber.next(response.data ?? undefined)
-        })
+      browserClient.query(q.Get(q.Match(q.Index('game_by_id'), id))).then((response) => {
+        subscriber.next((response as GameResponse) ?? undefined)
+      })
     } catch (err) {
       console.log({ err })
     }
   })
 }
 
-const subscribeToGame = (id: string) => {
+const subscribeToGame = (ref: typeof q.Ref) => {
   return new Observable<Game>((subscriber) => {
-    const supabase = getSupabaseClient()
-    const realtimeSubscription = supabase
-      .from<Game>(`game:id=eq.${id}`)
-      .on('*', (payload) => {
-        subscriber.next(payload.new)
+    const realtimeSubscription = browserClient.stream
+      .document(q.Ref(ref))
+      .on('version', (payload) => {
+        console.log({ payload })
+        subscriber.next(payload.document.data)
       })
-      .subscribe()
+      .start()
 
     return () => {
-      realtimeSubscription.unsubscribe()
+      realtimeSubscription.close()
     }
   })
 }
 
 class Manager {
   gameId!: string
+
+  joinState$ = new Subject<JoinState>()
+
+  gameRef$ = new ReplaySubject<typeof q.Ref>(1)
 
   client = getSupabaseClient()
 
@@ -56,6 +75,17 @@ class Manager {
     this.gameId = gameId
   }
 
+  setJoinState(state: JoinState) {
+    this.joinState$.next(state)
+  }
+
+  get canJoin$() {
+    return this.joinState$.pipe(
+      filter((state) => state === JoinState.CanJoin),
+      mapTo(true)
+    )
+  }
+
   logError(error: PostgrestError) {
     console.error(error)
   }
@@ -64,7 +94,12 @@ class Manager {
   get fetchGame$() {
     if (!this.gameId) return of(null)
     if (!this.sharedGameRequest$) {
-      this.sharedGameRequest$ = fetchGame(this.gameId).pipe(shareLatest())
+      this.sharedGameRequest$ = this.canJoin$.pipe(
+        switchMap(() => fetchGame(this.gameId)),
+        tap((data) => this.gameRef$.next(data.ref)),
+        map((res) => res.data),
+        shareLatest()
+      )
     }
     return this.sharedGameRequest$
   }
@@ -73,7 +108,10 @@ class Manager {
   get gameSubscription$() {
     if (!this.gameId) return of(null)
     if (!this.sharedGameSubscription$) {
-      this.sharedGameSubscription$ = subscribeToGame(this.gameId).pipe(shareLatest())
+      this.sharedGameSubscription$ = this.gameRef$.pipe(
+        switchMap((ref) => subscribeToGame(ref)),
+        shareLatest()
+      )
     }
     return this.sharedGameSubscription$
   }
@@ -123,27 +161,32 @@ class Manager {
   }
 
   async setGameConfigCategories(categories: string[]) {
-    const { error } = await this.client.rpc(DatabaseFunctions.UpdateCategories, {
-      game_id: this.gameId,
-      new_categories: categories,
-    })
-    if (error) {
-      this.logError(error)
-    }
+    const payload: Partial<GameConfig> = { categories }
+
+    const res = this.gameRef$
+      .pipe(
+        tap(() => console.log('gameRef')),
+        switchMap((ref) => from(browserClient.query(q.Update(ref, { data: { config: payload } }))))
+      )
+      .subscribe()
   }
 
   get gameConfigRounds$() {
+    3
     return this.gameConfig$.pipe(map((config) => config.numRounds))
   }
 
   async setGameConfigRounds(rounds: number) {
-    const { error } = await this.client.rpc(DatabaseFunctions.UpdateRounds, {
-      game_id: this.gameId,
-      new_rounds: rounds,
-    })
-    if (error) {
-      this.logError(error)
+    const payload: Partial<GameConfig> = {
+      numRounds: rounds,
     }
+
+    const res = this.gameRef$
+      .pipe(
+        switchMap((ref) => from(browserClient.query(q.Update(ref, { data: { config: payload } }))))
+      )
+      .subscribe()
+    console.log(res)
   }
 
   get gameConfigAlliteration$() {
@@ -167,7 +210,7 @@ class Manager {
 
   cancelTimer$ = new Subject<boolean>()
 
-  // When stage is set to active, the consumer
+  // When stage is set to active, the consumer will receive the update after a delay
   get gameStateStage$() {
     return this.gameState$.pipe(
       map((state) => state.stage),
@@ -212,6 +255,9 @@ class Manager {
 }
 
 export const manager = new Manager()
+
+// INTERNALISH
+export const [useJoinState] = bind(() => manager.joinState$, JoinState.NotRequested)
 
 // GAME PLAYERS
 export const [useGamePlayers] = bind(() => manager.gamePlayers$, [])

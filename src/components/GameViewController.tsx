@@ -11,10 +11,6 @@ import EntryController from './new-game/EntryController'
 const GameViewController: React.FC = () => {
   const gameStateStage = useGameStateStage()
 
-  if (!gameStateStage) {
-    return null
-  }
-
   let Component
 
   switch (gameStateStage) {

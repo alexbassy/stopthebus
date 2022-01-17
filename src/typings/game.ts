@@ -1,17 +1,4 @@
-/**
- * Queued jobs
- */
-
-import { QueueEvent } from './socket-events'
-
-export interface QueueJob {
-  id?: string
-  name: QueueEvent
-  data: any
-  created?: number
-  due: number
-  inProgress: boolean
-}
+import { query } from 'faunadb'
 
 /**
  * GAME CONFIG
@@ -112,6 +99,12 @@ export interface GameRound {
 /**
  * TOP LEVEL TYPES
  */
+
+export interface GameResponse {
+  ref: typeof query.Ref
+  ts: number
+  data: Game
+}
 
 export interface Game {
   id: string

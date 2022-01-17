@@ -59,7 +59,6 @@ export default function ActiveRound() {
           inputHeight / 2
       }
       setQuestionPositions(offsets)
-      console.log({ offsets })
     }
 
     window.addEventListener('resize', onResize)
