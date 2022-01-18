@@ -1,0 +1,19 @@
+Query(
+  Lambda(
+    ["gameId", "inputLetters"],
+    Let(
+      {
+        game: Get(Match(Index("game_by_id"), Var("gameId"))),
+        gameRef: Select("ref", Var("game")),
+        valid: ContainsStrRegex(Var("inputLetters"), "^[a-z]+$")
+      },
+      If(
+        Var("valid"),
+        Update(Var("gameRef"), {
+          data: { config: { letters: Var("inputLetters") } }
+        }),
+        Abort("Should be [a-z]")
+      )
+    )
+  )
+)
