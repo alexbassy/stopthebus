@@ -40,7 +40,7 @@ export default function Home() {
     }
 
     try {
-      await createGameWithID(newGameID, player.id)
+      await createGameWithID(newGameID, player)
       router.push(APP_ROUTES.game(newGameID))
     } catch (e) {
       log.e(e)

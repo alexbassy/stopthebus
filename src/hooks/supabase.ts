@@ -1,9 +1,9 @@
 import getSupabaseClient from '@/client/supabase'
 import { DatabaseFunctions } from '@/constants/database-functions'
-import { Game, GameConfig, GameStage } from '@/typings/game'
+import { Game, GameStage } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
 import { PostgrestError } from '@supabase/supabase-js'
-import { from, map, merge, Observable, of, ReplaySubject, Subject, timer } from 'rxjs'
+import { from, map, merge, Observable, of, ReplaySubject, Subject, throwError, timer } from 'rxjs'
 import {
   distinctUntilChanged,
   filter,
@@ -46,7 +46,6 @@ const subscribeToGame = (ref: typeof q.Ref) => {
     const realtimeSubscription = browserClient.stream
       .document(q.Ref(ref))
       .on('version', (payload) => {
-        console.log({ payload })
         subscriber.next(payload.document.data)
       })
       .start()
@@ -70,6 +69,8 @@ class Manager {
 
   sharedGameSubscription$!: Observable<Game>
 
+  sharedGame$!: Observable<Game>
+
   setId(gameId: string) {
     if (typeof gameId !== 'string') return
     this.gameId = gameId
@@ -82,7 +83,8 @@ class Manager {
   get canJoin$() {
     return this.joinState$.pipe(
       filter((state) => state === JoinState.CanJoin),
-      mapTo(true)
+      mapTo(true),
+      distinctUntilChanged()
     )
   }
 
@@ -97,8 +99,7 @@ class Manager {
       this.sharedGameRequest$ = this.canJoin$.pipe(
         switchMap(() => fetchGame(this.gameId)),
         tap((data) => this.gameRef$.next(data.ref)),
-        map((res) => res.data),
-        shareLatest()
+        map((res) => res.data)
       )
     }
     return this.sharedGameRequest$
@@ -108,17 +109,20 @@ class Manager {
   get gameSubscription$() {
     if (!this.gameId) return of(null)
     if (!this.sharedGameSubscription$) {
-      this.sharedGameSubscription$ = this.gameRef$.pipe(
-        switchMap((ref) => subscribeToGame(ref)),
-        shareLatest()
-      )
+      this.sharedGameSubscription$ = this.gameRef$.pipe(switchMap((ref) => subscribeToGame(ref)))
     }
     return this.sharedGameSubscription$
   }
 
   // Emit the game object (rest) and any updates to follow (websocket)
   get game$() {
-    return merge(this.gameSubscription$, this.fetchGame$).pipe(filter(Boolean))
+    if (!this.sharedGame$) {
+      this.sharedGame$ = merge(this.gameSubscription$, this.fetchGame$).pipe(
+        filter(Boolean),
+        shareLatest()
+      )
+    }
+    return this.sharedGame$
   }
 
   // GAME PLAYERS
@@ -147,46 +151,29 @@ class Manager {
   }
 
   async setGameConfigLetters(letters: string[]) {
-    const { error } = await this.client.rpc(DatabaseFunctions.UpdateLetters, {
-      game_id: this.gameId,
-      new_letters: letters.join(''),
-    })
-    if (error) {
-      this.logError(error)
-    }
+    return from(browserClient.query(q.Call('update-letters', this.gameId, letters.join(''))))
+      .pipe(
+        tap((response: any) => {
+          if (response.errors) return throwError(response.errors)
+        })
+      )
+      .subscribe()
   }
 
   get gameConfigCategories$() {
     return this.gameConfig$.pipe(map((config) => config.categories))
   }
 
-  async setGameConfigCategories(categories: string[]) {
-    const payload: Partial<GameConfig> = { categories }
-
-    const res = this.gameRef$
-      .pipe(
-        tap(() => console.log('gameRef')),
-        switchMap((ref) => from(browserClient.query(q.Update(ref, { data: { config: payload } }))))
-      )
-      .subscribe()
+  async toggleCategory(category: string) {
+    return from(browserClient.query(q.Call('update-categories', this.gameId, category))).subscribe()
   }
 
   get gameConfigRounds$() {
-    3
     return this.gameConfig$.pipe(map((config) => config.numRounds))
   }
 
   async setGameConfigRounds(rounds: number) {
-    const payload: Partial<GameConfig> = {
-      numRounds: rounds,
-    }
-
-    const res = this.gameRef$
-      .pipe(
-        switchMap((ref) => from(browserClient.query(q.Update(ref, { data: { config: payload } }))))
-      )
-      .subscribe()
-    console.log(res)
+    return from(browserClient.query(q.Call('update-rounds', this.gameId, rounds))).subscribe()
   }
 
   get gameConfigAlliteration$() {
@@ -194,13 +181,9 @@ class Manager {
   }
 
   async setGameConfigAlliteration(alliteration: boolean) {
-    const { error } = await this.client.rpc(DatabaseFunctions.UpdateAlliteration, {
-      game_id: this.gameId,
-      new_alliteration: alliteration,
-    })
-    if (error) {
-      this.logError(error)
-    }
+    return from(
+      browserClient.query(q.Call('update-alliteration', this.gameId, alliteration))
+    ).subscribe()
   }
 
   // GAME STATE

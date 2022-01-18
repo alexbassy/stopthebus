@@ -1,5 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import { assertMethod, getGameId, getGameOwner } from '@/helpers/api/validation'
+import { assertMethod, getGameId, getGamePlayer } from '@/helpers/api/validation'
 import { Game, GameMode, GameResponse, GameStage } from '@/typings/game'
 import { GameConfig, GameState } from '@/typings/game'
 import type { NextApiRequest, NextApiResponse } from 'next'
@@ -34,13 +34,11 @@ export default async function handler(
   const [name, nameError] = getGameId({ req, res })
   if (nameError) return
 
-  const [owner, ownerError] = getGameOwner({ req, res })
-  if (ownerError) return
+  const [player, playerError] = getGamePlayer({ req, res })
+  if (playerError) return
 
   const gameConfig = createGameConfig()
   const gameState = createGameState()
-
-  const players = [{ id: owner }]
 
   const response = await serverClient.query<GameResponse>(
     q.Create(q.Collection('game'), {
@@ -48,7 +46,7 @@ export default async function handler(
         id: name,
         state: gameState,
         config: gameConfig,
-        players: players,
+        players: [player],
       },
     })
   )

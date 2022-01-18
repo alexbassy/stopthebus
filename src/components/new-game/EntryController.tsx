@@ -15,10 +15,7 @@ const EntryController: React.FC = (props) => {
   const [errorMessage, setErrorMessage] = useState<string>()
   const hasGameStarted = gameStateStage !== null && gameStateStage !== GameStage.PRE
 
-  console.log('EntryController', { gameStateStage, hasGameStarted, errorMessage, hasJoined })
-
   const joinGame = useCallback(async () => {
-    console.log({ joinState, gameId })
     if (!gameId || !player || joinState !== JoinState.NotRequested) return
     try {
       await joinGameWithID(gameId, player)
@@ -30,22 +27,25 @@ const EntryController: React.FC = (props) => {
   }, [gameId, joinState, player])
 
   const leaveGame = useCallback(() => {
-    if (!hasJoined || !player || hasGameStarted) return
+    if (joinState !== JoinState.CanJoin || !player || hasGameStarted) return
     leaveGameWithID(gameId, player)
     setHasJoined(false)
     manager.setJoinState(JoinState.NotRequested)
-  }, [gameId, hasJoined, player, hasGameStarted])
+  }, [gameId, joinState, player, hasGameStarted])
 
-  // Join/leave game when visibility changes
-  useEffect(() => {
-    // Do not leave game when in play, so it is possible to reenter
-    if (hasGameStarted || typeof document === 'undefined') return
-
-    const visibility$ = fromEvent(document, 'visibilitychange').pipe(
+  const visibility$ = useMemo(() => {
+    if (hasGameStarted || typeof document === 'undefined') return of(true)
+    return fromEvent(document, 'visibilitychange').pipe(
       startWith(false),
       map(() => document.visibilityState === 'hidden'),
       distinctUntilChanged()
     )
+  }, [hasGameStarted])
+
+  // Join/leave game when visibility changes
+  useEffect(() => {
+    // Do not leave game when in play, so it is possible to reenter
+    if (!player || hasGameStarted || typeof document === 'undefined') return
 
     const onVisibilityChange = visibility$.subscribe((isHidden) => {
       isHidden ? leaveGame() : joinGame()
@@ -54,7 +54,7 @@ const EntryController: React.FC = (props) => {
     return () => {
       onVisibilityChange.unsubscribe()
     }
-  }, [joinGame, leaveGame, hasGameStarted])
+  }, [joinGame, leaveGame, hasGameStarted, visibility$, player])
 
   if (errorMessage) {
     return <p>{errorMessage}</p>
@@ -63,8 +63,6 @@ const EntryController: React.FC = (props) => {
   if (!hasJoined) {
     return <p>Connecting…</p>
   }
-
-  console.log('render children', props.children)
 
   return <>{props.children}</>
 }

@@ -54,8 +54,8 @@ async function httpRequest<T = any>(route: string, body: Record<any, any>): Prom
   return response
 }
 
-export function createGameWithID(id: string, owner: string) {
-  return httpRequest(API_ROUTES.createGame, { id, owner })
+export function createGameWithID(id: string, player: Player) {
+  return httpRequest(API_ROUTES.createGame, { id, player })
 }
 
 export function joinGameWithID(id: string, player: Player): Promise<Game> {

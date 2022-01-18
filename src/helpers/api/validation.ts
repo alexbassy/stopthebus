@@ -33,10 +33,6 @@ export function getGameId(handler: Handler) {
   return getRequestPropertyOrReject<string>('id', handler)
 }
 
-export function getGameOwner(handler: Handler) {
-  return getRequestPropertyOrReject<string>('owner', handler)
-}
-
 export function getGamePlayer(handler: Handler) {
   return getRequestPropertyOrReject<Player>('player', handler)
 }

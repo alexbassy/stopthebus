@@ -1,4 +1,4 @@
-import React, { ChangeEvent, SyntheticEvent, useContext, useState } from 'react'
+import React, { ChangeEvent, SyntheticEvent, useState } from 'react'
 import { categories as defaultCategories } from '@/constants/game'
 import { Flex } from '@/components/Grid'
 import { Button, Checkbox, Input, Item, List, HiddenLabel, H3, Lighter } from '@/components/visual'
@@ -14,15 +14,12 @@ const CategoriesList: React.FC = () => {
   const customCategories = selectedCategories.filter((cat) => !defaultCategories.includes(cat))
 
   const toggleCategory = (category: string) => {
-    const newState = new Set(selectedCategories)
-    newState.has(category) ? newState.delete(category) : newState.add(category)
-    manager.setGameConfigCategories(sortByDefaultOrder(Array.from(newState)))
+    manager.toggleCategory(category)
   }
 
   const handleNewCustomCategory = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const deduplicated = Array.from(new Set([...selectedCategories, customCategory]))
-    manager.setGameConfigCategories(sortByDefaultOrder(deduplicated))
+    manager.toggleCategory(customCategory)
     setCustomCategory('')
   }
 
