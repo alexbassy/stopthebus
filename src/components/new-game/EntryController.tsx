@@ -8,7 +8,7 @@ import { GameStage } from '@/typings/game'
 
 const EntryController: React.FC = (props) => {
   const gameId = useGameIdFromRoute()
-  const player = usePlayer()
+  const [player] = usePlayer()
   const joinState = useJoinState()
   const gameStateStage = useGameStateStage()
   const [hasJoined, setHasJoined] = useState<boolean>(false)
@@ -18,6 +18,7 @@ const EntryController: React.FC = (props) => {
   const joinGame = useCallback(async () => {
     if (!gameId || !player || joinState !== JoinState.NotRequested) return
     try {
+      console.log('join', player.name)
       await joinGameWithID(gameId, player)
       manager.setJoinState(JoinState.CanJoin)
       setHasJoined(true)
@@ -28,6 +29,7 @@ const EntryController: React.FC = (props) => {
 
   const leaveGame = useCallback(() => {
     if (joinState !== JoinState.CanJoin || !player || hasGameStarted) return
+    console.log('leave', player.name)
     leaveGameWithID(gameId, player)
     setHasJoined(false)
     manager.setJoinState(JoinState.NotRequested)
@@ -44,6 +46,7 @@ const EntryController: React.FC = (props) => {
 
   // Join/leave game when visibility changes
   useEffect(() => {
+    console.log('hide listener', player?.name)
     // Do not leave game when in play, so it is possible to reenter
     if (!player || hasGameStarted || typeof document === 'undefined') return
 

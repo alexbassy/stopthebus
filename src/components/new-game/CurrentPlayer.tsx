@@ -3,7 +3,7 @@ import Player from '@/components/Player'
 import usePlayer from '@/hooks/usePlayer'
 
 const CurrentPlayer: React.FC = () => {
-  const player = usePlayer()
+  const [player] = usePlayer()
   const gamePlayers = useGamePlayers()
 
   const currentPlayer = gamePlayers.find((gamePlayer) => gamePlayer.id === player?.id)

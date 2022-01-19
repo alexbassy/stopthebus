@@ -22,7 +22,7 @@ import usePlayer from '@/hooks/usePlayer'
 
 export default function NewGame() {
   const gameId = useGameIdFromRoute()
-  const currentPlayer = usePlayer()
+  const [currentPlayer] = usePlayer()
   const gameConfigCategories = useGameConfigCategories()
   const gameRoundTimeStarted = useGameRoundTimeStarted()
   const gameRoundLetter = useGameRoundLetter()

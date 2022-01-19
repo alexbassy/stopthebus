@@ -1,15 +1,27 @@
-import { getUserSession } from '@/helpers/getPersistedPlayer'
+import { useCallback, useEffect } from 'react'
+import { getUserSession, updatePersistedUserName } from '@/helpers/getPersistedPlayer'
 import { Player } from '@/typings/game'
-import { useEffect, useState } from 'react'
+import { manager, useGamePlayer } from '@/hooks/supabase'
 
-function usePlayer() {
-  const [player, setPlayer] = useState<Player | null>(null)
+function usePlayer(): [Player | null, (playerName: string) => void] {
+  const player = useGamePlayer()
 
   useEffect(() => {
-    setPlayer(getUserSession())
+    manager.player$.next(getUserSession())
   }, [])
 
-  return player
+  const updatePlayerName = useCallback(
+    (playerName: string) => {
+      if (!player?.id) return
+      manager.setGamePlayerName(player.id, playerName)
+      console.log('set to', playerName, getUserSession())
+    },
+    [player?.id]
+  )
+
+  console.log('usePlayer', player?.name)
+
+  return [player, updatePlayerName]
 }
 
 export default usePlayer

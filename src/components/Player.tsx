@@ -36,7 +36,7 @@ export const Pin = styled.span<PinProps>`
 `
 
 export default function Player(props: PlayerProps) {
-  const player = usePlayer()
+  const [player] = usePlayer()
   return (
     <Wrapper inline={props.inline} small={props.small}>
       <Pin colour={props.colour} small={props.small} />

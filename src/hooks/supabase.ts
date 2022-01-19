@@ -1,6 +1,6 @@
 import getSupabaseClient from '@/client/supabase'
 import { DatabaseFunctions } from '@/constants/database-functions'
-import { Game, GameStage } from '@/typings/game'
+import { Game, GameStage, Player } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
 import { PostgrestError } from '@supabase/supabase-js'
 import { from, map, merge, Observable, of, ReplaySubject, Subject, throwError, timer } from 'rxjs'
@@ -15,6 +15,7 @@ import {
   tap,
 } from 'rxjs/operators'
 import { browserClient, q } from '@/client/fauna'
+import { getUserSession, updatePersistedUserName } from '@/helpers/getPersistedPlayer'
 
 export enum JoinState {
   NotRequested,
@@ -60,6 +61,8 @@ class Manager {
   gameId!: string
 
   joinState$ = new Subject<JoinState>()
+
+  player$ = new Subject<Player>()
 
   gameRef$ = new ReplaySubject<typeof q.Ref>(1)
 
@@ -130,15 +133,19 @@ class Manager {
     return this.game$.pipe(map((game) => game.players))
   }
 
+  get gamePlayer$() {
+    return this.player$.pipe(shareLatest())
+  }
+
   async setGamePlayerName(playerId: string, newName: string) {
-    const { error } = await this.client.rpc(DatabaseFunctions.UpdatePlayerName, {
-      game_id: this.gameId,
-      player_id: playerId,
-      new_name: newName,
-    })
-    if (error) {
-      this.logError(error)
-    }
+    return from(browserClient.query(q.Call('update-nickname', this.gameId, playerId, newName)))
+      .pipe(
+        tap(() => {
+          updatePersistedUserName(newName)
+          this.player$.next(getUserSession())
+        })
+      )
+      .subscribe()
   }
 
   // GAME CONFIG
@@ -243,6 +250,7 @@ export const manager = new Manager()
 export const [useJoinState] = bind(() => manager.joinState$, JoinState.NotRequested)
 
 // GAME PLAYERS
+export const [useGamePlayer] = bind(() => manager.gamePlayer$, null)
 export const [useGamePlayers] = bind(() => manager.gamePlayers$, [])
 
 // GAME CONFIG

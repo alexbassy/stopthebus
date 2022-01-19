@@ -2,22 +2,22 @@ import { manager } from '@/hooks/supabase'
 import { Button, Description, Input, Spacing } from '@/components/visual'
 import FormControl from '@/components/FormControl'
 import { useState } from 'react'
-import { updatePersistedUserName } from '@/helpers/getPersistedPlayer'
 import usePlayer from '@/hooks/usePlayer'
 
 const PlayerName: React.FC = () => {
-  const player = usePlayer()
+  const [player, updatePlayerName] = usePlayer()
   const [username, setUsername] = useState('')
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: Event) => {
+    event.preventDefault()
     if (!player?.id) return
     await manager.setGamePlayerName(player.id, username)
-    updatePersistedUserName(username)
+    updatePlayerName(username)
     setUsername('')
   }
 
   return (
-    <section>
+    <form onSubmit={handleSubmit}>
       <FormControl>
         <Input
           type='text'
@@ -27,16 +27,14 @@ const PlayerName: React.FC = () => {
           aria-label='Nickname'
           aria-describedby='nickname-description'
         />
-        <Button type='button' onClick={handleSubmit}>
-          Update
-        </Button>
+        <Button>Update</Button>
       </FormControl>
       <Spacing t={0.5}>
         <Description id='nickname-description'>
           Enter a nickname for other players to see you by.
         </Description>
       </Spacing>
-    </section>
+    </form>
   )
 }
 
