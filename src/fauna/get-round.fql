@@ -1,0 +1,11 @@
+Query(
+  Lambda(
+    ['gameId', 'playerId', 'round'],
+    Get(
+      Filter(
+        Match(Index('answers_by_game_id'), [Var('gameId'), Var('playerId')]),
+        Lambda('answers', Equals(Select(['data', 'round'], Get(Var('answers'))), Var('round')))
+      )
+    )
+  )
+)

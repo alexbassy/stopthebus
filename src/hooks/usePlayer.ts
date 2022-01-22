@@ -14,12 +14,9 @@ function usePlayer(): [Player | null, (playerName: string) => void] {
     (playerName: string) => {
       if (!player?.id) return
       manager.setGamePlayerName(player.id, playerName)
-      console.log('set to', playerName, getUserSession())
     },
     [player?.id]
   )
-
-  console.log('usePlayer', player?.name)
 
   return [player, updatePlayerName]
 }
