@@ -270,6 +270,10 @@ class Manager {
     return this.gameRound$.pipe(map((round) => round?.letter))
   }
 
+  get gameRoundNextLetter$() {
+    return this.gameRound$.pipe(map((round) => round?.nextLetter))
+  }
+
   get gameRoundEndingPlayer$() {
     return this.gameRound$.pipe(map((round) => round?.endedByPlayer))
   }
@@ -334,3 +338,4 @@ export const [useGameRoundIndex] = bind(() => manager.gameRoundIndex$, 0)
 export const [useGameRoundEndingPlayer] = bind(() => manager.gameRoundEndingPlayer$, null)
 export const [useGameRoundAllAnswers] = bind(() => manager.gameRoundAllAnswers$, null)
 export const [useGameRoundAllScores] = bind(() => manager.gameRoundAllScores$, null)
+export const [useGameRoundNextLetter] = bind(() => manager.gameRoundNextLetter$, null)

@@ -11,6 +11,7 @@ import {
   useGameRoundAllAnswers,
   useGameRoundAllScores,
   useGameRoundIndex,
+  useGameRoundNextLetter,
   useGameStateStage,
 } from '@/hooks/supabase'
 import ReviewHeader from '@/components/round-review/ReviewHeader'
@@ -18,6 +19,7 @@ import ReviewHeader from '@/components/round-review/ReviewHeader'
 export default function ReviewRound() {
   const gameAnswers = useGameRoundAllAnswers()
   const gameScores = useGameRoundAllScores()
+  const nextLetter = useGameRoundNextLetter()
   const stage = useGameStateStage()
   const categories = useGameConfigCategories()
   const numRounds = useGameConfigRounds()
@@ -61,7 +63,7 @@ export default function ReviewRound() {
           <Countdown
             from={3}
             onCancel={handleCancelStartGame}
-            showAfter={{}.nextLetter?.toUpperCase()}
+            showAfter={nextLetter?.toUpperCase()}
             // In reality it should be displayed for 1.5s, but instruct the
             // component to display it for longer to account for transport latency
             afterMessageDuration={3000}

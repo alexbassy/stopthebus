@@ -1,6 +1,7 @@
 import { q, serverClient } from '@/client/fauna'
 import httpStatuses from '@/constants/http-codes'
 import { assertMethod, getGameId, getGamePlayer } from '@/helpers/api/validation'
+import { getNextLetterForGame } from '@/helpers/letters'
 import log from '@/helpers/log'
 import { getInitialScores } from '@/helpers/scores'
 import {
@@ -18,6 +19,13 @@ type ErrorResponse = any
 
 function getGame(id: string): Promise<GameResponse> {
   return serverClient.query<GameResponse>(q.Get(q.Match(q.Index('game_by_id'), id)))
+}
+
+function getPreviouslyPlayedLetters(rounds: GameRound[] | null) {
+  if (!rounds || !rounds.length) {
+    return []
+  }
+  return rounds.map((round) => round.letter)
 }
 
 async function getAnswers(gameId: string, round: number): Promise<Round> {
@@ -85,9 +93,15 @@ export default async function handler(
   }
 
   try {
+    const nextLetter = getNextLetterForGame(
+      game.config.letters.split(''),
+      getPreviouslyPlayedLetters([...(game.previousRounds || []), game.currentRound])
+    )
+
     const newCurrentRound: Partial<GameRound> = {
       timeEnded: Date.now(),
       endedByPlayer: player.id,
+      nextLetter,
       answers,
       scores,
     }
