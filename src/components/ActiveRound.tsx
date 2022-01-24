@@ -32,7 +32,6 @@ interface QuestionPositions {
 }
 
 export default function ActiveRound() {
-  const emit = (...args: any[]) => console.log(...args)
   const [player] = usePlayer()
   const gameStateStage = useGameStateStage()
   const gameConfigCategories = useGameConfigCategories()
@@ -82,15 +81,15 @@ export default function ActiveRound() {
   }, [gameConfigCategories])
 
   useEffect(() => {
-    if (gameStateStage === GameStage.REVIEW && !!emit && !hasEnded) {
+    if (gameStateStage === GameStage.REVIEW && !hasEnded) {
       setHasEnded(true)
-      emit(ClientEvent.FILLED_ANSWER, values)
+      console.log('FILLED_ANSWER', values)
     }
-  }, [gameStateStage, emit, values, hasEnded])
+  }, [gameStateStage, values, hasEnded])
 
   // useEffect(() => {
   //   if (gameStateStage === GameStage.ACTIVE) {
-  //     emit(ClientEvent.RETRIEVE_ANSWERS)
+  //     emit('RETRIEVE_ANSWERS')
   //   }
   // }, [emit, gameStateStage])
 
@@ -109,7 +108,7 @@ export default function ActiveRound() {
   }
 
   const handleFocus = (event: SyntheticEvent<HTMLInputElement>) => {
-    emit(ClientEvent.FOCUSSED_ANSWER, gameConfigCategories.indexOf(event.currentTarget.name))
+    console.log('FOCUSSED_ANSWER', gameConfigCategories.indexOf(event.currentTarget.name))
   }
 
   const pushAnswer = (category: string, answer: string) => {

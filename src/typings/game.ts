@@ -1,3 +1,4 @@
+import { q } from '@/client/fauna'
 import { query } from 'faunadb'
 
 /**
@@ -122,6 +123,10 @@ export interface Games {
 }
 
 // FAUNADB TYPES
+export interface FfbGame {
+  ref: typeof q.Ref
+  data: Game
+}
 export interface FdbAnswersCollection {
   data: {
     gameId: string

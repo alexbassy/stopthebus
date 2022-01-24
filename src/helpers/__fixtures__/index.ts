@@ -2,6 +2,7 @@ import { GameRound } from '@/typings/game'
 
 export const rounds: GameRound[] = [
   {
+    index: 0,
     timeStarted: 1592866015263,
     letter: 'n',
     answers: {
@@ -29,6 +30,7 @@ export const rounds: GameRound[] = [
     endedByPlayer: '8c86d893-9b55-4019-b8bf-a1c92daa4c64',
   },
   {
+    index: 1,
     timeStarted: 1592866064180,
     letter: 'e',
     answers: {
@@ -58,6 +60,7 @@ export const rounds: GameRound[] = [
     endedByPlayer: '06c245a4-7b87-43fe-bb55-c3b3607fa3bd',
   },
   {
+    index: 2,
     timeStarted: 1592866126205,
     letter: 'c',
     answers: {

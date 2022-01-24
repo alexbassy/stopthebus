@@ -1,6 +1,5 @@
 import getSupabaseClient from '@/client/supabase'
-import { DatabaseFunctions } from '@/constants/database-functions'
-import { Game, GameStage, Player, RoundResults } from '@/typings/game'
+import { FfbGame, Game, GameStage, Player, RoundResults } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
 import { PostgrestError } from '@supabase/supabase-js'
 import {
@@ -58,7 +57,7 @@ const subscribeToGame = (ref: typeof q.Ref) => {
     const realtimeSubscription = browserClient.stream
       .document(q.Ref(ref))
       .on('version', (payload) => {
-        subscriber.next(payload.document.data)
+        subscriber.next((payload.document as FfbGame).data)
       })
       .start()
 

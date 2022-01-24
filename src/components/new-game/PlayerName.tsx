@@ -1,19 +1,20 @@
 import { manager } from '@/hooks/supabase'
 import { Button, Description, Input, Spacing } from '@/components/visual'
 import FormControl from '@/components/FormControl'
-import { useState } from 'react'
+import { FormEventHandler, useState } from 'react'
 import usePlayer from '@/hooks/usePlayer'
 
 const PlayerName: React.FC = () => {
   const [player, updatePlayerName] = usePlayer()
   const [username, setUsername] = useState('')
 
-  const handleSubmit = async (event: Event) => {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()
     if (!player?.id) return
-    await manager.setGamePlayerName(player.id, username)
-    updatePlayerName(username)
-    setUsername('')
+    manager.setGamePlayerName(player.id, username).then(() => {
+      updatePlayerName(username)
+      setUsername('')
+    })
   }
 
   return (
