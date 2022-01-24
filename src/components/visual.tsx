@@ -101,7 +101,7 @@ export const Input = styled.input<InputProps>`
   }
 `
 
-export const Checkbox = styled<'input'>('input')`
+export const Checkbox = styled.input`
   font-size: 1.2rem;
   padding: 0 0.4rem;
   -webkit-appearance: none;
@@ -129,6 +129,10 @@ export const Checkbox = styled<'input'>('input')`
   }
 
   :active {
+    background-color: #274672;
+  }
+
+  :disabled {
     background-color: #274672;
   }
 `

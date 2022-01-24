@@ -262,8 +262,8 @@ class Manager {
     return this.gameRound$.pipe(map((round) => round?.timeStarted ?? 0))
   }
 
-  get gameRoundTimeEnded$() {
-    return this.gameRound$.pipe(map((round) => round?.timeEnded ?? 0))
+  get gameRoundDuration$() {
+    return this.gameRound$.pipe(map((round) => (round?.timeEnded ?? 0) - (round?.timeStarted ?? 0)))
   }
 
   get gameRoundLetter$() {
@@ -299,6 +299,13 @@ class Manager {
   get gameRoundAllScores$() {
     return this.gameRound$.pipe(map((round) => round?.scores))
   }
+
+  // ROUND SCORES
+  updateScore(playerId: string, category: string, newScore: number) {
+    const updateScore = () =>
+      browserClient.query(q.Call('update-score', this.gameId, playerId, category, newScore))
+    return from(updateScore()).subscribe()
+  }
 }
 
 export const manager = new Manager()
@@ -321,7 +328,7 @@ export const [useGameStateStage] = bind(() => manager.gameStateStage$, null)
 
 // GAME ROUNDS
 export const [useGameRoundTimeStarted] = bind(() => manager.gameRoundTimeStarted$, 0)
-export const [useGameRoundTimeEnded] = bind(() => manager.gameRoundTimeEnded$, 0)
+export const [useGameRoundDuration] = bind(() => manager.gameRoundDuration$, 0)
 export const [useGameRoundLetter] = bind(() => manager.gameRoundLetter$, null)
 export const [useGameRoundIndex] = bind(() => manager.gameRoundIndex$, 0)
 export const [useGameRoundEndingPlayer] = bind(() => manager.gameRoundEndingPlayer$, null)
