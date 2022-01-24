@@ -21,6 +21,7 @@ import {
   useGameStateStage,
 } from '@/hooks/supabase'
 import { endRoundWithGameID } from '@/client/rest'
+import usePlayer from '@/hooks/usePlayer'
 
 const Wrap = styled('div')`
   max-width: 400px;
@@ -32,6 +33,7 @@ interface QuestionPositions {
 
 export default function ActiveRound() {
   const emit = (...args: any[]) => console.log(...args)
+  const [player] = usePlayer()
   const gameStateStage = useGameStateStage()
   const gameConfigCategories = useGameConfigCategories()
   const gameRoundLetter = useGameRoundLetter()
@@ -42,7 +44,6 @@ export default function ActiveRound() {
 
   useEffect(() => {
     manager.getRoundAnswers().subscribe((answers) => {
-      console.log('answers', answers)
       setValues(answers)
     })
   }, [])
@@ -127,7 +128,10 @@ export default function ActiveRound() {
         `You haven’t filled in all answers. Are you sure you want to end the round?`
       )
     }
-    if (shouldEndRound) endRoundWithGameID(manager.gameId)
+    if (!player) {
+      return
+    }
+    if (shouldEndRound) endRoundWithGameID(manager.gameId, player)
   }
 
   return (

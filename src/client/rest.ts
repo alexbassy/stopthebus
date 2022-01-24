@@ -78,6 +78,6 @@ export function cancelStartGameWithID(id: string): Promise<void> {
   return httpRequest(API_ROUTES.cancelStartGame, { id })
 }
 
-export function endRoundWithGameID(id: string): Promise<void> {
-  return httpRequest(API_ROUTES.endRound, { id })
+export function endRoundWithGameID(id: string, player: Player): Promise<void> {
+  return httpRequest(API_ROUTES.endRound, { id, player })
 }

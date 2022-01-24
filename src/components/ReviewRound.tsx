@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useContext, ChangeEvent, SyntheticEvent } from 'react'
 import Head from 'next/head'
 import { ClientEvent, PlayerVote } from '@/typings/socket-events'
@@ -12,6 +11,19 @@ import { Flex } from './Grid'
 import GameContext from '../contexts/GameContext'
 import useScrollToTop from '../hooks/useScrollToTop'
 import useIsSmallScreen from '../hooks/useIsSmallScreen'
+import {
+  useGameConfigCategories,
+  useGameConfigRounds,
+  useGamePlayers,
+  useGameRoundAllAnswers,
+  useGameRoundAllScores,
+  useGameRoundEndingPlayer,
+  useGameRoundIndex,
+  useGameRoundTimeEnded,
+  useGameRoundTimeStarted,
+  useGameStateStage,
+} from '@/hooks/supabase'
+import usePlayer from '@/hooks/usePlayer'
 
 const Table = styled('table')`
   width: 100%;
@@ -54,13 +66,13 @@ interface ResultsTableProps {
 }
 
 const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
-  const game = useContext(GameContext)
   const emit = (...args: any[]) => console.log(...args)
   const isSmallScreen = useIsSmallScreen()
+  const players = useGamePlayers()
 
   useScrollToTop()
 
-  if (!game || !emit) {
+  if (!emit) {
     return null
   }
 
@@ -74,7 +86,7 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
       emit(ClientEvent.VOTE_ANSWER, payload)
     }
 
-  const getPlayer = (id: string) => game.players.find((player) => id === player.id)
+  const getPlayer = (id: string) => players.find((player) => id === player.id)
 
   return (
     <Table>
@@ -123,17 +135,21 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
 
 export default function ReviewRound() {
   const emit = (...args: any[]) => console.log(...args)
-  const game = useContext(GameContext)
 
-  if (!game || !emit) return null
+  const gameAnswers = useGameRoundAllAnswers()
+  const gameScores = useGameRoundAllScores()
+  const stage = useGameStateStage()
+  const categories = useGameConfigCategories()
+  const timeStarted = useGameRoundTimeStarted()
+  const timeEnded = useGameRoundTimeEnded()
+  const numRounds = useGameConfigRounds()
+  const roundEndingPlayer = useGameRoundEndingPlayer()
+  const roundIndex = useGameRoundIndex()
+  const players = useGamePlayers()
 
-  const { config, state, players } = game
-  const round = state.currentRound
-  const timeStarted = state.currentRound?.timeStarted ?? 0
-  const timeEnded = state.currentRound?.timeEnded ?? timeStarted
+  if (!emit) return null
+
   const roundDuration = timeEnded - timeStarted
-
-  if (!round) return null
 
   const handleNextRoundClick = (event: SyntheticEvent<HTMLButtonElement>) => {
     emit(ClientEvent.START_ROUND)
@@ -143,10 +159,10 @@ export default function ReviewRound() {
     emit(ClientEvent.CANCEL_START_ROUND)
   }
 
-  const isLastRound = state.rounds.length + 1 === config.rounds
+  const isLastRound = (roundIndex || 0) + 1 === numRounds
 
   const playerWhoEndedRound =
-    players.find(({ id }) => id === round.endedByPlayer)?.name || round.endedByPlayer
+    players.find(({ id }) => id === roundEndingPlayer)?.name || roundEndingPlayer
 
   const RoundDuration =
     roundDuration === 0 ? null : <span> in {Math.floor(roundDuration / 1000)}s</span>
@@ -157,20 +173,20 @@ export default function ReviewRound() {
         <title>Review - Stop The Bus</title>
       </Head>
       <h2>
-        End of round {state.rounds.length + 1}/{config.rounds}
+        End of round {(roundIndex || 0) + 1}/{numRounds}
       </h2>
       <p>
         Round finished by <strong>{playerWhoEndedRound}</strong>
         {RoundDuration}
       </p>
 
-      {config.categories.map((category) => {
+      {categories.map((category) => {
         return (
           <ResultsTable
             key={category}
             categoryName={category}
-            answers={round.answers}
-            scores={round.scores}
+            answers={gameAnswers as Round}
+            scores={gameScores as Scores}
           />
         )
       })}
@@ -178,11 +194,11 @@ export default function ReviewRound() {
       <Button onClick={handleNextRoundClick}>{isLastRound ? 'Finish game' : 'Next round'}</Button>
 
       <Dialog>
-        {!isLastRound && state.stage === GameStage.NEXT_STARTING && (
+        {!isLastRound && stage === GameStage.ACTIVE && (
           <Countdown
             from={3}
             onCancel={handleCancelStartGame}
-            showAfter={state.nextLetter?.toUpperCase()}
+            showAfter={{}.nextLetter?.toUpperCase()}
             // In reality it should be displayed for 1.5s, but instruct the
             // component to display it for longer to account for transport latency
             afterMessageDuration={3000}

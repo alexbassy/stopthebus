@@ -1,6 +1,6 @@
 import { q, serverClient } from '@/client/fauna'
 import httpStatuses from '@/constants/http-codes'
-import { assertMethod, getGameId } from '@/helpers/api/validation'
+import { assertMethod, getGameId, getGamePlayer } from '@/helpers/api/validation'
 import log from '@/helpers/log'
 import { getInitialScores } from '@/helpers/scores'
 import {
@@ -47,6 +47,9 @@ export default async function handler(
   const [id, idError] = getGameId({ req, res })
   if (idError) return
 
+  const [player, playerError] = getGamePlayer({ req, res })
+  if (playerError) return
+
   const start = Date.now()
 
   const { ref, data: game } = await getGame(id)
@@ -80,25 +83,29 @@ export default async function handler(
     console.log(e)
     return res.status(400).json({ message: 'The answers could not be scored' })
   }
+
   try {
+    const newCurrentRound: Partial<GameRound> = {
+      timeEnded: Date.now(),
+      endedByPlayer: player.id,
+      answers,
+      scores,
+    }
+
     await serverClient.query(
       q.Update(ref, {
         data: {
           state: {
             stage: GameStage.REVIEW,
           },
-          currentRound: {
-            timeEnded: Date.now(),
-            answers,
-            scores,
-          },
+          currentRound: newCurrentRound,
         },
       })
     )
   } catch (e) {
     return res.status(httpStatuses.BAD_REQUEST).json({ message: e })
   } finally {
-    log.d(`Took ${Date.now() - start}ms to cancel game`)
+    log.d(`Took ${Date.now() - start}ms to end round`)
   }
 
   return res.status(200).end()

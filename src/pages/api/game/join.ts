@@ -40,8 +40,6 @@ export default async function handler(
     return res.status(httpStatuses.NOT_FOUND).end()
   }
 
-  console.log(`game`, game)
-
   const { ref, data } = game
 
   let players = (data.players || []) as Player[]

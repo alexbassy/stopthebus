@@ -262,8 +262,16 @@ class Manager {
     return this.gameRound$.pipe(map((round) => round?.timeStarted ?? 0))
   }
 
+  get gameRoundTimeEnded$() {
+    return this.gameRound$.pipe(map((round) => round?.timeEnded ?? 0))
+  }
+
   get gameRoundLetter$() {
     return this.gameRound$.pipe(map((round) => round?.letter))
+  }
+
+  get gameRoundEndingPlayer$() {
+    return this.gameRound$.pipe(map((round) => round?.endedByPlayer))
   }
 
   getRoundAnswers(): Observable<RoundResults> {
@@ -282,6 +290,14 @@ class Manager {
     return combineLatest([this.player$, this.gameRoundIndex$])
       .pipe(switchMap(([player, index]) => from(saveAnswers(player.id, index!))))
       .subscribe()
+  }
+
+  get gameRoundAllAnswers$() {
+    return this.gameRound$.pipe(map((round) => round?.answers))
+  }
+
+  get gameRoundAllScores$() {
+    return this.gameRound$.pipe(map((round) => round?.scores))
   }
 }
 
@@ -304,5 +320,10 @@ export const [useGameConfigAlliteration] = bind(() => manager.gameConfigAllitera
 export const [useGameStateStage] = bind(() => manager.gameStateStage$, null)
 
 // GAME ROUNDS
-export const [useGameRoundTimeStarted] = bind(() => manager.gameRoundTimeStarted$, null)
+export const [useGameRoundTimeStarted] = bind(() => manager.gameRoundTimeStarted$, 0)
+export const [useGameRoundTimeEnded] = bind(() => manager.gameRoundTimeEnded$, 0)
 export const [useGameRoundLetter] = bind(() => manager.gameRoundLetter$, null)
+export const [useGameRoundIndex] = bind(() => manager.gameRoundIndex$, 0)
+export const [useGameRoundEndingPlayer] = bind(() => manager.gameRoundEndingPlayer$, null)
+export const [useGameRoundAllAnswers] = bind(() => manager.gameRoundAllAnswers$, null)
+export const [useGameRoundAllScores] = bind(() => manager.gameRoundAllScores$, null)
