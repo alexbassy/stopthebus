@@ -1,0 +1,19 @@
+Query(
+  Lambda(
+    ["gameId", "playerId", "round", "question", "answer"],
+    Let(
+      {
+        round: Call('get-round', Var("gameId"), Var("playerId"), Var("round")),
+        roundRef: Select("ref", Var("round")),
+        valid: And(IsString("question"), IsString("answer")),
+      },
+      If(
+        Var("valid"),
+        Update(Var("roundRef"), {
+          data: { answers: ToObject([[Var("question"), Var("answer")]]) },
+        }),
+        Abort("Should be a string")
+      )
+    )
+  )
+)

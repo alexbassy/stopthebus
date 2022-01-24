@@ -60,6 +60,7 @@ export default async function handler(
     const previousRounds = getPreviousRounds(game.currentRound, game.previousRounds)
 
     const newRound: GameRound = {
+      index: previousRounds.length,
       letter: getNextLetterForGame(
         game.config.letters.split(''),
         getPreviouslyPlayedLetters(previousRounds)

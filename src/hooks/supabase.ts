@@ -1,9 +1,20 @@
 import getSupabaseClient from '@/client/supabase'
 import { DatabaseFunctions } from '@/constants/database-functions'
-import { Game, GameStage, Player } from '@/typings/game'
+import { Game, GameStage, Player, RoundResults } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
 import { PostgrestError } from '@supabase/supabase-js'
-import { from, map, merge, Observable, of, ReplaySubject, Subject, throwError, timer } from 'rxjs'
+import {
+  combineLatest,
+  from,
+  map,
+  merge,
+  Observable,
+  of,
+  ReplaySubject,
+  Subject,
+  throwError,
+  timer,
+} from 'rxjs'
 import {
   distinctUntilChanged,
   filter,
@@ -62,7 +73,7 @@ class Manager {
 
   joinState$ = new Subject<JoinState>()
 
-  player$ = new Subject<Player>()
+  player$ = new ReplaySubject<Player>(1)
 
   gameRef$ = new ReplaySubject<typeof q.Ref>(1)
 
@@ -101,7 +112,10 @@ class Manager {
     if (!this.sharedGameRequest$) {
       this.sharedGameRequest$ = this.canJoin$.pipe(
         switchMap(() => fetchGame(this.gameId)),
-        tap((data) => this.gameRef$.next(data.ref)),
+        tap((data) => {
+          this.gameRef$.next(data.ref)
+          this.player$.next(getUserSession())
+        }),
         map((res) => res.data)
       )
     }
@@ -230,9 +244,18 @@ class Manager {
     )
   }
 
+  endRound() {
+    const endGame = async (ref: typeof q.Ref) => browserClient.query(q.Call('end-round', ref))
+    return this.gameRef$.pipe(switchMap((ref) => from(endGame(ref))))
+  }
+
   // GAME CURRENT ROUND
   get gameRound$() {
     return this.game$.pipe(map((game) => game.currentRound))
+  }
+
+  get gameRoundIndex$() {
+    return this.gameRound$.pipe(map((round) => round?.index))
   }
 
   get gameRoundTimeStarted$() {
@@ -241,6 +264,24 @@ class Manager {
 
   get gameRoundLetter$() {
     return this.gameRound$.pipe(map((round) => round?.letter))
+  }
+
+  getRoundAnswers(): Observable<RoundResults> {
+    const getRound = (player: string, round: number) =>
+      browserClient.query(q.Call('get-round', this.gameId, player, round))
+    return combineLatest([this.player$, this.gameRoundIndex$]).pipe(
+      switchMap(([player, index]) => from(getRound(player.id, index!))),
+      map((response) => (response as any).data.answers as RoundResults)
+    )
+  }
+
+  // ROUND ANSWERS
+  async setRoundAnswer(question: string, answer: string) {
+    const saveAnswers = (player: string, round: number) =>
+      browserClient.query(q.Call('save-answers', this.gameId, player, round, question, answer))
+    return combineLatest([this.player$, this.gameRoundIndex$])
+      .pipe(switchMap(([player, index]) => from(saveAnswers(player.id, index!))))
+      .subscribe()
   }
 }
 

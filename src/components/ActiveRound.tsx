@@ -1,7 +1,6 @@
 import React, {
   ChangeEvent,
   SyntheticEvent,
-  useContext,
   useState,
   useEffect,
   useRef,
@@ -14,9 +13,14 @@ import { Button, Input, Item, List, Spacing } from './visual'
 import { Grid } from './Grid'
 import Lanes from './Lanes'
 import styled from '@emotion/styled'
-import GameContext from '../contexts/GameContext'
 import useScrollToTop from '../hooks/useScrollToTop'
-import { useGameConfigCategories, useGameRoundLetter, useGameStateStage } from '@/hooks/supabase'
+import {
+  manager,
+  useGameConfigCategories,
+  useGameRoundLetter,
+  useGameStateStage,
+} from '@/hooks/supabase'
+import { endRoundWithGameID } from '@/client/rest'
 
 const Wrap = styled('div')`
   max-width: 400px;
@@ -35,6 +39,13 @@ export default function ActiveRound() {
   const [hasEnded, setHasEnded] = useState<boolean>(false)
   const formRef = useRef<HTMLFormElement>(null)
   const [questionPositions, setQuestionPositions] = useState<QuestionPositions>({})
+
+  useEffect(() => {
+    manager.getRoundAnswers().subscribe((answers) => {
+      console.log('answers', answers)
+      setValues(answers)
+    })
+  }, [])
 
   useScrollToTop()
 
@@ -100,8 +111,8 @@ export default function ActiveRound() {
     emit(ClientEvent.FOCUSSED_ANSWER, gameConfigCategories.indexOf(event.currentTarget.name))
   }
 
-  const handleBlur = () => {
-    emit(ClientEvent.FILLED_ANSWER, values)
+  const pushAnswer = (category: string, answer: string) => {
+    manager.setRoundAnswer(category, answer)
   }
 
   const handleEndRoundClick = (event: SyntheticEvent<HTMLFormElement>) => {
@@ -116,7 +127,7 @@ export default function ActiveRound() {
         `You haven’t filled in all answers. Are you sure you want to end the round?`
       )
     }
-    if (shouldEndRound) emit(ClientEvent.END_ROUND)
+    if (shouldEndRound) endRoundWithGameID(manager.gameId)
   }
 
   return (
@@ -143,7 +154,7 @@ export default function ActiveRound() {
                         type='text'
                         id={id}
                         name={category}
-                        onBlur={handleBlur}
+                        onBlur={(event) => pushAnswer(category, event.target.value)}
                         onFocus={handleFocus}
                         onChange={handleChange(category)}
                         value={values[category] ?? ''}

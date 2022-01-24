@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Game, GameConfig, Scores, GameRound, FinalScores } from '@/typings/game'
+import { Game, GameConfig, Scores, GameRound, FinalScores, Round } from '@/typings/game'
 import log from '../helpers/log'
 
 export const getWords = (string: string) => string.trim().split(' ')
@@ -8,14 +8,13 @@ const sanitiseAnswer = (answer: string) =>
   typeof answer === 'string' ? answer.trim().toLowerCase() : ''
 
 export const scoreAnswer = (
-  gameConfig: GameConfig,
+  scoreWithAlliteration: boolean,
   letter: string,
   input: string | undefined,
   shouldValidate: boolean = true
 ) => {
   if (!input) return 0
   const answer = input.trim().toLowerCase()
-  const { alliteration: scoreWithAlliteration } = gameConfig
   const isValidFirstCharacter = answer.startsWith(letter)
   const isOnlyLetter = answer === letter
   const words = getWords(answer)
@@ -39,20 +38,20 @@ interface GroupedAnswers {
   [categoryName: string]: { [answer: string]: number }
 }
 
-export const getInitialScores = (room: Game): Scores | undefined => {
-  const { categories } = room.config
-  const { currentRound } = room.state
-  const { answers, letter } = currentRound ?? {}
-
-  if (!currentRound || !answers || typeof letter !== 'string') {
-    log.e('Cannot get votes without answers')
-    return
+export const getInitialScores = (
+  answers: Round,
+  letter: string,
+  config: GameConfig,
+  players: Player[]
+): Scores => {
+  if (!answers || typeof letter !== 'string') {
+    throw new Error('Cannot get votes without answers')
   }
 
   const votes: Scores = {}
 
   const groupedAnswers = Object.values(answers).reduce<GroupedAnswers>((accum, answers) => {
-    categories.forEach((category) => {
+    config.categories.forEach((category) => {
       if (!accum[category]) {
         accum[category] = {}
       }
@@ -68,12 +67,12 @@ export const getInitialScores = (room: Game): Scores | undefined => {
     return accum
   }, {})
 
-  room.players.forEach(
+  players.forEach(
     (player) =>
-      categories.map((category) => {
+      config.categories.map((category) => {
         if (!votes[player.id]) votes[player.id] = {}
-        const answer = sanitiseAnswer(answers?.[player.id]?.[category])
-        votes[player.id][category] = scoreAnswer(room.config, letter, answer)
+        const answer = sanitiseAnswer(answers[player.id][category])
+        votes[player.id][category] = scoreAnswer(config, letter, answer)
 
         if (groupedAnswers[category][answer] > 1) {
           votes[player.id][category] = 0

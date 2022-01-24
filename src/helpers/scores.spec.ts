@@ -1,6 +1,6 @@
 import { scoreAnswer, getInitialScores, getFinalScores } from './scores'
 import { rounds } from './__fixtures__'
-import { GameConfig, Game } from '../typings/game'
+import { GameConfig, Game, Player, Round } from '../typings/game'
 
 describe('scoreAnswer()', () => {
   const gameConfig = { alliteration: false } as GameConfig
@@ -9,52 +9,50 @@ describe('scoreAnswer()', () => {
   } as GameConfig
 
   it('scores invalid answer', () => {
-    expect(scoreAnswer(gameConfig, 'e', '')).toBe(0)
-    expect(scoreAnswer(gameConfig, 'z', 'eggs')).toBe(0)
+    expect(scoreAnswer(false, 'e', '')).toBe(0)
+    expect(scoreAnswer(false, 'z', 'eggs')).toBe(0)
   })
   it('scores invalid answer with alliteration', () => {
-    expect(scoreAnswer(gameConfigWithAlliteration, 'f', 'frog city')).toBe(1)
-    expect(scoreAnswer(gameConfigWithAlliteration, 'c', 'frog city')).toBe(0)
+    expect(scoreAnswer(true, 'f', 'frog city')).toBe(1)
+    expect(scoreAnswer(true, 'c', 'frog city')).toBe(0)
   })
   it('scores valid answer ', () => {
-    expect(scoreAnswer(gameConfig, 'e', 'exeter')).toBe(1)
-    expect(scoreAnswer(gameConfig, 'e', 'end of the game')).toBe(1)
-    expect(scoreAnswer(gameConfig, 'a', 'amazing angel')).toBe(1)
+    expect(scoreAnswer(false, 'e', 'exeter')).toBe(1)
+    expect(scoreAnswer(false, 'e', 'end of the game')).toBe(1)
+    expect(scoreAnswer(false, 'a', 'amazing angel')).toBe(1)
   })
   it('scores valid answer with alliteration', () => {
-    expect(scoreAnswer(gameConfigWithAlliteration, 'e', 'end of the road')).toBe(1)
-    expect(scoreAnswer(gameConfigWithAlliteration, 'l', 'lilies')).toBe(1)
-    expect(scoreAnswer(gameConfigWithAlliteration, 't', 'tina turner')).toBe(2)
-    expect(scoreAnswer(gameConfigWithAlliteration, 't', 'tilly took the thyme')).toBe(4)
+    expect(scoreAnswer(true, 'e', 'end of the road')).toBe(1)
+    expect(scoreAnswer(true, 'l', 'lilies')).toBe(1)
+    expect(scoreAnswer(true, 't', 'tina turner')).toBe(2)
+    expect(scoreAnswer(true, 't', 'tilly took the thyme')).toBe(4)
   })
   it('ignore validation when told', () => {
-    expect(scoreAnswer(gameConfig, 'l', 'poppies', false)).toBe(1)
-    expect(scoreAnswer(gameConfigWithAlliteration, 'k', 'kylie jenner', false)).toBe(1)
-    expect(scoreAnswer(gameConfigWithAlliteration, 'p', 'ru paul', false)).toBe(1)
+    expect(scoreAnswer(false, 'l', 'poppies', false)).toBe(1)
+    expect(scoreAnswer(true, 'k', 'kylie jenner', false)).toBe(1)
+    expect(scoreAnswer(true, 'p', 'ru paul', false)).toBe(1)
   })
 })
 
 describe('getInitialScores()', () => {
   let game: Game
+  let config: GameConfig
+  let players: Player[]
+  let letter: string
+  let answers: Round
 
   beforeEach(() => {
-    game = {
-      config: { categories: ['animals', 'people'] },
-      players: [{ id: 'one' }, { id: 'two' }],
-      state: {
-        currentRound: {
-          letter: 'c',
-          answers: {
-            one: { animals: 'cat', people: 'cady' },
-            two: { animals: 'cayote', people: 'carry' },
-          },
-        },
-      },
+    config = { alliteration: false, categories: ['animals', 'people'] } as GameConfig
+    players = [{ id: 'one' }, { id: 'two' }] as Player[]
+    letter = 'c'
+    answers = {
+      one: { animals: 'cat', people: 'cady' },
+      two: { animals: 'cayote', people: 'carry' },
     }
   })
 
   it('adds up scores', () => {
-    const results = getInitialScores(game as Game)
+    const results = getInitialScores(answers, letter, config, players)
     expect(results).toEqual({
       one: { animals: 1, people: 1 },
       two: { animals: 1, people: 1 },
@@ -62,9 +60,9 @@ describe('getInitialScores()', () => {
   })
 
   it('gives extra points for alliteration', () => {
-    game.config.alliteration = true
-    game.state.currentRound.answers.one.people = 'cady carson'
-    const results = getInitialScores(game as Game)
+    config.alliteration = true
+    answers.one.people = 'cady carson'
+    const results = getInitialScores(answers, letter, config, players)
     expect(results).toEqual({
       one: { animals: 1, people: 2 },
       two: { animals: 1, people: 1 },
@@ -72,8 +70,8 @@ describe('getInitialScores()', () => {
   })
 
   it('excludes duplicates', () => {
-    game.state.currentRound.answers.two.people = 'cady'
-    const results = getInitialScores(game as Game)
+    answers.two.people = 'cady'
+    const results = getInitialScores(answers, letter, config, players)
     expect(results).toEqual({
       one: { animals: 1, people: 0 },
       two: { animals: 1, people: 0 },

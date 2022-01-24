@@ -88,6 +88,7 @@ export interface Scores {
 }
 
 export interface GameRound {
+  index: number
   letter: string
   timeStarted: number // Time the round started
   timeEnded?: number // The time the round ended, more applicable for races
@@ -117,4 +118,18 @@ export interface Game {
 
 export interface Games {
   [x: string]: Game
+}
+
+// FAUNADB TYPES
+export interface FdbAnswersCollection {
+  data: {
+    gameId: string
+    playerId: string
+    round: number
+    answers: RoundResults
+  }
+}
+
+export interface FdbAllAnswersQuery {
+  data: FdbAnswersCollection['data'][]
 }
