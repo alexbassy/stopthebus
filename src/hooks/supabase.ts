@@ -1,4 +1,3 @@
-import getSupabaseClient from '@/client/supabase'
 import { FfbGame, Game, GameStage, Player, RoundResults } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
 import { PostgrestError } from '@supabase/supabase-js'
@@ -75,8 +74,6 @@ class Manager {
   player$ = new ReplaySubject<Player>(1)
 
   gameRef$ = new ReplaySubject<typeof q.Ref>(1)
-
-  client = getSupabaseClient()
 
   sharedGameRequest$!: Observable<Game>
 
