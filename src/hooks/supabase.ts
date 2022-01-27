@@ -53,7 +53,7 @@ function queryAsObservable<T = any>(expression: ExprArg): Observable<T> {
 }
 
 function fetchGame(id: string) {
-  return queryAsObservable<Game>(q.Get(q.Match(q.Index('game_by_id'), id)))
+  return queryAsObservable<FfbGame>(q.Get(q.Match(q.Index('game_by_id'), id)))
 }
 
 const subscribeToGame = (ref: typeof q.Ref) => {
