@@ -14,18 +14,26 @@ import {
   timer,
 } from 'rxjs'
 import {
+  catchError,
+  concatMap,
+  delay,
+  delayWhen,
   distinctUntilChanged,
   filter,
   mapTo,
   pairwise,
+  retryWhen,
+  scan,
   startWith,
   switchMap,
+  take,
   takeUntil,
   tap,
   withLatestFrom,
 } from 'rxjs/operators'
 import { browserClient, q } from '@/client/fauna'
 import { getUserSession, updatePersistedUserName } from '@/helpers/getPersistedPlayer'
+import { ExprArg } from 'faunadb'
 
 export enum JoinState {
   NotRequested,
@@ -38,6 +46,10 @@ type GameResponse = {
   ref: typeof q.Ref
   ts: number
   data: Game
+}
+
+function queryAsObservable<T = any>(expression: ExprArg): Observable<T> {
+  return from(browserClient.query<T>(expression)).pipe(take(1))
 }
 
 function fetchGame(id: string) {
@@ -53,12 +65,12 @@ function fetchGame(id: string) {
 }
 
 const subscribeToGame = (ref: typeof q.Ref) => {
-  return new Observable<Game>((subscriber) => {
+  return new Observable<[boolean | null, Game | null]>((subscriber) => {
     const realtimeSubscription = browserClient.stream
       .document(q.Ref(ref))
-      .on('version', (payload) => {
-        subscriber.next((payload.document as FfbGame).data)
-      })
+      .on('version', (payload) => subscriber.next([null, (payload.document as FfbGame).data]))
+      .on('error', () => subscriber.error())
+      .on('start', () => subscriber.next([true, null]))
       .start()
 
     return () => {
@@ -69,6 +81,8 @@ const subscribeToGame = (ref: typeof q.Ref) => {
 
 class Manager {
   gameId!: string
+
+  isConnected$ = new ReplaySubject<boolean>(1)
 
   joinState$ = new Subject<JoinState>()
 
@@ -103,6 +117,10 @@ class Manager {
     console.error(error)
   }
 
+  get isConnectedState$() {
+    return this.isConnected$.pipe(shareLatest())
+  }
+
   // Multicasted game rest request
   get fetchGame$() {
     if (!this.gameId) return of(null)
@@ -123,7 +141,25 @@ class Manager {
   get gameSubscription$() {
     if (!this.gameId) return of(null)
     if (!this.sharedGameSubscription$) {
-      this.sharedGameSubscription$ = this.gameRef$.pipe(switchMap((ref) => subscribeToGame(ref)))
+      this.sharedGameSubscription$ = this.gameRef$.pipe(
+        switchMap((ref) => subscribeToGame(ref)),
+        switchMap(([connection, data]) => {
+          if (connection) {
+            this.isConnected$.next(true)
+            return of()
+          } else {
+            return of(data as Game)
+          }
+        }),
+        // Retry every 2 seconds if connection breaks
+        retryWhen((errors) =>
+          errors.pipe(
+            tap(() => this.isConnected$.next(false)),
+            delayWhen(() => timer(2000)),
+            take(15)
+          )
+        )
+      )
     }
     return this.sharedGameSubscription$
   }
@@ -149,7 +185,7 @@ class Manager {
   }
 
   async setGamePlayerName(playerId: string, newName: string) {
-    return from(browserClient.query(q.Call('update-nickname', this.gameId, playerId, newName)))
+    return queryAsObservable(q.Call('update-nickname', this.gameId, playerId, newName))
       .pipe(
         tap(() => {
           updatePersistedUserName(newName)
@@ -169,7 +205,7 @@ class Manager {
   }
 
   async setGameConfigLetters(letters: string[]) {
-    return from(browserClient.query(q.Call('update-letters', this.gameId, letters.join(''))))
+    return queryAsObservable(q.Call('update-letters', this.gameId, letters.join('')))
       .pipe(
         tap((response: any) => {
           if (response.errors) return throwError(response.errors)
@@ -183,25 +219,27 @@ class Manager {
   }
 
   async toggleCategory(category: string) {
-    return from(browserClient.query(q.Call('update-categories', this.gameId, category))).subscribe()
+    return queryAsObservable(q.Call('update-categories', this.gameId, category))
+      .subscribe()
+      .unsubscribe()
   }
 
   get gameConfigRounds$() {
     return this.gameConfig$.pipe(map((config) => config.numRounds))
   }
 
-  async setGameConfigRounds(rounds: number) {
-    return from(browserClient.query(q.Call('update-rounds', this.gameId, rounds))).subscribe()
+  setGameConfigRounds(rounds: number) {
+    return queryAsObservable(q.Call('update-rounds', this.gameId, rounds)).subscribe().unsubscribe()
   }
 
   get gameConfigAlliteration$() {
     return this.gameConfig$.pipe(map((config) => config.alliteration))
   }
 
-  async setGameConfigAlliteration(alliteration: boolean) {
-    return from(
-      browserClient.query(q.Call('update-alliteration', this.gameId, alliteration))
-    ).subscribe()
+  setGameConfigAlliteration(alliteration: boolean) {
+    return queryAsObservable(q.Call('update-alliteration', this.gameId, alliteration))
+      .subscribe()
+      .unsubscribe()
   }
 
   // GAME STATE
@@ -279,34 +317,36 @@ class Manager {
   }
 
   getRoundAnswers(): Observable<RoundResults> {
-    const getRound = (player: string, round: number) =>
-      browserClient.query(q.Call('get-round', this.gameId, player, round))
     return this.gameRoundIndex$.pipe(
       withLatestFrom(this.player$),
       tap(([roundIndex, player]) => console.log({ player, roundIndex })),
-      switchMap(([index, player]) => from(getRound(player.id, index!))),
+      switchMap(([index, player]) =>
+        queryAsObservable(q.Call('get-round', this.gameId, player, index!))
+      ),
       tap((response) => console.log(response.data)),
-      map((response) => (response as any).data.answers as RoundResults)
+      map((response) => (response as any).data.answers as RoundResults),
+      take(1)
     )
   }
 
   // ROUND ANSWERS
-  async setRoundAnswer(question: string, answer: string) {
+  setRoundAnswer(question: string, answer: string) {
     console.log('setRoundAnswers', question, answer)
-    const saveAnswers = (player: string, round: number) =>
-      browserClient.query(q.Call('save-answers', this.gameId, player, round, question, answer))
 
     return this.gameRoundIndex$
       .pipe(
-        tap((player) => console.log('player emitted', player)),
         withLatestFrom(this.player$),
         switchMap(([index, player]) => {
           console.log('setAnswers', { player, index, question, answer })
-          return from(saveAnswers(player.id, index!))
+          return queryAsObservable(
+            q.Call('save-answers', this.gameId, player.id, index!, question, answer)
+          )
         }),
-        tap((response) => console.log('saved!', response))
+        tap((response) => console.log('saved!', response)),
+        take(1)
       )
       .subscribe()
+      .unsubscribe()
   }
 
   get gameRoundAllAnswers$() {
@@ -319,9 +359,9 @@ class Manager {
 
   // ROUND SCORES
   updateScore(playerId: string, category: string, newScore: number) {
-    const updateScore = () =>
-      browserClient.query(q.Call('update-score', this.gameId, playerId, category, newScore))
-    return from(updateScore()).subscribe()
+    return queryAsObservable(q.Call('update-score', this.gameId, playerId, category, newScore))
+      .subscribe()
+      .unsubscribe()
   }
 }
 
@@ -329,6 +369,7 @@ export const manager = new Manager()
 
 // INTERNALISH
 export const [useJoinState] = bind(() => manager.joinState$, JoinState.NotRequested)
+export const [useIsConnected] = bind(() => manager.isConnectedState$, true)
 
 // GAME PLAYERS
 export const [useGamePlayer] = bind(() => manager.gamePlayer$, null)
