@@ -1,4 +1,4 @@
-import { FfbGame, Game, GameStage, Player, RoundResults } from '@/typings/game'
+import { FfbGame, FinalScores, Game, GameStage, Player, RoundResults } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
 import { PostgrestError } from '@supabase/supabase-js'
 import {
@@ -279,6 +279,14 @@ class Manager {
     )
   }
 
+  get gameStateFinalScores$(): Observable<FinalScores | undefined> {
+    return this.gameState$.pipe(map((state) => state.finalScores))
+  }
+
+  get gameStateNextGameId$(): Observable<string | undefined> {
+    return this.gameState$.pipe(map((state) => state.nextGameId))
+  }
+
   endRound() {
     const endGame = async (ref: typeof q.Ref) => browserClient.query(q.Call('end-round', ref))
     return this.gameRef$.pipe(switchMap((ref) => from(endGame(ref))))
@@ -331,19 +339,14 @@ class Manager {
 
   // ROUND ANSWERS
   setRoundAnswer(question: string, answer: string) {
-    console.log('setRoundAnswers', question, answer)
-
     return this.gameRoundIndex$
       .pipe(
         withLatestFrom(this.player$),
-        switchMap(([index, player]) => {
-          console.log('setAnswers', { player, index, question, answer })
-          return queryAsObservable(
+        switchMap(([index, player]) =>
+          queryAsObservable(
             q.Call('save-answers', this.gameId, player.id, index!, question, answer)
           )
-        }),
-        tap((response) => console.log('saved!', response)),
-        take(1)
+        )
       )
       .subscribe()
       .unsubscribe()
@@ -383,6 +386,8 @@ export const [useGameConfigAlliteration] = bind(() => manager.gameConfigAllitera
 
 // GAME STATE
 export const [useGameStateStage] = bind(() => manager.gameStateStage$, null)
+export const [useGameStateFinalScores] = bind(() => manager.gameStateFinalScores$, null)
+export const [useGameStateNextGameId] = bind(() => manager.gameStateNextGameId$, null)
 
 // GAME ROUNDS
 export const [useGameRoundTimeStarted] = bind(() => manager.gameRoundTimeStarted$, 0)

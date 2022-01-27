@@ -69,7 +69,7 @@ export interface FinalScores {
 export interface GameState {
   stage: GameStage
   finalScores?: FinalScores
-  nextGameID?: string
+  nextGameId?: string
 }
 
 export interface RoundResults {

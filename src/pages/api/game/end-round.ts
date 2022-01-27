@@ -3,7 +3,8 @@ import httpStatuses from '@/constants/http-codes'
 import { assertMethod, getGameId, getGamePlayer } from '@/helpers/api/validation'
 import { getNextLetterForGame } from '@/helpers/letters'
 import log from '@/helpers/log'
-import { getInitialScores } from '@/helpers/scores'
+import { getGameName } from '@/helpers/random'
+import { getFinalScores, getInitialScores } from '@/helpers/scores'
 import {
   FdbAllAnswersQuery,
   Game,
@@ -90,11 +91,9 @@ export default async function handler(
   }
 
   try {
-    console.log({ answers })
     const { players, config } = game
     const letter = game.currentRound.letter
     scores = getInitialScores(answers, letter, config, players)
-    console.log({ scores })
   } catch (e) {
     console.log(e)
     return res.status(400).json({ message: 'The answers could not be scored' })
@@ -113,8 +112,6 @@ export default async function handler(
       answers,
       scores,
     }
-
-    console.log('new round', newCurrentRound)
 
     await serverClient.query(
       q.Update(ref, {

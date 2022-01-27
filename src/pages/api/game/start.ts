@@ -3,6 +3,8 @@ import httpStatuses from '@/constants/http-codes'
 import { assertMethod, getGameId } from '@/helpers/api/validation'
 import { getNextLetterForGame } from '@/helpers/letters'
 import log from '@/helpers/log'
+import { getGameName } from '@/helpers/random'
+import { getFinalScores } from '@/helpers/scores'
 import { Game, GameResponse, GameRound, GameStage } from '@/typings/game'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
@@ -54,31 +56,55 @@ export default async function handler(
   }
 
   try {
-    // 3 seconds with a bit of buffer time to account for network delay
-    const startTime = Date.now() + 3500
+    let newData: Partial<Game>
 
-    const previousRounds = getPreviousRounds(game.currentRound, game.previousRounds)
+    const isLastRound = game.currentRound?.index === game.config.numRounds - 1
 
-    const newRound: GameRound = {
-      index: previousRounds.length,
-      letter: getNextLetterForGame(
-        game.config.letters.split(''),
-        getPreviouslyPlayedLetters(previousRounds)
-      ),
-      timeStarted: startTime,
-      answers: {},
-      scores: {},
+    console.log({ isLastRound, index: game.currentRound?.index, numRounds: game.config.numRounds })
+
+    if (isLastRound) {
+      const allRounds = [...(game.previousRounds || []), game.currentRound as GameRound]
+      const finalScores = getFinalScores(allRounds)
+      newData = {
+        state: {
+          stage: GameStage.FINISHED,
+          finalScores,
+          nextGameId: getGameName(),
+        },
+        previousRounds: allRounds,
+        currentRound: null,
+      }
+    } else {
+      // 3 seconds with a bit of buffer time to account for network delay
+      const startTime = Date.now() + 3500
+
+      const previousRounds = getPreviousRounds(game.currentRound, game.previousRounds)
+
+      const newRound: GameRound = {
+        index: previousRounds.length,
+        letter: getNextLetterForGame(
+          game.config.letters.split(''),
+          getPreviouslyPlayedLetters(previousRounds)
+        ),
+        timeStarted: startTime,
+        answers: {},
+        scores: {},
+      }
+
+      newData = {
+        state: {
+          stage: GameStage.ACTIVE,
+        },
+        previousRounds,
+        currentRound: newRound,
+      }
     }
+
+    console.log(newData)
 
     await serverClient.query<GameResponse>(
       q.Update(ref, {
-        data: {
-          state: {
-            stage: GameStage.ACTIVE,
-          },
-          previousRounds,
-          currentRound: newRound,
-        },
+        data: newData,
       })
     )
   } catch (e) {
