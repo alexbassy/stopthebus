@@ -10,6 +10,7 @@ import {
   GameResponse,
   GameRound,
   GameStage,
+  Player,
   Round,
   Scores,
 } from '@/typings/game'
@@ -38,10 +39,15 @@ async function getAnswers(gameId: string, round: number): Promise<Round> {
   }, {})
 }
 
-function getNewRounds(previousRounds: GameRound[] | null): [GameRound | null, GameRound[] | null] {
-  const newPreviousRounds = [...(previousRounds || [])]
-  const currentRound = newPreviousRounds.pop() || null
-  return [currentRound, newPreviousRounds.length ? newPreviousRounds : null]
+// Create a full answer record replacing missing entries with empty strings
+// This is because the `currentRound` needs to be overwritten, as fauna writes are partial
+function fillEmptyAnswers(answers: Round, categories: string[], players: Player[]): Round {
+  return players.reduce<Round>((accum, player) => {
+    accum[player.id] = Object.fromEntries(
+      categories.map((category) => [category, answers?.[player.id]?.[category] || ''])
+    )
+    return accum
+  }, {})
 }
 
 export default async function handler(
@@ -77,6 +83,7 @@ export default async function handler(
   let scores: Scores
   try {
     answers = await getAnswers(id, game.currentRound.index)
+    answers = fillEmptyAnswers(answers, game.config.categories, game.players)
   } catch (e) {
     console.log(e)
     return res.status(400).json({ message: 'The answers could not be found' })
@@ -87,6 +94,7 @@ export default async function handler(
     const { players, config } = game
     const letter = game.currentRound.letter
     scores = getInitialScores(answers, letter, config, players)
+    console.log({ scores })
   } catch (e) {
     console.log(e)
     return res.status(400).json({ message: 'The answers could not be scored' })
@@ -105,6 +113,8 @@ export default async function handler(
       answers,
       scores,
     }
+
+    console.log('new round', newCurrentRound)
 
     await serverClient.query(
       q.Update(ref, {
