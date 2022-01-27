@@ -60,8 +60,6 @@ export default async function handler(
 
     const isLastRound = game.currentRound?.index === game.config.numRounds - 1
 
-    console.log({ isLastRound, index: game.currentRound?.index, numRounds: game.config.numRounds })
-
     if (isLastRound) {
       const allRounds = [...(game.previousRounds || []), game.currentRound as GameRound]
       const finalScores = getFinalScores(allRounds)
@@ -99,8 +97,6 @@ export default async function handler(
         currentRound: newRound,
       }
     }
-
-    console.log(newData)
 
     await serverClient.query<GameResponse>(
       q.Update(ref, {

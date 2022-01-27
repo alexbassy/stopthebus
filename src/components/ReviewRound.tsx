@@ -1,6 +1,5 @@
-import React, { SyntheticEvent } from 'react'
+import React from 'react'
 import Head from 'next/head'
-import { GameStage } from '@/typings/game'
 import { Button } from './visual'
 import Dialog from './Dialog'
 import Countdown from './Countdown'
@@ -8,13 +7,11 @@ import ResultsTable from '@/components/round-review/ResultsTable'
 import {
   useGameConfigCategories,
   useGameConfigRounds,
-  useGameRoundAllAnswers,
-  useGameRoundAllScores,
+  useGameRoundAnswersByCategory,
   useGameRoundIndex,
   useGameRoundLetter,
-  useGameRoundNextLetter,
+  useGameRoundScoresByPlayer,
   useGameRoundTimeStarted,
-  useGameStateStage,
 } from '@/hooks/supabase'
 import ReviewHeader from '@/components/round-review/ReviewHeader'
 import { cancelStartGameWithID, startGameWithID } from '@/client/rest'
@@ -22,12 +19,10 @@ import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 
 export default function ReviewRound() {
   const gameId = useGameIdFromRoute()
-  const gameAnswers = useGameRoundAllAnswers()
-  const gameScores = useGameRoundAllScores()
-  const nextLetter = useGameRoundNextLetter()
+  const gameAnswers = useGameRoundAnswersByCategory()
+  const gameScores = useGameRoundScoresByPlayer()
   const gameRoundTimeStarted = useGameRoundTimeStarted()
   const gameRoundLetter = useGameRoundLetter()
-  const stage = useGameStateStage()
   const categories = useGameConfigCategories()
   const numRounds = useGameConfigRounds()
   const roundIndex = useGameRoundIndex()
@@ -58,8 +53,8 @@ export default function ReviewRound() {
         <ResultsTable
           key={category}
           categoryName={category}
-          answers={gameAnswers}
-          scores={gameScores}
+          answers={gameAnswers[category]}
+          scores={gameScores[category]}
         />
       ))}
 

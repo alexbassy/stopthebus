@@ -53,15 +53,7 @@ function queryAsObservable<T = any>(expression: ExprArg): Observable<T> {
 }
 
 function fetchGame(id: string) {
-  return new Observable<GameResponse>((subscriber) => {
-    try {
-      browserClient.query(q.Get(q.Match(q.Index('game_by_id'), id))).then((response) => {
-        subscriber.next((response as GameResponse) ?? undefined)
-      })
-    } catch (err) {
-      console.log({ err })
-    }
-  })
+  return queryAsObservable<Game>(q.Get(q.Match(q.Index('game_by_id'), id)))
 }
 
 const subscribeToGame = (ref: typeof q.Ref) => {
@@ -327,11 +319,9 @@ class Manager {
   getRoundAnswers(): Observable<RoundResults> {
     return this.gameRoundIndex$.pipe(
       withLatestFrom(this.player$),
-      tap(([roundIndex, player]) => console.log({ player, roundIndex })),
       switchMap(([index, player]) =>
         queryAsObservable(q.Call('get-round', this.gameId, player, index!))
       ),
-      tap((response) => console.log(response.data)),
       map((response) => (response as any).data.answers as RoundResults),
       take(1)
     )
@@ -356,8 +346,42 @@ class Manager {
     return this.gameRound$.pipe(map((round) => round?.answers))
   }
 
+  get gameRoundAnswersByCategory$() {
+    return this.gameRound$.pipe(
+      withLatestFrom(this.gameConfigCategories$),
+      map(([round, categories]) => {
+        if (!round) return null
+        const playerIds = Object.keys(round.answers)
+        return categories.reduce<Record<string, Record<string, string>>>((byPlayer, category) => {
+          byPlayer[category] = playerIds.reduce<Record<string, string>>((scores, player) => {
+            scores[player] = round.answers[player][category]
+            return scores
+          }, {})
+          return byPlayer
+        }, {})
+      })
+    )
+  }
+
   get gameRoundAllScores$() {
     return this.gameRound$.pipe(map((round) => round?.scores))
+  }
+
+  get gameRoundScoresByCategory$() {
+    return this.gameRound$.pipe(
+      withLatestFrom(this.gameConfigCategories$),
+      map(([round, categories]) => {
+        if (!round) return null
+        const playerIds = Object.keys(round.answers)
+        return categories.reduce<Record<string, Record<string, number>>>((byPlayer, category) => {
+          byPlayer[category] = playerIds.reduce<Record<string, number>>((scores, player) => {
+            scores[player] = round.scores[player][category]
+            return scores
+          }, {})
+          return byPlayer
+        }, {})
+      })
+    )
   }
 
   // ROUND SCORES
@@ -396,5 +420,7 @@ export const [useGameRoundLetter] = bind(() => manager.gameRoundLetter$, null)
 export const [useGameRoundIndex] = bind(() => manager.gameRoundIndex$, 0)
 export const [useGameRoundEndingPlayer] = bind(() => manager.gameRoundEndingPlayer$, null)
 export const [useGameRoundAllAnswers] = bind(() => manager.gameRoundAllAnswers$, null)
+export const [useGameRoundAnswersByCategory] = bind(() => manager.gameRoundAnswersByCategory$, null)
 export const [useGameRoundAllScores] = bind(() => manager.gameRoundAllScores$, null)
+export const [useGameRoundScoresByPlayer] = bind(() => manager.gameRoundScoresByCategory$, null)
 export const [useGameRoundNextLetter] = bind(() => manager.gameRoundNextLetter$, null)

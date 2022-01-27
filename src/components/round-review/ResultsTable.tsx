@@ -14,6 +14,7 @@ import { Flex } from '@/components/Grid'
 import Player from '@/components/Player'
 import { Checkbox } from '@/components/visual'
 import { scoreAnswer } from '@/helpers/scores'
+import ResultsRow from '@/components/round-review/ResultsRow'
 
 const Table = styled.table`
   width: 100%;
@@ -51,28 +52,12 @@ const TableHeader = styled.thead`
 
 interface ResultsTableProps {
   categoryName: string
-  answers: Round
-  scores: Scores
+  answers: Record<string, string>
+  scores: Record<string, number>
 }
 
 const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
-  const isSmallScreen = useIsSmallScreen()
-  const players = useGamePlayers()
-  const scoreWithAlliteration = useGameConfigAlliteration()
-  const letter = useGameRoundLetter()
-
   useScrollToTop()
-
-  const handleVote =
-    (playerId: string, category: string, answer: string) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const newScore = event.target.checked
-        ? scoreAnswer(scoreWithAlliteration, letter!, answer)
-        : 0
-      manager.updateScore(playerId, category, newScore)
-    }
-
-  const getPlayer = (id: string) => players.find((player) => id === player.id)
 
   return (
     <Table>
@@ -89,32 +74,17 @@ const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
         </tr>
       </TableHeader>
       <tbody>
-        {Object.entries(answers).map(([playerId, playerAnswers]) => {
-          const player = getPlayer(playerId)
-          const answer = playerAnswers[categoryName]
-          const score = scores[playerId][categoryName]
-
-          console.log('player', player)
+        {Object.entries(answers).map(([playerId, answer]) => {
+          const score = scores[playerId]
 
           return (
-            <tr key={`${categoryName}-${playerId}`}>
-              <PlayerColumn>
-                {player ? <Player {...player} small={isSmallScreen} /> : playerId}
-              </PlayerColumn>
-              <td>{answer}</td>
-              <td>
-                <Flex yCentre>
-                  <Checkbox
-                    type='checkbox'
-                    title='Vote'
-                    checked={score > 0}
-                    disabled={!answer}
-                    onChange={handleVote(playerId, categoryName, answer)}
-                  />{' '}
-                  {score}
-                </Flex>
-              </td>
-            </tr>
+            <ResultsRow
+              key={`${categoryName}-${playerId}`}
+              playerId={playerId}
+              categoryName={categoryName}
+              answer={answer}
+              score={score}
+            />
           )
         })}
       </tbody>

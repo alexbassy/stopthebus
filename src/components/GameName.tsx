@@ -92,8 +92,7 @@ export default function GameName(props: GameNameProps) {
         url: gameURL,
       })
     } catch (e) {
-      console.log(e)
-      log.e('GAME_NAME.tsx', 'Share API not supported')
+      log.e('GameName', 'Share API not supported')
     }
   }
 
