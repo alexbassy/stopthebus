@@ -45,6 +45,8 @@ export default function ActiveRound() {
     manager.getRoundAnswers().subscribe((answers) => {
       setValues(answers)
     })
+
+    return () => setValues({})
   }, [])
 
   useScrollToTop()
@@ -112,6 +114,7 @@ export default function ActiveRound() {
   }
 
   const pushAnswer = (category: string, answer: string) => {
+    console.log('push answer', category, answer)
     manager.setRoundAnswer(category, answer)
   }
 

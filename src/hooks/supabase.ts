@@ -22,6 +22,7 @@ import {
   switchMap,
   takeUntil,
   tap,
+  withLatestFrom,
 } from 'rxjs/operators'
 import { browserClient, q } from '@/client/fauna'
 import { getUserSession, updatePersistedUserName } from '@/helpers/getPersistedPlayer'
@@ -251,7 +252,10 @@ class Manager {
   }
 
   get gameRoundIndex$() {
-    return this.gameRound$.pipe(map((round) => round?.index))
+    return this.gameRound$.pipe(
+      map((round) => round?.index),
+      distinctUntilChanged()
+    )
   }
 
   get gameRoundTimeStarted$() {
@@ -277,18 +281,31 @@ class Manager {
   getRoundAnswers(): Observable<RoundResults> {
     const getRound = (player: string, round: number) =>
       browserClient.query(q.Call('get-round', this.gameId, player, round))
-    return combineLatest([this.player$, this.gameRoundIndex$]).pipe(
-      switchMap(([player, index]) => from(getRound(player.id, index!))),
+    return this.gameRoundIndex$.pipe(
+      withLatestFrom(this.player$),
+      tap(([roundIndex, player]) => console.log({ player, roundIndex })),
+      switchMap(([index, player]) => from(getRound(player.id, index!))),
+      tap((response) => console.log(response.data)),
       map((response) => (response as any).data.answers as RoundResults)
     )
   }
 
   // ROUND ANSWERS
   async setRoundAnswer(question: string, answer: string) {
+    console.log('setRoundAnswers', question, answer)
     const saveAnswers = (player: string, round: number) =>
       browserClient.query(q.Call('save-answers', this.gameId, player, round, question, answer))
-    return combineLatest([this.player$, this.gameRoundIndex$])
-      .pipe(switchMap(([player, index]) => from(saveAnswers(player.id, index!))))
+
+    return this.gameRoundIndex$
+      .pipe(
+        tap((player) => console.log('player emitted', player)),
+        withLatestFrom(this.player$),
+        switchMap(([index, player]) => {
+          console.log('setAnswers', { player, index, question, answer })
+          return from(saveAnswers(player.id, index!))
+        }),
+        tap((response) => console.log('saved!', response))
+      )
       .subscribe()
   }
 

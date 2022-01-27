@@ -50,31 +50,37 @@ export const getInitialScores = (
 
   const votes: Scores = {}
 
-  const groupedAnswers = Object.values(answers).reduce<GroupedAnswers>((accum, answers) => {
-    config.categories.forEach((category) => {
-      if (!accum[category]) {
-        accum[category] = {}
-      }
+  const groupedByCategory = Object.values(answers).reduce<GroupedAnswers>(
+    (accum, playerAnswers) => {
+      config.categories.forEach((category) => {
+        if (!accum[category]) {
+          accum[category] = {}
+        }
 
-      const answer = sanitiseAnswer(answers[category])
+        // Get the answer the player provided for this category
+        const answer = sanitiseAnswer(playerAnswers[category])
 
-      if (accum[category][answer]) {
-        accum[category][answer] += 1
-      } else {
-        accum[category][answer] = 1
-      }
-    })
-    return accum
-  }, {})
+        if (accum[category][answer]) {
+          accum[category][answer] += 1
+        } else {
+          accum[category][answer] = 1
+        }
+      })
+      return accum
+    },
+    {}
+  )
 
   players.forEach(
     (player) =>
       config.categories.map((category) => {
         if (!votes[player.id]) votes[player.id] = {}
-        const answer = sanitiseAnswer(answers[player.id][category])
+        const providedAnswer = answers?.[player.id]?.[category] ?? ''
+
+        const answer = sanitiseAnswer(providedAnswer)
         votes[player.id][category] = scoreAnswer(config, letter, answer)
 
-        if (groupedAnswers[category][answer] > 1) {
+        if (groupedByCategory[category][answer] > 1) {
           votes[player.id][category] = 0
         }
 

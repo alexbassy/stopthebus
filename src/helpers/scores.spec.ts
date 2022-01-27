@@ -77,6 +77,15 @@ describe('getInitialScores()', () => {
       two: { animals: 1, people: 0 },
     })
   })
+
+  it('gracefully handles missing answers from players', () => {
+    delete answers.two
+    const results = getInitialScores(answers, letter, config, players)
+    expect(results).toEqual({
+      one: { animals: 1, people: 1 },
+      two: { animals: 0, people: 0 },
+    })
+  })
 })
 
 describe('getFinalScores()', () => {

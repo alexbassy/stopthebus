@@ -11,15 +11,22 @@ import {
   useGameRoundAllAnswers,
   useGameRoundAllScores,
   useGameRoundIndex,
+  useGameRoundLetter,
   useGameRoundNextLetter,
+  useGameRoundTimeStarted,
   useGameStateStage,
 } from '@/hooks/supabase'
 import ReviewHeader from '@/components/round-review/ReviewHeader'
+import { cancelStartGameWithID, startGameWithID } from '@/client/rest'
+import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 
 export default function ReviewRound() {
+  const gameId = useGameIdFromRoute()
   const gameAnswers = useGameRoundAllAnswers()
   const gameScores = useGameRoundAllScores()
   const nextLetter = useGameRoundNextLetter()
+  const gameRoundTimeStarted = useGameRoundTimeStarted()
+  const gameRoundLetter = useGameRoundLetter()
   const stage = useGameStateStage()
   const categories = useGameConfigCategories()
   const numRounds = useGameConfigRounds()
@@ -29,12 +36,12 @@ export default function ReviewRound() {
     return null
   }
 
-  const handleNextRoundClick = (event: SyntheticEvent<HTMLButtonElement>) => {
-    console.log('START_ROUND')
+  const handleNextRoundClick = () => {
+    startGameWithID(gameId)
   }
 
   const handleCancelStartGame = () => {
-    console.log('CANCEL_START_ROUND')
+    cancelStartGameWithID(gameId)
   }
 
   const isLastRound = (roundIndex || 0) + 1 === numRounds
@@ -59,11 +66,11 @@ export default function ReviewRound() {
       <Button onClick={handleNextRoundClick}>{isLastRound ? 'Finish game' : 'Next round'}</Button>
 
       <Dialog>
-        {!isLastRound && stage === GameStage.ACTIVE && (
+        {(gameRoundTimeStarted || 0) > Date.now() && (
           <Countdown
             from={3}
             onCancel={handleCancelStartGame}
-            showAfter={nextLetter?.toUpperCase()}
+            showAfter={gameRoundLetter?.toUpperCase()}
             // In reality it should be displayed for 1.5s, but instruct the
             // component to display it for longer to account for transport latency
             afterMessageDuration={3000}
