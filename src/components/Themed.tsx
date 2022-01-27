@@ -2,14 +2,7 @@ import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react'
 import Head from 'next/head'
 import { ThemeProvider } from '@emotion/react'
 import { Global } from '@emotion/react'
-import {
-  globalStyles,
-  Background,
-  GameWrapper,
-  Spacing,
-  ExternalLink,
-  HiddenLabel,
-} from './visual'
+import { globalStyles, Background, GameWrapper, Spacing, ExternalLink, HiddenLabel } from './visual'
 import styled from '@emotion/styled'
 import { Flex } from './Grid'
 import themes, { Themes } from '../themes'
@@ -82,11 +75,7 @@ const Themed: React.FC<ThemedProps> = ({ children }) => {
           <Spacing t={2} />
           <ChangeThemeWrapper>
             <HiddenLabel htmlFor='change-theme'>Change theme</HiddenLabel>
-            <ThemeButton
-              id='change-theme'
-              value={activeTheme}
-              onChange={changeTheme}
-            >
+            <ThemeButton id='change-theme' value={activeTheme} onChange={changeTheme}>
               <option value={Themes.PASTEL}>Theme: Original</option>
               <option value={Themes.DARK}>Theme: Dark</option>
             </ThemeButton>
@@ -94,7 +83,7 @@ const Themed: React.FC<ThemedProps> = ({ children }) => {
         </GameWrapper>
         <Footer yCentre xCentre>
           <Spacing y={1}>
-            @{process.env.REACT_APP_SHORT_SHA || 'local'}
+            @{process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 7) ?? 'local'}
             <Spacing l={0.5} r={0.5} inline>
               &bull;
             </Spacing>
