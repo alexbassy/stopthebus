@@ -5,6 +5,7 @@ import log from '@/helpers/log'
 import styled from '@emotion/styled'
 import { Spacing } from './visual'
 import GameContext from '../contexts/GameContext'
+import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 
 interface GameParams {
   gameID: string
@@ -67,12 +68,8 @@ interface GameNameProps {
 }
 
 export default function GameName(props: GameNameProps) {
-  const {
-    query: { game: paramsGameID },
-  } = useRouter()
-  const game = useContext(GameContext)
+  const gameId = useGameIdFromRoute()
   const [hasShareAPI, setHasShareAPI] = useState(false)
-  const gameID = game && game.config ? game.config.id : paramsGameID
 
   useEffect(() => {
     setHasShareAPI(Boolean(window.navigator.share))
@@ -91,7 +88,7 @@ export default function GameName(props: GameNameProps) {
     }
     try {
       await window.navigator.share({
-        title: `Share game ${gameID}`,
+        title: `Share game ${gameId}`,
         url: gameURL,
       })
     } catch (e) {
@@ -104,13 +101,9 @@ export default function GameName(props: GameNameProps) {
     return null
   }
 
-  if (!game || !game.config) {
-    return <Title>{paramsGameID}</Title>
-  }
-
   return (
     <BorderedName>
-      <Title>{game.id} </Title>
+      <Title>{gameId} </Title>
       <ShareButton type='button' onClick={handleShareClick}>
         Share game ({hasShareAPI ? 'opens share dialog' : 'copies URL to clipboard'})
       </ShareButton>

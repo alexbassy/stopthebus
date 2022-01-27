@@ -1,4 +1,4 @@
-import { useGameStateStage } from '@/hooks/supabase'
+import { useGameStateStage, useIsConnected } from '@/hooks/supabase'
 import { GameStage } from '@/typings/game'
 import NewGame from '@/components/NewGame'
 import ActiveRound from '@/components/ActiveRound'
@@ -10,6 +10,7 @@ import EntryController from './new-game/EntryController'
 
 const GameViewController: React.FC = () => {
   const gameStateStage = useGameStateStage()
+  const isConnected = useIsConnected()
 
   let Component
 
@@ -31,6 +32,7 @@ const GameViewController: React.FC = () => {
     <>
       <PageTitle isInGame={gameStateStage !== GameStage.PRE} />
       <GameName isShareable={gameStateStage === GameStage.PRE} />
+      {/* <p>Connected: {isConnected ? 'Yes' : 'no'}</p> */}
       <EntryController>{Component ? <Component /> : null}</EntryController>
     </>
   )
