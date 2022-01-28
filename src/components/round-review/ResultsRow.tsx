@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/visual'
 import useIsSmallScreen from '@/hooks/useIsSmallScreen'
 import { ChangeEvent, memo } from 'react'
 import { scoreAnswer } from '@/helpers/scores'
+import useSound from 'use-sound'
 
 const PlayerColumn = styled.td`
   word-break: break-all;
@@ -31,10 +32,12 @@ const ResultsRow: React.FC<ResultsRowProps> = (props) => {
   const letter = useGameRoundLetter()
   const players = useGamePlayers()
   const player = players.find((player) => player.id === playerId)
+  const [playCheck] = useSound('/sounds/tap.mp3', { volume: 0.5 })
 
   const handleVote =
     (playerId: string, category: string, answer: string) =>
     (event: ChangeEvent<HTMLInputElement>) => {
+      playCheck()
       const newScore = event.target.checked
         ? scoreAnswer(scoreWithAlliteration, letter!, answer)
         : 0

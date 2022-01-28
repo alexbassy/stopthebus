@@ -256,7 +256,7 @@ class Manager {
           (oldStage === GameStage.PRE || oldStage === GameStage.REVIEW) &&
           newStage === GameStage.ACTIVE
         if (isStartingRound) {
-          return timer(3000).pipe(
+          return timer(4500).pipe(
             takeUntil(this.cancelTimer$),
             map(() => newStage)
           )

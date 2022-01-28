@@ -3,6 +3,7 @@ import { css } from '@emotion/react'
 import isPropValid from '@emotion/is-prop-valid'
 import styled from '@emotion/styled'
 import { motion, AnimatePresence } from 'framer-motion'
+import useSound from 'use-sound'
 
 const Overlay = styled(motion.div)`
   position: fixed;
@@ -95,6 +96,11 @@ const Countdown: React.FC<CountdownProps> = ({
   const [isAfterMessageShown, setIsAfterMessageShown] = useState<boolean>(false)
   const intervalRef = useRef<number>()
   const [timeLeft, setTimeLeft] = useState<number>(from)
+  const [playCountdown] = useSound('/sounds/countdown.mp3', { volume: 0.5 })
+
+  useEffect(() => {
+    playCountdown()
+  }, [playCountdown])
 
   const onTimerComplete = useCallback(() => {
     // If there is no message to display, immediately hide the overlay
