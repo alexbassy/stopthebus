@@ -1,6 +1,6 @@
 import { Select } from '@/components/visual'
 import { range } from '@/helpers/util'
-import { manager, useGameConfigRounds } from '@/hooks/supabase'
+import { manager, useGameConfigRounds } from '@/hooks/database'
 import { ChangeEvent } from 'react'
 
 const RaceRounds: React.FC = () => {

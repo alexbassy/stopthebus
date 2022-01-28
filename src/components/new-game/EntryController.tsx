@@ -3,7 +3,7 @@ import { distinctUntilChanged, fromEvent, map, of, startWith } from 'rxjs'
 import { joinGameWithID, leaveGameWithID, RequestError } from '@/client/rest'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 import usePlayer from '@/hooks/usePlayer'
-import { JoinState, manager, useGameStateStage, useJoinState } from '@/hooks/supabase'
+import { JoinState, manager, useGameStateStage, useJoinState } from '@/hooks/database'
 import { GameStage } from '@/typings/game'
 
 const EntryController: React.FC = (props) => {

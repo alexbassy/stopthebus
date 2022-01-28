@@ -1,4 +1,4 @@
-import { manager, useGameConfigAlliteration } from '@/hooks/supabase'
+import { manager, useGameConfigAlliteration } from '@/hooks/database'
 import { Checkbox } from '@/components/visual'
 
 const Alliteration: React.FC = () => {

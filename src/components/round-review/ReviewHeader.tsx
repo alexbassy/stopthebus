@@ -4,7 +4,7 @@ import {
   useGameRoundDuration,
   useGameRoundEndingPlayer,
   useGameRoundIndex,
-} from '@/hooks/supabase'
+} from '@/hooks/database'
 
 const ReviewHeader: React.FC = () => {
   const duration = useGameRoundDuration()

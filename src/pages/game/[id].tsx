@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Themed from '@/components/Themed'
 import { Subscribe } from '@react-rxjs/core'
-import { manager } from '@/hooks/supabase'
+import { manager } from '@/hooks/database'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 import GameViewController from '@/components/GameViewController'
 import EntryController from '@/components/new-game/EntryController'

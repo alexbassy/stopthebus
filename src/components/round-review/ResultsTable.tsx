@@ -4,7 +4,7 @@ import {
   useGameConfigAlliteration,
   useGamePlayers,
   useGameRoundLetter,
-} from '@/hooks/supabase'
+} from '@/hooks/database'
 import useIsSmallScreen from '@/hooks/useIsSmallScreen'
 import useScrollToTop from '@/hooks/useScrollToTop'
 import { Round, Scores } from '@/typings/game'

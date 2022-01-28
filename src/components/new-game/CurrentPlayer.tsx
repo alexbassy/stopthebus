@@ -1,4 +1,4 @@
-import { useGamePlayers } from '@/hooks/supabase'
+import { useGamePlayers } from '@/hooks/database'
 import Player from '@/components/Player'
 import usePlayer from '@/hooks/usePlayer'
 

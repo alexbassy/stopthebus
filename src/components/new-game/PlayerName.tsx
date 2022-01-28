@@ -1,4 +1,4 @@
-import { manager } from '@/hooks/supabase'
+import { manager } from '@/hooks/database'
 import { Button, Description, Input, Spacing } from '@/components/visual'
 import FormControl from '@/components/FormControl'
 import { FormEventHandler, useState } from 'react'

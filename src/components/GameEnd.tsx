@@ -3,7 +3,7 @@ import { Player as PlayerType } from '@/typings/game'
 import { Item, List, ExternalLink, Spacing } from './visual'
 import Player from './Player'
 import { APP_ROUTES } from '@/client/api-routes'
-import { useGamePlayers, useGameStateFinalScores, useGameStateNextGameId } from '@/hooks/supabase'
+import { useGamePlayers, useGameStateFinalScores, useGameStateNextGameId } from '@/hooks/database'
 
 export default function ReviewRound() {
   const finalScores = useGameStateFinalScores()

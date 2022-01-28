@@ -12,7 +12,7 @@ import {
   useGameRoundLetter,
   useGameRoundScoresByPlayer,
   useGameRoundTimeStarted,
-} from '@/hooks/supabase'
+} from '@/hooks/database'
 import ReviewHeader from '@/components/round-review/ReviewHeader'
 import { cancelStartGameWithID, startGameWithID } from '@/client/rest'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'

@@ -1,4 +1,4 @@
-import { useGameStateStage, useIsConnected } from '@/hooks/supabase'
+import { useGameStateStage, useIsConnected } from '@/hooks/database'
 import { GameStage } from '@/typings/game'
 import NewGame from '@/components/NewGame'
 import ActiveRound from '@/components/ActiveRound'

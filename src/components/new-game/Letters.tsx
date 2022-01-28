@@ -1,4 +1,4 @@
-import { manager, useGameConfigLetters } from '@/hooks/supabase'
+import { manager, useGameConfigLetters } from '@/hooks/database'
 import { Checkbox, H3, Item, List, Spacing } from '@/components/visual'
 import { ENGLISH_LETTERS } from '@/constants/letters'
 import { Flex } from '@/components/Grid'

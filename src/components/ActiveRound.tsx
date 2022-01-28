@@ -19,7 +19,7 @@ import {
   useGameConfigCategories,
   useGameRoundLetter,
   useGameStateStage,
-} from '@/hooks/supabase'
+} from '@/hooks/database'
 import { endRoundWithGameID } from '@/client/rest'
 import usePlayer from '@/hooks/usePlayer'
 

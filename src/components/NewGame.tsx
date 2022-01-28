@@ -14,7 +14,7 @@ import {
   useGameConfigCategories,
   useGameRoundLetter,
   useGameRoundTimeStarted,
-} from '@/hooks/supabase'
+} from '@/hooks/database'
 import RaceRounds from '@/components/new-game/RaceRounds'
 import { cancelStartGameWithID, startGameWithID } from '@/client/rest'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'

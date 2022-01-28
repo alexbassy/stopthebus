@@ -5,7 +5,7 @@ import {
   useGameConfigAlliteration,
   useGamePlayers,
   useGameRoundLetter,
-} from '@/hooks/supabase'
+} from '@/hooks/database'
 import Player from '@/components/Player'
 import { Checkbox } from '@/components/visual'
 import useIsSmallScreen from '@/hooks/useIsSmallScreen'
