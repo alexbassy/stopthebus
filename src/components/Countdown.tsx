@@ -96,11 +96,20 @@ const Countdown: React.FC<CountdownProps> = ({
   const [isAfterMessageShown, setIsAfterMessageShown] = useState<boolean>(false)
   const intervalRef = useRef<number>()
   const [timeLeft, setTimeLeft] = useState<number>(from)
-  const [playCountdown] = useSound('/sounds/countdown.mp3', { volume: 0.5 })
+  const [playCountdown, { stop: stopCountdown }] = useSound('/sounds/countdown.mp3', {
+    volume: 0.5,
+  })
 
   useEffect(() => {
     playCountdown()
   }, [playCountdown])
+
+  const handleCancel = () => {
+    if (onCancel) {
+      stopCountdown()
+      onCancel()
+    }
+  }
 
   const onTimerComplete = useCallback(() => {
     // If there is no message to display, immediately hide the overlay
@@ -160,7 +169,7 @@ const Countdown: React.FC<CountdownProps> = ({
           <Text isLarger={isAfterMessageShown}>{displayedText}</Text>
         </TextContainer>
       </AnimatePresence>
-      {onCancel && <Button onClick={onCancel}>Cancel</Button>}
+      {onCancel && <Button onClick={handleCancel}>Cancel</Button>}
     </Overlay>
   )
 }
