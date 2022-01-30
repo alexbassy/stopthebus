@@ -1,19 +1,5 @@
-import { ChangeEvent } from 'react'
-import {
-  manager,
-  useGameConfigAlliteration,
-  useGamePlayers,
-  useGameRoundLetter,
-} from '@/hooks/database'
-import useIsSmallScreen from '@/hooks/useIsSmallScreen'
 import useScrollToTop from '@/hooks/useScrollToTop'
-import { Round, Scores } from '@/typings/game'
-import { PlayerVote } from '@/typings/socket-events'
 import styled from '@emotion/styled'
-import { Flex } from '@/components/Grid'
-import Player from '@/components/Player'
-import { Checkbox } from '@/components/visual'
-import { scoreAnswer } from '@/helpers/scores'
 import ResultsRow from '@/components/round-review/ResultsRow'
 
 const Table = styled.table`

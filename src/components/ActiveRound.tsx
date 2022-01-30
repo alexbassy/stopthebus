@@ -8,7 +8,6 @@ import React, {
 } from 'react'
 import Head from 'next/head'
 import { RoundResults, GameStage } from '@/typings/game'
-import { ClientEvent } from '@/typings/socket-events'
 import { Button, Input, Item, List, Spacing } from './visual'
 import { Grid } from './Grid'
 import Lanes from './Lanes'
