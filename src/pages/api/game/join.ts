@@ -1,6 +1,5 @@
 import httpStatuses from '@/constants/http-codes'
 import { assertMethod, getGameId, getGamePlayer, getIsJoining } from '@/helpers/api/validation'
-import log from '@/helpers/log'
 import { Game, GameResponse, GameStage, Player } from '@/typings/game'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { serverClient, q } from '@/client/fauna'
@@ -64,12 +63,11 @@ export default async function handler(
       : players.filter((gamePlayer) => gamePlayer.id !== player.id)
 
     try {
-      console.log(isJoining ? 'adding' : 'removing', player, 'for game')
       await serverClient.query(q.Update(ref, { data: { players } }))
     } catch (e) {
       return res.status(httpStatuses.BAD_REQUEST).json({ message: e })
     } finally {
-      log.d(`Took ${Date.now() - start}ms to ${isJoining ? 'add' : 'remove'} player`)
+      console.info(`Took ${Date.now() - start}ms to ${isJoining ? 'add' : 'remove'} player`)
     }
   }
 

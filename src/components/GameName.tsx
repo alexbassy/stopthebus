@@ -1,10 +1,6 @@
-import React, { useContext, SyntheticEvent, useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
+import React, { SyntheticEvent, useState, useEffect } from 'react'
 import { css } from '@emotion/react'
-import log from '@/helpers/log'
 import styled from '@emotion/styled'
-import { Spacing } from './visual'
-import GameContext from '../contexts/GameContext'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 
 interface GameParams {
@@ -92,7 +88,7 @@ export default function GameName(props: GameNameProps) {
         url: gameURL,
       })
     } catch (e) {
-      log.e('GameName', 'Share API not supported')
+      console.error('Share API not supported')
     }
   }
 

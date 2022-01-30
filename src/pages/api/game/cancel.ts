@@ -1,7 +1,6 @@
 import { q, serverClient } from '@/client/fauna'
 import httpStatuses from '@/constants/http-codes'
 import { assertMethod, getGameId } from '@/helpers/api/validation'
-import log from '@/helpers/log'
 import { Game, GameResponse, GameRound, GameStage } from '@/typings/game'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
@@ -59,7 +58,7 @@ export default async function handler(
   } catch (e) {
     return res.status(httpStatuses.BAD_REQUEST).json({ message: e })
   } finally {
-    log.d(`Took ${Date.now() - start}ms to cancel game`)
+    console.info(`Took ${Date.now() - start}ms to cancel game`)
   }
 
   return res.status(200).end()

@@ -10,7 +10,6 @@ import { createGameWithID } from '@/client/rest'
 import { Player } from '@/typings/game'
 import { getUserSession } from '@/helpers/getPersistedPlayer'
 import { APP_ROUTES } from '@/client/api-routes'
-import log from '@/helpers/log'
 
 export default function Home() {
   const router = useRouter()
@@ -43,7 +42,7 @@ export default function Home() {
       await createGameWithID(newGameID, player)
       router.push(APP_ROUTES.game(newGameID))
     } catch (e) {
-      log.e(e)
+      console.error('Something went wrong while creating a game', e)
       alert('Sorry, something went wrong')
     }
   }

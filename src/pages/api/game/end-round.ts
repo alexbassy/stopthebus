@@ -2,9 +2,7 @@ import { q, serverClient } from '@/client/fauna'
 import httpStatuses from '@/constants/http-codes'
 import { assertMethod, getGameId, getGamePlayer } from '@/helpers/api/validation'
 import { getNextLetterForGame } from '@/helpers/letters'
-import log from '@/helpers/log'
-import { getGameName } from '@/helpers/random'
-import { getFinalScores, getInitialScores } from '@/helpers/scores'
+import { getInitialScores } from '@/helpers/scores'
 import {
   FdbAllAnswersQuery,
   Game,
@@ -86,7 +84,6 @@ export default async function handler(
     answers = await getAnswers(id, game.currentRound.index)
     answers = fillEmptyAnswers(answers, game.config.categories, game.players)
   } catch (e) {
-    console.log(e)
     return res.status(400).json({ message: 'The answers could not be found' })
   }
 
@@ -95,7 +92,7 @@ export default async function handler(
     const letter = game.currentRound.letter
     scores = getInitialScores(answers, letter, config, players)
   } catch (e) {
-    console.log(e)
+    console.error(`Answers for game "${id}" could not be scored`, e)
     return res.status(400).json({ message: 'The answers could not be scored' })
   }
 
@@ -126,7 +123,7 @@ export default async function handler(
   } catch (e) {
     return res.status(httpStatuses.BAD_REQUEST).json({ message: e })
   } finally {
-    log.d(`Took ${Date.now() - start}ms to end round`)
+    console.info(`Took ${Date.now() - start}ms to end round`)
   }
 
   return res.status(200).end()

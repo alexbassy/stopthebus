@@ -2,7 +2,6 @@ import { q, serverClient } from '@/client/fauna'
 import httpStatuses from '@/constants/http-codes'
 import { assertMethod, getGameId } from '@/helpers/api/validation'
 import { getNextLetterForGame } from '@/helpers/letters'
-import log from '@/helpers/log'
 import { getGameName } from '@/helpers/random'
 import { getFinalScores } from '@/helpers/scores'
 import { Game, GameResponse, GameRound, GameStage } from '@/typings/game'
@@ -106,7 +105,7 @@ export default async function handler(
   } catch (e) {
     return res.status(httpStatuses.BAD_REQUEST).json({ message: e })
   } finally {
-    log.d(`Took ${Date.now() - start}ms to start game`)
+    console.info(`Took ${Date.now() - start}ms to start game`)
   }
 
   return res.status(200).end()

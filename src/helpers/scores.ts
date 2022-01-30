@@ -1,6 +1,5 @@
 // @ts-nocheck
 import { Game, GameConfig, Scores, GameRound, FinalScores, Round } from '@/typings/game'
-import log from '../helpers/log'
 
 export const getWords = (string: string) => string.trim().split(' ')
 
