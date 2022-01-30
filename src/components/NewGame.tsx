@@ -1,6 +1,6 @@
 import React from 'react'
 import Head from 'next/head'
-import { Grid } from '@/components/Grid'
+import { Grid } from '@nextui-org/react'
 import { Button, Spacing } from '@/components/visual'
 import Dialog from '@/components/Dialog'
 import Countdown from '@/components/Countdown'
@@ -50,10 +50,15 @@ export default function NewGame() {
         <CurrentPlayer />
       </Spacing>
       <PlayerName />
-      <Grid columns={[2, 1]} stackOnMobile>
-        <Letters />
-        <Players />
-      </Grid>
+
+      <Grid.Container>
+        <Grid xs={12} md={8}>
+          <Letters />
+        </Grid>
+        <Grid xs={12} md={4}>
+          <Players />
+        </Grid>
+      </Grid.Container>
 
       <CategoriesList />
 

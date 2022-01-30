@@ -9,7 +9,7 @@ import React, {
 import Head from 'next/head'
 import { RoundResults, GameStage } from '@/typings/game'
 import { Button, Input, Item, List, Spacing } from './visual'
-import { Grid } from './Grid'
+import { Grid } from '@nextui-org/react'
 import Lanes from './Lanes'
 import styled from '@emotion/styled'
 import useScrollToTop from '../hooks/useScrollToTop'
@@ -143,38 +143,42 @@ export default function ActiveRound() {
         The letter is <strong style={{ fontSize: '2rem' }}>{gameRoundLetter?.toUpperCase()}</strong>
       </p>
       <Wrap>
-        <Grid columns={[3, 1]}>
-          <form onSubmit={handleEndRoundClick} ref={formRef}>
-            <List>
-              {gameConfigCategories.map((category) => {
-                const stripped = category.replace(/\W/g, '')
-                const id = `input-${stripped}`
-                return (
-                  <Item key={category}>
-                    <Spacing b={1}>
-                      <label htmlFor={id}>{category}</label>
-                      <Spacing b={0.5} />
-                      <Input
-                        type='text'
-                        id={id}
-                        name={category}
-                        onBlur={(event) => pushAnswer(category, event.target.value)}
-                        onFocus={handleFocus}
-                        onChange={handleChange(category)}
-                        value={values[category] ?? ''}
-                        autoCorrect='off'
-                        disabled={hasEnded}
-                        grow
-                      />
-                    </Spacing>
-                  </Item>
-                )
-              })}
-            </List>
-            <Button disabled={hasEnded}>{hasEnded ? 'Out of time!' : 'Finished'}</Button>
-          </form>
-          <Lanes questionPositions={questionPositions} />
-        </Grid>
+        <Grid.Container>
+          <Grid xs={9}>
+            <form onSubmit={handleEndRoundClick} ref={formRef}>
+              <List>
+                {gameConfigCategories.map((category) => {
+                  const stripped = category.replace(/\W/g, '')
+                  const id = `input-${stripped}`
+                  return (
+                    <Item key={category}>
+                      <Spacing b={1}>
+                        <label htmlFor={id}>{category}</label>
+                        <Spacing b={0.5} />
+                        <Input
+                          type='text'
+                          id={id}
+                          name={category}
+                          onBlur={(event) => pushAnswer(category, event.target.value)}
+                          onFocus={handleFocus}
+                          onChange={handleChange(category)}
+                          value={values[category] ?? ''}
+                          autoCorrect='off'
+                          disabled={hasEnded}
+                          grow
+                        />
+                      </Spacing>
+                    </Item>
+                  )
+                })}
+              </List>
+              <Button disabled={hasEnded}>{hasEnded ? 'Out of time!' : 'Finished'}</Button>
+            </form>
+          </Grid>
+          <Grid xs={3}>
+            <Lanes questionPositions={questionPositions} />
+          </Grid>
+        </Grid.Container>
       </Wrap>
     </div>
   )
