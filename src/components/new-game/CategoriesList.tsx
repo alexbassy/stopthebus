@@ -13,7 +13,7 @@ const CategoriesList: React.FC = () => {
   const [customCategory, setCustomCategory] = useState('')
   const selectedCategories = useGameConfigCategories()
   const customCategories = selectedCategories.filter((cat) => !defaultCategories.includes(cat))
-  const [playCheck] = useSound('/sounds/tap.mp3', { volume: 0.5 })
+  const [playCheck] = useSound('/sounds/tap.mp3', { volume: 0.1 })
 
   const toggleCategory = (category: string) => {
     playCheck()

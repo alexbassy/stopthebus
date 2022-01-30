@@ -6,7 +6,7 @@ import useSound from 'use-sound'
 
 const Letters: React.FC = () => {
   const gameLetters = useGameConfigLetters()
-  const [playCheck] = useSound('/sounds/tap.mp3', { volume: 0.5 })
+  const [playCheck] = useSound('/sounds/tap.mp3', { volume: 0.1 })
 
   const handleChange = (letter: string) => () => {
     playCheck()

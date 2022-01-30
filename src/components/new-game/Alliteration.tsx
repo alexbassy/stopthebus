@@ -5,7 +5,7 @@ import useSound from 'use-sound'
 const Alliteration: React.FC = () => {
   const isAlliterationRewarded = useGameConfigAlliteration()
 
-  const [playCheck] = useSound('/sounds/tap.mp3', { volume: 0.5 })
+  const [playCheck] = useSound('/sounds/tap.mp3', { volume: 0.1 })
 
   const handleChange = () => {
     playCheck()

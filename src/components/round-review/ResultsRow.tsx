@@ -32,7 +32,7 @@ const ResultsRow: React.FC<ResultsRowProps> = (props) => {
   const letter = useGameRoundLetter()
   const players = useGamePlayers()
   const player = players.find((player) => player.id === playerId)
-  const [playCheck] = useSound('/sounds/tap.mp3', { volume: 0.5 })
+  const [playCheck] = useSound('/sounds/tap.mp3', { volume: 0.1 })
 
   const handleVote =
     (playerId: string, category: string, answer: string) =>

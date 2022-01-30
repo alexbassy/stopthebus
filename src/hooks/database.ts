@@ -1,29 +1,14 @@
 import { FfbGame, FinalScores, Game, GameStage, Player, RoundResults } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
-import { PostgrestError } from '@supabase/supabase-js'
-import {
-  combineLatest,
-  from,
-  map,
-  merge,
-  Observable,
-  of,
-  ReplaySubject,
-  Subject,
-  throwError,
-  timer,
-} from 'rxjs'
+import { from, map, merge, Observable, of, ReplaySubject, Subject, throwError, timer } from 'rxjs'
 import {
   catchError,
-  concatMap,
-  delay,
   delayWhen,
   distinctUntilChanged,
   filter,
   mapTo,
   pairwise,
   retryWhen,
-  scan,
   startWith,
   switchMap,
   take,
@@ -105,7 +90,7 @@ class Manager {
     )
   }
 
-  logError(error: PostgrestError) {
+  logError(error: Error) {
     console.error(error)
   }
 
@@ -133,6 +118,10 @@ class Manager {
   get gameSubscription$() {
     if (!this.gameId) return of(null)
     if (!this.sharedGameSubscription$) {
+      // The game subscription also notifies the manager when
+      // the connection has broken by sending an array where
+      // the first element is whether the connection is active.
+      // It's a bit crappy and I don't love it.
       this.sharedGameSubscription$ = this.gameRef$.pipe(
         switchMap((ref) => subscribeToGame(ref)),
         switchMap(([connection, data]) => {
@@ -320,10 +309,14 @@ class Manager {
     return this.gameRoundIndex$.pipe(
       withLatestFrom(this.player$),
       switchMap(([index, player]) =>
-        queryAsObservable(q.Call('get-round', this.gameId, player, index!))
+        queryAsObservable(q.Call('get-round', this.gameId, player.id, index!))
       ),
       map((response) => (response as any).data.answers as RoundResults),
-      take(1)
+      take(1),
+      catchError((error) => {
+        console.log(error)
+        return of({} as RoundResults)
+      })
     )
   }
 
@@ -348,17 +341,18 @@ class Manager {
 
   get gameRoundAnswersByCategory$() {
     return this.gameRound$.pipe(
-      withLatestFrom(this.gameConfigCategories$),
-      map(([round, categories]) => {
+      map((round) => {
         if (!round) return null
-        const playerIds = Object.keys(round.answers)
-        return categories.reduce<Record<string, Record<string, string>>>((byPlayer, category) => {
-          byPlayer[category] = playerIds.reduce<Record<string, string>>((scores, player) => {
-            scores[player] = round.answers[player][category]
-            return scores
-          }, {})
-          return byPlayer
-        }, {})
+        const answerEntries = Object.entries(round.answers)
+        const categories = Object.keys(answerEntries[0][1])
+        return Object.fromEntries(
+          categories.map((category) => [
+            category,
+            Object.fromEntries(
+              answerEntries.map(([player, playerAnswers]) => [player, playerAnswers[category]])
+            ),
+          ])
+        )
       })
     )
   }
@@ -369,17 +363,18 @@ class Manager {
 
   get gameRoundScoresByCategory$() {
     return this.gameRound$.pipe(
-      withLatestFrom(this.gameConfigCategories$),
-      map(([round, categories]) => {
+      map((round) => {
         if (!round) return null
-        const playerIds = Object.keys(round.answers)
-        return categories.reduce<Record<string, Record<string, number>>>((byPlayer, category) => {
-          byPlayer[category] = playerIds.reduce<Record<string, number>>((scores, player) => {
-            scores[player] = round.scores[player][category]
-            return scores
-          }, {})
-          return byPlayer
-        }, {})
+        const scoreEntries = Object.entries(round.scores)
+        const categories = Object.keys(scoreEntries[0][1])
+        return Object.fromEntries(
+          categories.map((category) => [
+            category,
+            Object.fromEntries(
+              scoreEntries.map(([player, playerAnswers]) => [player, playerAnswers[category]])
+            ),
+          ])
+        )
       })
     )
   }
