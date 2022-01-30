@@ -23,7 +23,7 @@ import {
 import { endRoundWithGameID } from '@/client/rest'
 import usePlayer from '@/hooks/usePlayer'
 
-const Wrap = styled('div')`
+const Wrap = styled.div`
   max-width: 400px;
 `
 

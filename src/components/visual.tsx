@@ -25,7 +25,7 @@ export const globalStyles = css`
   }
 `
 
-export const Background = styled('div')`
+export const Background = styled.div`
   width: 100%;
   min-height: 100%;
   background-color: ${(props) => props.theme?.colours?.pageBackground};
@@ -36,7 +36,7 @@ export const Background = styled('div')`
   }
 `
 
-export const GameWrapper = styled('div')`
+export const GameWrapper = styled.div`
   display: flex;
   flex-direction: column;
   max-width: 760px;
@@ -55,7 +55,7 @@ export const GameWrapper = styled('div')`
   }
 `
 
-export const H2 = styled<'h2'>('h2')`
+export const H2 = styled.h2`
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.5px;
@@ -64,7 +64,7 @@ export const H2 = styled<'h2'>('h2')`
 
 export const H3 = H2.withComponent('h3')
 
-export const HiddenLabel = styled<'label'>('label')`
+export const HiddenLabel = styled.label`
   position: absolute !important;
   height: 1px;
   width: 1px;
@@ -139,7 +139,7 @@ export const Checkbox = styled.input`
 
 const DownArrow = `<svg width="10" height="6" xmlns="http://www.w3.org/2000/svg"><path d="M.6 0a.59.59 0 00-.42.19.69.69 0 000 .92l4.39 4.7a.58.58 0 00.86 0l4.38-4.7A.68.68 0 009.83.2a.58.58 0 00-.86 0L5 4.44 1.03.2A.59.59 0 00.6 0z" fill="white" fill-rule="nonzero"/></svg>`
 
-export const Select = styled<'select'>('select')`
+export const Select = styled.select`
   font-size: 1rem;
   padding: 0.3rem 1.5rem 0.3rem 1rem;
   -webkit-appearance: none;
@@ -189,7 +189,7 @@ export const Button = styled.button<ButtonProps>`
   }
 `
 
-export const ExternalLink = styled<'a'>('a')`
+export const ExternalLink = styled.a`
   color: #fff;
   cursor: pointer;
 
@@ -254,7 +254,7 @@ export const Spacing = styled.div<SpacingProps>`
   ${(props) => props.inline && `display: inline-block;`};
 `
 
-export const Lighter = styled<'span'>('span')`
+export const Lighter = styled.span`
   color: rgb(255 255 255 / 60%);
   font-weight: 400;
 `

@@ -11,7 +11,7 @@ interface ThemedProps {
   children: ReactNode
 }
 
-const Footer = styled<'footer'>('footer')`
+const Footer = styled.footer`
   color: #fff;
   text-align: center;
   font-weight: 600;

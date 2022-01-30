@@ -2,7 +2,7 @@ import React, { SyntheticEvent } from 'react'
 import styled from '@emotion/styled'
 import { ExternalLink } from './visual'
 
-const StyledLink = styled<'a'>('a')`
+const StyledLink = styled.a`
   text-decoration: none;
   --webkit-tap-highlight-color: transparent;
 `.withComponent(ExternalLink)
