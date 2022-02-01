@@ -2,7 +2,7 @@ import React, { useState, SyntheticEvent, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import * as random from '@/helpers/random'
-import { Input, Button, H2, Spacing } from '@/components/visual'
+import { H2, Spacing } from '@/components/visual'
 import PageTitle from '@/components/PageTitle'
 import FormControl from '@/components/FormControl'
 import Themed from '@/components/Themed'
@@ -10,6 +10,7 @@ import { createGameWithID } from '@/client/rest'
 import { Player } from '@/typings/game'
 import { getUserSession } from '@/helpers/getPersistedPlayer'
 import { APP_ROUTES } from '@/client/api-routes'
+import { Button, Input } from '@nextui-org/react'
 
 export default function Home() {
   const router = useRouter()
@@ -55,7 +56,13 @@ export default function Home() {
       <PageTitle />
       <H2>Join a game</H2>
       <form onSubmit={handleJoinGame}>
-        <FormControl>
+        <FormControl
+          action={
+            <Button shadow color='primary'>
+              Join
+            </Button>
+          }
+        >
           <Input
             type='text'
             id='game-id'
@@ -63,27 +70,38 @@ export default function Home() {
             value={gameID}
             onChange={(ev) => setGameID(ev.target.value.toLowerCase())}
             placeholder='Type in game name'
+            fullWidth
+            clearable
           />
-          {/* <Spacing r={0.5} inline /> */}
-          <Button>Join</Button>
         </FormControl>
       </form>
       <H2>Create a game</H2>
       <form onSubmit={handleCreateGame}>
-        <FormControl>
+        <FormControl
+          action={
+            <Button
+              type='button'
+              shadow
+              color='primary'
+              onClick={() => setNewGameID(random.getGameName())}
+            >
+              Change
+            </Button>
+          }
+        >
           <Input
             type='text'
             id='new-game-id'
             value={newGameID}
             aria-label='New game name'
             readOnly
+            fullWidth
           />
-          <Button type='button' onClick={() => setNewGameID(random.getGameName())}>
-            Change
-          </Button>
         </FormControl>
         <Spacing b={1} />
-        <Button>Create game</Button>
+        <Button shadow color='primary' auto>
+          Create game
+        </Button>
       </form>
     </Themed>
   )

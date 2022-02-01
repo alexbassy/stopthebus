@@ -1,8 +1,8 @@
 import { manager, useGameConfigLetters } from '@/hooks/database'
-import { Checkbox, H3, Item, List, Spacing } from '@/components/visual'
+import { List } from '@/components/visual'
 import { ENGLISH_LETTERS } from '@/constants/letters'
-import { Flex } from '@/components/Grid'
 import useSound from 'use-sound'
+import { Checkbox, Grid, Text } from '@nextui-org/react'
 
 const Letters: React.FC = () => {
   const gameLetters = useGameConfigLetters()
@@ -17,28 +17,27 @@ const Letters: React.FC = () => {
 
   return (
     <section>
-      <H3>Letters</H3>
+      <Text h3>Letters</Text>
       <List>
-        {gameLetters &&
-          ENGLISH_LETTERS.map((letter) => {
-            return (
-              <Item key={letter} inline>
-                <Spacing r={0.75} b={0.75}>
-                  <label>
-                    <Flex yCentre style={{ width: '3.15rem' }}>
-                      <Checkbox
-                        type='checkbox'
-                        value={letter}
-                        checked={gameLetters.includes(letter)}
-                        onChange={handleChange(letter)}
-                      />
-                      {letter.toUpperCase()}
-                    </Flex>
-                  </label>
-                </Spacing>
-              </Item>
-            )
-          })}
+        <Grid.Container gap={1}>
+          {gameLetters &&
+            ENGLISH_LETTERS.map((letter) => {
+              return (
+                <Grid key={letter} xs={2}>
+                  <Checkbox
+                    size='md'
+                    key={letter}
+                    value={letter}
+                    checked={gameLetters.includes(letter)}
+                    initialChecked={gameLetters.includes(letter)}
+                    onChange={handleChange(letter)}
+                  >
+                    {letter.toUpperCase()}
+                  </Checkbox>
+                </Grid>
+              )
+            })}
+        </Grid.Container>
       </List>
     </section>
   )

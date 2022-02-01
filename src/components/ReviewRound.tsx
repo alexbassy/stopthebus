@@ -1,6 +1,5 @@
 import React from 'react'
 import Head from 'next/head'
-import { Button } from './visual'
 import Dialog from './Dialog'
 import Countdown from './Countdown'
 import ResultsTable from '@/components/round-review/ResultsTable'
@@ -16,6 +15,7 @@ import {
 import ReviewHeader from '@/components/round-review/ReviewHeader'
 import { cancelStartGameWithID, startGameWithID } from '@/client/rest'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
+import { Button } from '@nextui-org/react'
 
 export default function ReviewRound() {
   const gameId = useGameIdFromRoute()
@@ -58,7 +58,9 @@ export default function ReviewRound() {
         />
       ))}
 
-      <Button onClick={handleNextRoundClick}>{isLastRound ? 'Finish game' : 'Next round'}</Button>
+      <Button shadow color='primary' auto onClick={handleNextRoundClick}>
+        {isLastRound ? 'Finish game' : 'Next round'}
+      </Button>
 
       <Dialog>
         {(gameRoundTimeStarted || 0) > Date.now() && (

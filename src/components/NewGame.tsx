@@ -1,7 +1,7 @@
 import React from 'react'
 import Head from 'next/head'
-import { Grid } from '@nextui-org/react'
-import { Button, Spacing } from '@/components/visual'
+import { Button, Grid } from '@nextui-org/react'
+import { Spacing } from '@/components/visual'
 import Dialog from '@/components/Dialog'
 import Countdown from '@/components/Countdown'
 import Alliteration from '@/components/new-game/Alliteration'
@@ -51,7 +51,7 @@ export default function NewGame() {
       </Spacing>
       <PlayerName />
 
-      <Grid.Container>
+      <Grid.Container gap={2}>
         <Grid xs={12} md={8}>
           <Letters />
         </Grid>
@@ -91,7 +91,7 @@ export default function NewGame() {
       <Alliteration />
       <Spacing b={2} />
 
-      <Button large onClick={handleStartGameClick}>
+      <Button shadow color='primary' auto onClick={handleStartGameClick}>
         Start game
       </Button>
 

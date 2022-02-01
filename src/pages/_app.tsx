@@ -1,10 +1,19 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
-import { NextUIProvider } from '@nextui-org/react'
+import { NextUIProvider, createTheme } from '@nextui-org/react'
+
+const darkTheme = createTheme({
+  type: 'dark',
+  theme: {
+    breakpoints: {
+      xs: '500px',
+    },
+  },
+})
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <NextUIProvider disableBaseline>
+    <NextUIProvider theme={darkTheme}>
       <Component {...pageProps} />
     </NextUIProvider>
   )

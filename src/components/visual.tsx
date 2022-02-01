@@ -43,7 +43,7 @@ export const GameWrapper = styled.div`
   margin: 2rem auto 0;
   background: ${(props) => props.theme?.colours?.gameBackground};
   font-family: ${(props) => props.theme?.fonts.body.name};
-  padding: 0.5rem;
+  padding: 1rem;
   color: #fff;
   font-size: 120%;
   border: 10px solid ${(props) => props.theme?.colours?.gameBorder};
@@ -208,6 +208,8 @@ interface ListProps {
 export const List = styled.ul<ListProps>`
   list-style: none;
   padding-left: 0;
+  margin: 0;
+
   ${(props) =>
     props.columns
       ? css`

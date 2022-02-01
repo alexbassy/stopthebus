@@ -8,8 +8,8 @@ import React, {
 } from 'react'
 import Head from 'next/head'
 import { RoundResults, GameStage } from '@/typings/game'
-import { Button, Input, Item, List, Spacing } from './visual'
-import { Grid } from '@nextui-org/react'
+import { Input, Item, List, Spacing } from './visual'
+import { Button, Grid } from '@nextui-org/react'
 import Lanes from './Lanes'
 import styled from '@emotion/styled'
 import useScrollToTop from '../hooks/useScrollToTop'
@@ -172,7 +172,9 @@ export default function ActiveRound() {
                   )
                 })}
               </List>
-              <Button disabled={hasEnded}>{hasEnded ? 'Out of time!' : 'Finished'}</Button>
+              <Button shadow color='primary' auto disabled={hasEnded}>
+                {hasEnded ? 'Out of time!' : 'Finished'}
+              </Button>
             </form>
           </Grid>
           <Grid xs={3}>

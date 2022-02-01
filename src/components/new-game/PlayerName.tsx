@@ -1,8 +1,9 @@
 import { manager } from '@/hooks/database'
-import { Button, Description, Input, Spacing } from '@/components/visual'
+import { Description, Spacing } from '@/components/visual'
 import FormControl from '@/components/FormControl'
 import { FormEventHandler, useState } from 'react'
 import usePlayer from '@/hooks/usePlayer'
+import { Button, Input } from '@nextui-org/react'
 
 const PlayerName: React.FC = () => {
   const [player, updatePlayerName] = usePlayer()
@@ -19,7 +20,13 @@ const PlayerName: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <FormControl>
+      <FormControl
+        action={
+          <Button shadow color='primary' disabled={!username}>
+            Update
+          </Button>
+        }
+      >
         <Input
           type='text'
           value={username}
@@ -27,14 +34,10 @@ const PlayerName: React.FC = () => {
           placeholder='Enter your nickname'
           aria-label='Nickname'
           aria-describedby='nickname-description'
+          helperText='Enter a nickname for other players to see you by.'
+          fullWidth
         />
-        <Button>Update</Button>
       </FormControl>
-      <Spacing t={0.5}>
-        <Description id='nickname-description'>
-          Enter a nickname for other players to see you by.
-        </Description>
-      </Spacing>
     </form>
   )
 }
