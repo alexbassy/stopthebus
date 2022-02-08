@@ -19,6 +19,7 @@ import {
 import { browserClient, q } from '@/client/fauna'
 import { getUserSession, updatePersistedUserName } from '@/helpers/getPersistedPlayer'
 import { ExprArg } from 'faunadb'
+import { DatabaseFunctions } from '@/constants/database-functions'
 
 export enum JoinState {
   NotRequested,
@@ -166,7 +167,9 @@ class Manager {
   }
 
   async setGamePlayerName(playerId: string, newName: string) {
-    return queryAsObservable(q.Call('update-nickname', this.gameId, playerId, newName))
+    return queryAsObservable(
+      q.Call(DatabaseFunctions.UpdatePlayerName, this.gameId, playerId, newName)
+    )
       .pipe(
         tap(() => {
           updatePersistedUserName(newName)
@@ -186,7 +189,7 @@ class Manager {
   }
 
   async setGameConfigLetters(letters: string[]) {
-    return queryAsObservable(q.Call('update-letters', this.gameId, letters.join('')))
+    return queryAsObservable(q.Call(DatabaseFunctions.UpdateLetters, this.gameId, letters.join('')))
       .pipe(
         tap((response: any) => {
           if (response.errors) return throwError(response.errors)
@@ -200,7 +203,7 @@ class Manager {
   }
 
   async toggleCategory(category: string) {
-    return queryAsObservable(q.Call('update-categories', this.gameId, category))
+    return queryAsObservable(q.Call(DatabaseFunctions.UpdateCategories, this.gameId, category))
       .subscribe()
       .unsubscribe()
   }
@@ -210,7 +213,9 @@ class Manager {
   }
 
   setGameConfigRounds(rounds: number) {
-    return queryAsObservable(q.Call('update-rounds', this.gameId, rounds)).subscribe().unsubscribe()
+    return queryAsObservable(q.Call(DatabaseFunctions.UpdateRounds, this.gameId, rounds))
+      .subscribe()
+      .unsubscribe()
   }
 
   get gameConfigAlliteration$() {
@@ -218,7 +223,9 @@ class Manager {
   }
 
   setGameConfigAlliteration(alliteration: boolean) {
-    return queryAsObservable(q.Call('update-alliteration', this.gameId, alliteration))
+    return queryAsObservable(
+      q.Call(DatabaseFunctions.UpdateAlliteration, this.gameId, alliteration)
+    )
       .subscribe()
       .unsubscribe()
   }
@@ -269,8 +276,9 @@ class Manager {
   }
 
   endRound() {
-    const endGame = async (ref: typeof q.Ref) => browserClient.query(q.Call('end-round', ref))
-    return this.gameRef$.pipe(switchMap((ref) => from(endGame(ref))))
+    return this.gameRef$.pipe(
+      switchMap((ref) => from(browserClient.query(q.Call(DatabaseFunctions.EndRound, ref))))
+    )
   }
 
   // GAME CURRENT ROUND
@@ -309,7 +317,7 @@ class Manager {
     return this.gameRoundIndex$.pipe(
       withLatestFrom(this.player$),
       switchMap(([index, player]) =>
-        queryAsObservable(q.Call('get-round', this.gameId, player.id, index!))
+        queryAsObservable(q.Call(DatabaseFunctions.GetRound, this.gameId, player.id, index!))
       ),
       map((response) => (response as any).data.answers as RoundResults),
       take(1),
@@ -327,7 +335,7 @@ class Manager {
         withLatestFrom(this.player$),
         switchMap(([index, player]) =>
           queryAsObservable(
-            q.Call('save-answers', this.gameId, player.id, index!, question, answer)
+            q.Call(DatabaseFunctions.SaveAnswers, this.gameId, player.id, index!, question, answer)
           )
         )
       )
@@ -381,7 +389,9 @@ class Manager {
 
   // ROUND SCORES
   updateScore(playerId: string, category: string, newScore: number) {
-    return queryAsObservable(q.Call('update-score', this.gameId, playerId, category, newScore))
+    return queryAsObservable(
+      q.Call(DatabaseFunctions.UpdateScore, this.gameId, playerId, category, newScore)
+    )
       .subscribe()
       .unsubscribe()
   }
