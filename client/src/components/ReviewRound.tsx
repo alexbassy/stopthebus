@@ -1,200 +1,71 @@
-import React, { useContext, ChangeEvent, SyntheticEvent } from 'react'
-import { Helmet } from 'react-helmet'
-import { ClientEvent, PlayerVote } from 'shared/typings/socket-events'
-import {
-  Round,
-  Scores,
-  Player as PlayerType,
-  GameStage,
-} from 'shared/typings/game'
-import { Button, Checkbox } from './visual'
-import styled from './styled'
-import Player from './Player'
+import React from 'react'
+import Head from 'next/head'
+import { Button } from './visual'
 import Dialog from './Dialog'
 import Countdown from './Countdown'
-import { Flex } from './Grid'
-import GameContext from '../contexts/GameContext'
-import EmitterContext from '../contexts/EmitterContext'
-import useScrollToTop from '../hooks/useScrollToTop'
-import useIsSmallScreen from '../hooks/useIsSmallScreen'
+import ResultsTable from '@/components/round-review/ResultsTable'
+import {
+  useGameConfigCategories,
+  useGameConfigRounds,
+  useGameRoundAnswersByCategory,
+  useGameRoundIndex,
+  useGameRoundLetter,
+  useGameRoundScoresByPlayer,
+  useGameRoundTimeStarted,
+} from '@/hooks/database'
+import ReviewHeader from '@/components/round-review/ReviewHeader'
+import { cancelStartGameWithID, startGameWithID } from '@/client/rest'
+import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 
-const Table = styled('table')`
-  width: 100%;
-  table-layout: fixed;
-  margin-bottom: 3rem;
-  border-collapse: collapse;
+export default function ReviewRound() {
+  const gameId = useGameIdFromRoute()
+  const gameAnswers = useGameRoundAnswersByCategory()
+  const gameScores = useGameRoundScoresByPlayer()
+  const gameRoundTimeStarted = useGameRoundTimeStarted()
+  const gameRoundLetter = useGameRoundLetter()
+  const categories = useGameConfigCategories()
+  const numRounds = useGameConfigRounds()
+  const roundIndex = useGameRoundIndex()
 
-  thead {
-    text-align: left;
-  }
-
-  td {
-    padding-top: 0.5rem;
-  }
-`
-
-const PlayerColumn = styled('td')`
-  word-break: break-all;
-  padding-right: 0.5rem;
-`
-
-const TableHeader = styled('thead')`
-  padding-bottom: 0.5rem;
-  font-size: 0.75rem;
-
-  th {
-    color: rgb(255 255 255 / 75%);
-    padding-bottom: 0.5rem;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 1px rgb(255 255 255 / 10%);
-  }
-`
-
-interface ResultsTableProps {
-  categoryName: string
-  answers: Round
-  scores: Scores
-}
-
-const ResultsTable = ({ categoryName, answers, scores }: ResultsTableProps) => {
-  const game = useContext(GameContext)
-  const emit = useContext(EmitterContext)
-  const isSmallScreen = useIsSmallScreen()
-
-  useScrollToTop()
-
-  if (!game || !emit) {
+  if (!gameAnswers || !gameScores) {
     return null
   }
 
-  const handleVote = (playerID: string, category: string) => (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
-    const payload: PlayerVote = {
-      playerID,
-      category,
-      value: event.target.checked,
-    }
-    emit(ClientEvent.VOTE_ANSWER, payload)
-  }
-
-  const getPlayer = (uuid: string) =>
-    game.players.find((player) => uuid === player.uuid)
-
-  return (
-    <Table>
-      <colgroup>
-        <col span={1} style={{ width: '30%' }} />
-        <col span={1} style={{ width: '52.5%' }} />
-        <col span={1} style={{ width: '17.5%' }} />
-      </colgroup>
-      <TableHeader>
-        <tr>
-          <th>{/* Player */}</th>
-          <th>{categoryName}</th>
-          <th>Score</th>
-        </tr>
-      </TableHeader>
-      <tbody>
-        {Object.keys(answers).map((playerID) => {
-          const player = getPlayer(playerID) as PlayerType
-          const answer = answers[playerID][categoryName]
-          const score = scores[playerID][categoryName]
-
-          return (
-            <tr key={`${categoryName}-${playerID}`}>
-              <PlayerColumn>
-                <Player {...player} small={isSmallScreen} />
-              </PlayerColumn>
-              <td>{answer}</td>
-              <td>
-                <Flex yCentre>
-                  <Checkbox
-                    type='checkbox'
-                    title='Vote'
-                    checked={score > 0}
-                    onChange={handleVote(playerID, categoryName)}
-                  />{' '}
-                  {score}
-                </Flex>
-              </td>
-            </tr>
-          )
-        })}
-      </tbody>
-    </Table>
-  )
-}
-
-export default function ReviewRound() {
-  const emit = useContext(EmitterContext)
-  const game = useContext(GameContext)
-
-  if (!game || !emit) return null
-
-  const { config, state, players } = game
-  const round = state.currentRound
-  const timeStarted = state.currentRound?.timeStarted ?? 0
-  const timeEnded = state.currentRound?.timeEnded ?? timeStarted
-  const roundDuration = timeEnded - timeStarted
-
-  if (!round) return null
-
-  const handleNextRoundClick = (event: SyntheticEvent<HTMLButtonElement>) => {
-    emit(ClientEvent.START_ROUND)
+  const handleNextRoundClick = () => {
+    startGameWithID(gameId)
   }
 
   const handleCancelStartGame = () => {
-    emit(ClientEvent.CANCEL_START_ROUND)
+    cancelStartGameWithID(gameId)
   }
 
-  const isLastRound = state.rounds.length + 1 === config.rounds
-
-  const playerWhoEndedRound =
-    players.find(({ uuid }) => uuid === round.endedByPlayer)?.name ||
-    round.endedByPlayer
-
-  const RoundDuration =
-    roundDuration === 0 ? null : (
-      <span> in {Math.floor(roundDuration / 1000)}s</span>
-    )
+  const isLastRound = (roundIndex || 0) + 1 === numRounds
 
   return (
     <div>
-      <Helmet>
+      <Head>
         <title>Review - Stop The Bus</title>
-      </Helmet>
-      <h2>
-        End of round {state.rounds.length + 1}/{config.rounds}
-      </h2>
-      <p>
-        Round finished by <strong>{playerWhoEndedRound}</strong>
-        {RoundDuration}
-      </p>
+      </Head>
 
-      {config.categories.map((category) => {
-        return (
-          <ResultsTable
-            key={category}
-            categoryName={category}
-            answers={round.answers}
-            scores={round.scores}
-          />
-        )
-      })}
+      <ReviewHeader />
 
-      <Button onClick={handleNextRoundClick}>
-        {isLastRound ? 'Finish game' : 'Next round'}
-      </Button>
+      {categories.map((category) => (
+        <ResultsTable
+          key={category}
+          categoryName={category}
+          answers={gameAnswers[category]}
+          scores={gameScores[category]}
+        />
+      ))}
+
+      <Button onClick={handleNextRoundClick}>{isLastRound ? 'Finish game' : 'Next round'}</Button>
 
       <Dialog>
-        {!isLastRound && state.stage === GameStage.NEXT_STARTING && (
+        {(gameRoundTimeStarted || 0) > Date.now() && (
           <Countdown
             from={3}
             onCancel={handleCancelStartGame}
-            showAfter={state.nextLetter?.toUpperCase()}
+            showAfter={gameRoundLetter?.toUpperCase()}
             // In reality it should be displayed for 1.5s, but instruct the
             // component to display it for longer to account for transport latency
             afterMessageDuration={3000}

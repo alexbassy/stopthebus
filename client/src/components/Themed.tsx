@@ -1,24 +1,17 @@
-import React, { ChangeEvent, ReactChild, useState } from 'react'
-import { Helmet } from 'react-helmet'
-import { ThemeProvider } from 'emotion-theming'
-import { Global } from '@emotion/core'
-import {
-  globalStyles,
-  Background,
-  GameWrapper,
-  Spacing,
-  ExternalLink,
-  HiddenLabel,
-} from './visual'
-import styled from './styled'
+import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react'
+import Head from 'next/head'
+import { ThemeProvider } from '@emotion/react'
+import { Global } from '@emotion/react'
+import { globalStyles, Background, GameWrapper, Spacing, ExternalLink, HiddenLabel } from './visual'
+import styled from '@emotion/styled'
 import { Flex } from './Grid'
 import themes, { Themes } from '../themes'
 
 interface ThemedProps {
-  children: ReactChild
+  children: ReactNode
 }
 
-const Footer = styled<'footer'>('footer')`
+const Footer = styled.footer`
   color: #fff;
   text-align: center;
   font-weight: 600;
@@ -53,8 +46,11 @@ function persistTheme(theme: Themes) {
   localStorage.setItem('theme', theme)
 }
 
-export default function Themed({ children }: ThemedProps) {
-  const [activeTheme, setActiveTheme] = useState<Themes>(getPersistedTheme())
+const Themed: React.FC<ThemedProps> = ({ children }) => {
+  const [activeTheme, setActiveTheme] = useState<Themes>()
+
+  const theme = activeTheme ? themes[activeTheme] : themes[Themes.PASTEL]
+
   const changeTheme = (ev: ChangeEvent<HTMLSelectElement>) => {
     const newTheme: Themes = ev.target.value as Themes
     if (newTheme !== activeTheme) {
@@ -63,11 +59,15 @@ export default function Themed({ children }: ThemedProps) {
     }
   }
 
+  useEffect(() => {
+    setActiveTheme(getPersistedTheme())
+  }, [])
+
   return (
-    <ThemeProvider theme={themes[activeTheme]}>
-      <Helmet>
-        <link href={themes[activeTheme].fonts.title.href} rel='stylesheet' />
-      </Helmet>
+    <ThemeProvider theme={theme}>
+      <Head>
+        <link href={theme.fonts.title.href} rel='stylesheet' />
+      </Head>
       <Global styles={globalStyles} />
       <Background>
         <GameWrapper>
@@ -75,11 +75,7 @@ export default function Themed({ children }: ThemedProps) {
           <Spacing t={2} />
           <ChangeThemeWrapper>
             <HiddenLabel htmlFor='change-theme'>Change theme</HiddenLabel>
-            <ThemeButton
-              id='change-theme'
-              value={activeTheme}
-              onChange={changeTheme}
-            >
+            <ThemeButton id='change-theme' value={activeTheme} onChange={changeTheme}>
               <option value={Themes.PASTEL}>Theme: Original</option>
               <option value={Themes.DARK}>Theme: Dark</option>
             </ThemeButton>
@@ -87,14 +83,15 @@ export default function Themed({ children }: ThemedProps) {
         </GameWrapper>
         <Footer yCentre xCentre>
           <Spacing y={1}>
-            @{process.env.REACT_APP_SHORT_SHA || 'local'}
+            @{process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 7) ?? 'local'}
             <Spacing l={0.5} r={0.5} inline>
               &bull;
             </Spacing>
             <FooterLink href='https://bass.dev/'>
               made with{' '}
               <span role='img' aria-label='pizazz'>
-                💛
+                {' '}
+                💛{' '}
               </span>
               in berlin
             </FooterLink>
@@ -108,3 +105,5 @@ export default function Themed({ children }: ThemedProps) {
     </ThemeProvider>
   )
 }
+
+export default Themed

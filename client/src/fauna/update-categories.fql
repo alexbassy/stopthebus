@@ -1,0 +1,29 @@
+Query(
+  Lambda(
+    ["gameId", "inputCategory"],
+    Let(
+      {
+        game: Get(Match(Index("game_by_id"), Var("gameId"))),
+        gameCategories: Select(["data", "config", "categories"], Var("game")),
+        gameRef: Select("ref", Var("game"))
+      },
+      Update(Var("gameRef"), {
+        data: {
+          config: {
+            categories: If(
+              ContainsValue(Var("inputCategory"), Var("gameCategories")),
+              Filter(
+                Var("gameCategories"),
+                Lambda(
+                  "category",
+                  Not(Equals(Var("category"), Var("inputCategory")))
+                )
+              ),
+              Append([Var("inputCategory")], Var("gameCategories"))
+            )
+          }
+        }
+      })
+    )
+  )
+)

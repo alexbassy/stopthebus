@@ -1,24 +1,28 @@
 import React, {
   ChangeEvent,
   SyntheticEvent,
-  useContext,
   useState,
   useEffect,
   useRef,
   useLayoutEffect,
 } from 'react'
-import { Helmet } from 'react-helmet'
-import { RoundResults, GameStage } from 'shared/typings/game'
-import { ClientEvent } from 'shared/typings/socket-events'
+import Head from 'next/head'
+import { RoundResults, GameStage } from '@/typings/game'
 import { Button, Input, Item, List, Spacing } from './visual'
 import { Grid } from './Grid'
 import Lanes from './Lanes'
-import styled from './styled'
-import EmitterContext from '../contexts/EmitterContext'
-import GameContext from '../contexts/GameContext'
+import styled from '@emotion/styled'
 import useScrollToTop from '../hooks/useScrollToTop'
+import {
+  manager,
+  useGameConfigCategories,
+  useGameRoundLetter,
+  useGameStateStage,
+} from '@/hooks/database'
+import { endRoundWithGameID } from '@/client/rest'
+import usePlayer from '@/hooks/usePlayer'
 
-const Wrap = styled('div')`
+const Wrap = styled.div`
   max-width: 400px;
 `
 
@@ -27,22 +31,28 @@ interface QuestionPositions {
 }
 
 export default function ActiveRound() {
-  const emit = useContext(EmitterContext)
-  const game = useContext(GameContext)
+  const [player] = usePlayer()
+  const gameStateStage = useGameStateStage()
+  const gameConfigCategories = useGameConfigCategories()
+  const gameRoundLetter = useGameRoundLetter()
   const [values, setValues] = useState<RoundResults>({})
   const [hasEnded, setHasEnded] = useState<boolean>(false)
   const formRef = useRef<HTMLFormElement>(null)
-  const [questionPositions, setQuestionPositions] = useState<QuestionPositions>(
-    {}
-  )
+  const [questionPositions, setQuestionPositions] = useState<QuestionPositions>({})
+
+  useEffect(() => {
+    manager.getRoundAnswers().subscribe((answers) => {
+      setValues(answers)
+    })
+
+    return () => setValues({})
+  }, [])
 
   useScrollToTop()
 
-  const gameCategories = game?.config.categories
-
   useLayoutEffect(() => {
     const onResize = () => {
-      if (!formRef.current || !gameCategories) return
+      if (!formRef.current || !gameConfigCategories) return
       const formYOffset = formRef.current.offsetTop
       const offsets: QuestionPositions = {}
       const elements = Array.from(formRef.current.elements) as HTMLElement[]
@@ -50,7 +60,7 @@ export default function ActiveRound() {
 
       for (const question of elements) {
         const name = question.getAttribute('name') || ''
-        const index = gameCategories.indexOf(name)
+        const index = gameConfigCategories.indexOf(name)
         if (question.tagName !== 'INPUT' || typeof index !== 'number') continue
         offsets[index] =
           // The offset starts from the form, which is the adjacent sibling of the <Lane/>
@@ -61,7 +71,6 @@ export default function ActiveRound() {
           inputHeight / 2
       }
       setQuestionPositions(offsets)
-      console.log({ offsets })
     }
 
     window.addEventListener('resize', onResize)
@@ -70,61 +79,46 @@ export default function ActiveRound() {
     return () => {
       window.removeEventListener('resize', onResize)
     }
-  }, [gameCategories])
-
-  const gameState = game?.state?.stage ?? null
+  }, [gameConfigCategories])
 
   useEffect(() => {
-    if (gameState && gameState === GameStage.ENDING && !!emit && !hasEnded) {
+    if (gameStateStage === GameStage.REVIEW && !hasEnded) {
       setHasEnded(true)
-      emit(ClientEvent.FILLED_ANSWER, values)
+      console.log('FILLED_ANSWER', values)
     }
-  }, [gameState, emit, values, hasEnded])
+  }, [gameStateStage, values, hasEnded])
 
-  useEffect(() => {
-    if (emit && gameState === GameStage.ACTIVE) {
-      console.log('Retrieving answers')
-      emit(ClientEvent.RETRIEVE_ANSWERS)
-    }
-  }, [emit, gameState])
+  // useEffect(() => {
+  //   if (gameStateStage === GameStage.ACTIVE) {
+  //     emit('RETRIEVE_ANSWERS')
+  //   }
+  // }, [emit, gameStateStage])
 
-  const answers = game?.answers
-  useEffect(() => {
-    if (answers) {
-      setValues(answers)
-    }
-  }, [answers])
+  // const answers = game?.answers
+  // useEffect(() => {
+  //   if (answers) {
+  //     setValues(answers)
+  //   }
+  // }, [answers])
 
-  if (!game || !emit) return null
-
-  const { config } = game
-
-  const categories = config.categories
-
-  const handleChange = (category: string) => (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
-    const inputValue = event.target.value
+  const handleChange = (category: string) => (event: ChangeEvent<HTMLInputElement>) => {
     setValues((currentValues) => ({
       ...currentValues,
-      [category]: inputValue,
+      [category]: event.target.value,
     }))
   }
 
   const handleFocus = (event: SyntheticEvent<HTMLInputElement>) => {
-    emit(
-      ClientEvent.FOCUSSED_ANSWER,
-      categories.indexOf(event.currentTarget.name)
-    )
+    console.log('FOCUSSED_ANSWER', gameConfigCategories.indexOf(event.currentTarget.name))
   }
 
-  const handleBlur = (event: SyntheticEvent<HTMLInputElement>) => {
-    emit(ClientEvent.FILLED_ANSWER, values)
+  const pushAnswer = (category: string, answer: string) => {
+    manager.setRoundAnswer(category, answer)
   }
 
   const handleEndRoundClick = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const hasAnswerForAllCategories = config.categories.every((category) => {
+    const hasAnswerForAllCategories = gameConfigCategories.every((category) => {
       const playerAnswer = values[category]
       return playerAnswer && playerAnswer.length > 1
     })
@@ -134,27 +128,25 @@ export default function ActiveRound() {
         `You haven’t filled in all answers. Are you sure you want to end the round?`
       )
     }
-    if (shouldEndRound) emit(ClientEvent.END_ROUND)
+    if (!player) {
+      return
+    }
+    if (shouldEndRound) endRoundWithGameID(manager.gameId, player)
   }
 
   return (
     <div>
-      <Helmet>
-        <title>
-          Letter {game.state.currentRound?.letter?.toUpperCase()} - Stop The Bus
-        </title>
-      </Helmet>
+      <Head>
+        <title>Letter {gameRoundLetter?.toUpperCase()} - Stop The Bus</title>
+      </Head>
       <p>
-        The letter is{' '}
-        <strong style={{ fontSize: '2rem' }}>
-          {game.state.currentRound?.letter?.toUpperCase()}
-        </strong>
+        The letter is <strong style={{ fontSize: '2rem' }}>{gameRoundLetter?.toUpperCase()}</strong>
       </p>
       <Wrap>
         <Grid columns={[3, 1]}>
           <form onSubmit={handleEndRoundClick} ref={formRef}>
             <List>
-              {config.categories.map((category) => {
+              {gameConfigCategories.map((category) => {
                 const stripped = category.replace(/\W/g, '')
                 const id = `input-${stripped}`
                 return (
@@ -166,7 +158,7 @@ export default function ActiveRound() {
                         type='text'
                         id={id}
                         name={category}
-                        onBlur={handleBlur}
+                        onBlur={(event) => pushAnswer(category, event.target.value)}
                         onFocus={handleFocus}
                         onChange={handleChange(category)}
                         value={values[category] ?? ''}
@@ -179,9 +171,7 @@ export default function ActiveRound() {
                 )
               })}
             </List>
-            <Button disabled={hasEnded}>
-              {hasEnded ? 'Out of time!' : 'Finished'}
-            </Button>
+            <Button disabled={hasEnded}>{hasEnded ? 'Out of time!' : 'Finished'}</Button>
           </form>
           <Lanes questionPositions={questionPositions} />
         </Grid>

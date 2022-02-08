@@ -1,7 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
-import { css } from '@emotion/core'
+import { css } from '@emotion/react'
+import isPropValid from '@emotion/is-prop-valid'
 import styled from '@emotion/styled'
 import { motion, AnimatePresence } from 'framer-motion'
+import useSound from 'use-sound'
 
 const Overlay = styled(motion.div)`
   position: fixed;
@@ -26,7 +28,9 @@ interface TextProps {
   isLarger?: boolean
 }
 
-const Text = styled(motion.p)<TextProps>`
+const Text = styled(motion.p, {
+  shouldForwardProp: (propName: string) => isPropValid(propName),
+})<TextProps>`
   font-size: ${(props) => (props.isLarger ? 30 : 20)}vw;
   font-weight: ${(props) => (props.isLarger ? 600 : 400)};
   color: #fff;
@@ -92,6 +96,20 @@ const Countdown: React.FC<CountdownProps> = ({
   const [isAfterMessageShown, setIsAfterMessageShown] = useState<boolean>(false)
   const intervalRef = useRef<number>()
   const [timeLeft, setTimeLeft] = useState<number>(from)
+  const [playCountdown, { stop: stopCountdown }] = useSound('/sounds/countdown.mp3', {
+    volume: 0.5,
+  })
+
+  useEffect(() => {
+    playCountdown()
+  }, [playCountdown])
+
+  const handleCancel = () => {
+    if (onCancel) {
+      stopCountdown()
+      onCancel()
+    }
+  }
 
   const onTimerComplete = useCallback(() => {
     // If there is no message to display, immediately hide the overlay
@@ -151,7 +169,7 @@ const Countdown: React.FC<CountdownProps> = ({
           <Text isLarger={isAfterMessageShown}>{displayedText}</Text>
         </TextContainer>
       </AnimatePresence>
-      {onCancel && <Button onClick={onCancel}>Cancel</Button>}
+      {onCancel && <Button onClick={handleCancel}>Cancel</Button>}
     </Overlay>
   )
 }

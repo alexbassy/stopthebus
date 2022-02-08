@@ -1,0 +1,19 @@
+Query(
+  Lambda(
+    ["gameId", "playerId", "round", "question", "answer"],
+    Let(
+      {
+        roundDoc: Match(Index("answers_by_game_id"), [Var("gameId"), Var("playerId"), Var('round')]),
+        roundRef: Select('ref', If(Exists(Var('roundDoc')), Get(Var('roundDoc')), Call('create-answers', Var("gameId"), Var("playerId"), Var('round')))),
+        valid: And(IsString("question"), IsString("answer")),
+      },
+      If(
+        Var("valid"),
+        Update(Var("roundRef"), {
+          data: { answers: ToObject([[Var("question"), Var("answer")]]) },
+        }),
+        Abort("Should be a string")
+      )
+    )
+  )
+)

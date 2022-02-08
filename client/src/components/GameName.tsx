@@ -1,10 +1,7 @@
-import React, { useContext, SyntheticEvent } from 'react'
-import { css } from '@emotion/core'
-import { useParams } from 'react-router-dom'
-import log from 'shared/helpers/log'
-import styled from './styled'
-import { Spacing } from './visual'
-import GameContext from '../contexts/GameContext'
+import React, { SyntheticEvent, useState, useEffect } from 'react'
+import { css } from '@emotion/react'
+import styled from '@emotion/styled'
+import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 
 interface GameParams {
   gameID: string
@@ -19,12 +16,12 @@ const baseStyles = css`
   }
 `
 
-const Title = styled<'h2'>('h2')`
+const Title = styled.h2`
   ${baseStyles}
   margin: 0 1rem 0 0;
 `
 
-const BorderedName = styled<'div'>('div')`
+const BorderedName = styled.div`
   display: inline-flex;
   align-items: center;
   ${baseStyles}
@@ -41,7 +38,7 @@ const BorderedName = styled<'div'>('div')`
 
 const ShareIcon = `<svg width="27" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M0 16v11.64A4.35 4.35 0 004.36 32h17.46a4.35 4.35 0 004.36-4.36V16a1.46 1.46 0 00-2.9 0v11.64a1.45 1.45 0 01-1.46 1.45H4.36a1.45 1.45 0 01-1.45-1.45V16A1.46 1.46 0 000 16zM11.64 4.97v15.4a1.46 1.46 0 002.9 0V4.96l3.34 3.33a1.45 1.45 0 102.06-2.06L14.12.43A1.47 1.47 0 0012.53.1c-.17.07-.33.18-.47.32L6.24 6.24A1.45 1.45 0 108.3 8.3l3.34-3.33z" fill="white" fill-rule="nonzero"/></svg>`
 
-const ShareButton = styled<'button'>('button')`
+const ShareButton = styled.button`
   -webkit-appearance: none;
   appearance: none;
   background-color: transparent;
@@ -67,12 +64,18 @@ interface GameNameProps {
 }
 
 export default function GameName(props: GameNameProps) {
-  const { gameID: paramsGameID }: GameParams = useParams()
-  const game = useContext(GameContext)
-  const gameID = game && game.config ? game.config.id : paramsGameID
-  const hasShareAPI = Boolean(window.navigator.share)
+  const gameId = useGameIdFromRoute()
+  const [hasShareAPI, setHasShareAPI] = useState(false)
+
+  useEffect(() => {
+    setHasShareAPI(Boolean(window.navigator.share))
+  }, [])
 
   const handleShareClick = async (event: SyntheticEvent<HTMLButtonElement>) => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
     const gameURL = window.location.href
     if (!hasShareAPI) {
       await navigator.clipboard.writeText(gameURL)
@@ -81,12 +84,11 @@ export default function GameName(props: GameNameProps) {
     }
     try {
       await window.navigator.share({
-        title: `Share game ${gameID}`,
+        title: `Share game ${gameId}`,
         url: gameURL,
       })
     } catch (e) {
-      console.log(e)
-      log.e('GAME_NAME.tsx', 'Share API not supported')
+      console.error('Share API not supported')
     }
   }
 
@@ -94,20 +96,11 @@ export default function GameName(props: GameNameProps) {
     return null
   }
 
-  if (!game || !game.config) {
-    return (
-      <Spacing y={1}>
-        <Title>{paramsGameID}</Title>
-      </Spacing>
-    )
-  }
-
   return (
     <BorderedName>
-      <Title>{game.config.name} </Title>
+      <Title>{gameId} </Title>
       <ShareButton type='button' onClick={handleShareClick}>
-        Share game (
-        {hasShareAPI ? 'opens share dialog' : 'copies URL to clipboard'})
+        Share game ({hasShareAPI ? 'opens share dialog' : 'copies URL to clipboard'})
       </ShareButton>
     </BorderedName>
   )

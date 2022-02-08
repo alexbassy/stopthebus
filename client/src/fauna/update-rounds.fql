@@ -1,0 +1,19 @@
+Query(
+  Lambda(
+    ["gameId", "inputRounds"],
+    Let(
+      {
+        game: Get(Match(Index("game_by_id"), Var("gameId"))),
+        gameRef: Select("ref", Var("game")),
+        valid: And(GT(Var("inputRounds"), 0), LT(Var("inputRounds"), 10))
+      },
+      If(
+        Var("valid"),
+        Update(Var("gameRef"), {
+          data: { config: { numRounds: Var("inputRounds") } }
+        }),
+        Abort("Should be between 0 and 10")
+      )
+    )
+  )
+)

@@ -1,7 +1,7 @@
 import React from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import styled from './styled'
+import styled from '@emotion/styled'
 
 const Underlay = styled(motion.div)`
   position: fixed;
@@ -20,9 +20,9 @@ const Modal = styled(motion.div)`
   max-width: 300px;
   border-radius: 8px;
   padding: 1rem;
-  background: ${(props) => props.theme.colours.dark};
+  background: ${(props) => props.theme?.colours?.gameBackground};
   text-align: center;
-  color: ${(props) => props.theme.colours.text};
+  color: ${(props) => props.theme?.colours?.text};
 `
 
 interface DialogProps {
@@ -33,16 +33,8 @@ function DialogWithOverlay(props: DialogProps) {
   return (
     <AnimatePresence>
       {props.children && (
-        <Underlay
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <Modal
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
+        <Underlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <Modal initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             {props.children}
           </Modal>
         </Underlay>

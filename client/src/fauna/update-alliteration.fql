@@ -1,0 +1,19 @@
+Query(
+  Lambda(
+    ["gameId", "inputAlliteration"],
+    Let(
+      {
+        game: Get(Match(Index("game_by_id"), Var("gameId"))),
+        gameRef: Select("ref", Var("game")),
+        valid: IsBoolean(Var("inputAlliteration"))
+      },
+      If(
+        Var("valid"),
+        Update(Var("gameRef"), {
+          data: { config: { alliteration: Var("inputAlliteration") } }
+        }),
+        Abort("Should be a boolean")
+      )
+    )
+  )
+)

@@ -1,7 +1,7 @@
 import React from 'react'
-import { SMALL_SCREEN_BREAKPOINT } from 'shared/constants/styles'
+import { SMALL_SCREEN_BREAKPOINT } from '@/constants/styles'
 import { Grid } from './Grid'
-import styled from './styled'
+import styled from '@emotion/styled'
 
 interface FormControlProps {
   children: React.ReactNode

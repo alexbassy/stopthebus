@@ -1,0 +1,34 @@
+Query(
+  Lambda(
+    ["gameId", "playerId", "newName"],
+    Let(
+      {
+        game: Get(Match(Index("game_by_id"), Var("gameId"))),
+        gameRef: Select("ref", Var("game")),
+        valid: ContainsStrRegex(Var("newName"), "^[A-Za-z0-9 .-_]{0,20}$"),
+        players: Select(['data', 'players'], Var('game'))
+      },
+      If(
+        Var("valid"),
+        Update(Var("gameRef"), {
+          data: { 
+            // Loop through the players
+            players: Map(
+              Var('players'), 
+              Lambda(
+                'player', 
+                If(
+                  // If the ID matches, update the name
+                  Equals(Select('id', Var('player')), Var('playerId')),
+                  Merge(Var('player'), { name: Var('newName') }),
+                  Var('player')
+                )
+              )
+            ) 
+          }
+        }),
+        Abort("Should only contain letters, numbers and a few symbols")
+      )
+    )
+  )
+)

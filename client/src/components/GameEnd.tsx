@@ -1,22 +1,20 @@
-import React, { useContext } from 'react'
-import { Helmet } from 'react-helmet'
-import { Player as PlayerType } from 'shared/typings/game'
+import Head from 'next/head'
+import { Player as PlayerType } from '@/typings/game'
 import { Item, List, ExternalLink, Spacing } from './visual'
 import Player from './Player'
-import EmitterContext from '../contexts/EmitterContext'
-import GameContext from '../contexts/GameContext'
+import { APP_ROUTES } from '@/client/api-routes'
+import { useGamePlayers, useGameStateFinalScores, useGameStateNextGameId } from '@/hooks/database'
 
 export default function ReviewRound() {
-  const emit = useContext(EmitterContext)
-  const game = useContext(GameContext)
+  const finalScores = useGameStateFinalScores()
+  const gamePlayers = useGamePlayers()
+  const nextGameId = useGameStateNextGameId()
 
-  if (!game || !emit) return null
+  if (!finalScores || !nextGameId) {
+    return null
+  }
 
-  const { state, players } = game
-
-  if (!state.finalScores) return null
-
-  const sortedScores = Object.entries(state.finalScores).sort((a, b) => {
+  const sortedScores = Object.entries(finalScores).sort((a, b) => {
     const scoreA = a[1]
     const scoreB = b[1]
     return scoreA < scoreB ? 1 : -1
@@ -24,14 +22,12 @@ export default function ReviewRound() {
 
   return (
     <div>
-      <Helmet>
+      <Head>
         <title>Game Finished - Stop The Bus</title>
-      </Helmet>
+      </Head>
       <List>
         {sortedScores.map(([playerID, score], index) => {
-          const playerData = players.find(
-            ({ uuid }) => uuid === playerID
-          ) as PlayerType
+          const playerData = gamePlayers.find(({ id }) => id === playerID) as PlayerType
 
           if (index === 0) {
             return (
@@ -52,9 +48,7 @@ export default function ReviewRound() {
           )
         })}
       </List>
-      <ExternalLink href={`/game/${state.nextGameID}`}>
-        Play another game
-      </ExternalLink>
+      <ExternalLink href={APP_ROUTES.game(nextGameId)}>Play another game</ExternalLink>
     </div>
   )
 }

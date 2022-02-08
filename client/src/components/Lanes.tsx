@@ -1,16 +1,16 @@
 import React, { useContext } from 'react'
-import { css } from '@emotion/core'
-import { QuestionPositions } from 'shared/typings/game'
-import { SMALL_SCREEN_BREAKPOINT } from 'shared/constants/styles'
+import { css } from '@emotion/react'
+import styled from '@emotion/styled'
+import { QuestionPositions } from '@/typings/game'
+import { SMALL_SCREEN_BREAKPOINT } from '@/constants/styles'
 import { Pin } from './Player'
-import styled from './styled'
 import GameContext from '../contexts/GameContext'
 
 interface LanesProps {
   questionPositions: QuestionPositions
 }
 
-const Wrapper = styled('div')`
+const Wrapper = styled.div`
   display: flex;
   margin-left: 1rem;
 
@@ -23,7 +23,7 @@ interface PinWrapperProps {
   count: number
 }
 
-const PlayerPinWrapper = styled<'span', PinWrapperProps>('span')`
+const PlayerPinWrapper = styled.span<PinWrapperProps>`
   display: inline-block;
   margin-right: ${(props) => (props.count > 7 ? 0 : 0.25)}rem;
   line-height: 0;
@@ -51,11 +51,11 @@ function Lanes(props: LanesProps) {
     <Wrapper>
       {game.players.map((player) => {
         const numPlayers = game.players.length
-        const currentQuestion = game?.opponentProgress?.[player.uuid] ?? 0
+        const currentQuestion = game?.opponentProgress?.[player.id] ?? 0
         const playerOffset = props.questionPositions[currentQuestion]
         return (
           <PlayerPinWrapper
-            key={player.uuid}
+            key={player.id}
             count={numPlayers}
             style={{
               transform: `translateY(${playerOffset + currentQuestion}px)`,
