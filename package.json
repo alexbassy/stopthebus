@@ -6,7 +6,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest"
+    "test": "jest",
+    "build-worker": "(cd src/workers && npx spack)"
   },
   "dependencies": {
     "@emotion/react": "^11.6.0",
@@ -23,7 +24,10 @@
     "use-sound": "^4.0.1"
   },
   "devDependencies": {
-    "@swc/core": "^1.2.133",
+    "@cloudflare/workers-types": "^3.3.1",
+    "@cloudflare/wrangler": "^1.19.7",
+    "@swc/cli": "^0.1.55",
+    "@swc/core": "^1.2.137",
     "@swc/jest": "^0.2.17",
     "@types/jest": "^27.0.3",
     "@types/node": "16.11.10",
