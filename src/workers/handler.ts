@@ -1,3 +1,3 @@
 export async function handleRequest(request: Request): Promise<Response> {
-  return new Response(`STP: request method: ${request.method}`)
+  return new Response(`[stop the bus]: ${request.method}`)
 }
