@@ -7,32 +7,33 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "build-worker": "(cd src/workers && npx spack)"
+    "build-worker": "esbuild src/workers/index.ts --bundle --target=es2019 --format=esm --outfile=src/workers/dist/worker.js",
+    "publish-worker": "(cd src/workers && wrangler publish)"
   },
   "dependencies": {
     "@emotion/react": "^11.6.0",
     "@emotion/styled": "^11.6.0",
     "@react-rxjs/core": "^0.8.4",
     "@react-rxjs/utils": "^0.9.3",
-    "faunadb": "^4.4.1",
+    "faunadb": "^4.5.2",
     "framer-motion": "^5.3.3",
     "human-readable-ids": "^1.0.4",
     "next": "12.0.4",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "rxjs": "^7.4.0",
-    "use-sound": "^4.0.1"
+    "use-sound": "^4.0.1",
+    "worktop": "^0.7.3"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.3.1",
     "@cloudflare/wrangler": "^1.19.7",
-    "@swc/cli": "^0.1.55",
-    "@swc/core": "^1.2.137",
     "@swc/jest": "^0.2.17",
     "@types/jest": "^27.0.3",
     "@types/node": "16.11.10",
     "@types/react": "17.0.37",
     "@types/react-dom": "^17.0.11",
+    "esbuild": "^0.14.20",
     "eslint": "7",
     "eslint-config-next": "12.0.4",
     "jest": "^27.4.7",

@@ -50,7 +50,7 @@ async function httpRequest<T = any>(route: string, body: Record<any, any>): Prom
     return data as unknown as T
   }
 
-  const response = await data.json()
+  const response = await data.json<T>()
   return response
 }
 

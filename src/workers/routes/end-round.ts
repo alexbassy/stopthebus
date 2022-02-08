@@ -1,6 +1,3 @@
-import { q, serverClient } from '@/client/fauna'
-import httpStatuses from '@/constants/http-codes'
-import { assertMethod, getGameId, getGamePlayer } from '@/helpers/api/validation'
 import { getNextLetterForGame } from '@/helpers/letters'
 import { getInitialScores } from '@/helpers/scores'
 import {
@@ -13,12 +10,14 @@ import {
   Round,
   Scores,
 } from '@/typings/game'
-import type { NextApiRequest, NextApiResponse } from 'next'
-
-type ErrorResponse = any
+import { Handler } from 'worktop'
+import { getFaunaError } from '../fauna-error'
+import { workerClient, q } from '../client'
+import httpStatuses from '@/constants/http-codes'
+import { errors } from 'faunadb'
 
 function getGame(id: string): Promise<GameResponse> {
-  return serverClient.query<GameResponse>(q.Get(q.Match(q.Index('game_by_id'), id)))
+  return workerClient.query<GameResponse>(q.Get(q.Match(q.Index('game_by_id'), id)))
 }
 
 function getPreviouslyPlayedLetters(rounds: GameRound[] | null) {
@@ -29,7 +28,7 @@ function getPreviouslyPlayedLetters(rounds: GameRound[] | null) {
 }
 
 async function getAnswers(gameId: string, round: number): Promise<Round> {
-  const answers = await serverClient.query<FdbAllAnswersQuery>(
+  const answers = await workerClient.query<FdbAllAnswersQuery>(
     q.Call('get-answers-for-round', gameId, round)
   )
   return answers.data.reduce<Round>((accum, data) => {
@@ -49,33 +48,28 @@ function fillEmptyAnswers(answers: Round, categories: string[], players: Player[
   }, {})
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Game | ErrorResponse>
-) {
-  if (!assertMethod('POST', { req, res })) {
-    return
-  }
+type RequestBody = { id?: string; player?: Player }
 
-  const [id, idError] = getGameId({ req, res })
-  if (idError) return
+const handleX: Handler = async (req, res) => {
+  const body = await req.body<RequestBody>()
 
-  const [player, playerError] = getGamePlayer({ req, res })
-  if (playerError) return
+  const id = body?.id
+  const player = body?.player
 
-  const start = Date.now()
+  if (!id) return res.send(httpStatuses.UNPROCESSABLE_ENTITY, { message: 'Game ID required' })
+  if (!player) return res.send(httpStatuses.UNPROCESSABLE_ENTITY, { message: 'Player required' })
 
   const { ref, data: game } = await getGame(id)
 
   if (!game) {
-    return res.status(404).json({ error: true })
+    return res.send(httpStatuses.NOT_FOUND, { message: 'Game not found' })
   }
 
   const currentStage = game?.state.stage
   const wasStarted = currentStage === GameStage.ACTIVE
 
   if (!wasStarted || !game.currentRound) {
-    return res.status(400).json({ message: 'The game has not been started' })
+    return res.send(httpStatuses.NOT_ACCEPTABLE, { message: 'The game has not been started' })
   }
 
   let answers: Round
@@ -84,7 +78,9 @@ export default async function handler(
     answers = await getAnswers(id, game.currentRound.index)
     answers = fillEmptyAnswers(answers, game.config.categories, game.players)
   } catch (e) {
-    return res.status(400).json({ message: 'The answers could not be found' })
+    return res.send(httpStatuses.INTERNAL_SERVER_ERROR, {
+      message: 'The answers could not be found',
+    })
   }
 
   try {
@@ -93,7 +89,9 @@ export default async function handler(
     scores = getInitialScores(answers, letter, config, players)
   } catch (e) {
     console.error(`Answers for game "${id}" could not be scored`, e)
-    return res.status(400).json({ message: 'The answers could not be scored' })
+    return res.send(httpStatuses.INTERNAL_SERVER_ERROR, {
+      message: 'The answers could not be scored',
+    })
   }
 
   try {
@@ -110,21 +108,21 @@ export default async function handler(
       scores,
     }
 
-    await serverClient.query(
+    await workerClient.query(
       q.Update(ref, {
         data: {
-          state: {
-            stage: GameStage.REVIEW,
-          },
+          state: { stage: GameStage.REVIEW },
           currentRound: newCurrentRound,
         },
       })
     )
   } catch (e) {
-    return res.status(httpStatuses.BAD_REQUEST).json({ message: e })
-  } finally {
-    console.info(`Took ${Date.now() - start}ms to end round`)
+    console.error(e)
+    const error = getFaunaError(e as errors.FaunaHTTPError)
+    return res.send(error.status, { message: error.description })
   }
 
-  return res.status(200).end()
+  return res.send(httpStatuses.ACCEPTED)
 }
+
+export default handleX

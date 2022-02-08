@@ -10,7 +10,12 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../*"]
+    },
     "types": ["@cloudflare/workers-types"]
   },
+  "include": ["shim.d.ts"],
   "exclude": ["node_modules", "dist", "test"]
 }
