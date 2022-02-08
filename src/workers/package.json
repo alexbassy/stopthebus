@@ -1,0 +1,8 @@
+{
+  "name": "stopthebus",
+  "version": "1.0.0",
+  "description": "Functions for stopthebus",
+  "main": "dist/worker.js",
+  "author": "author",
+  "license": "MIT OR Apache-2.0"
+}

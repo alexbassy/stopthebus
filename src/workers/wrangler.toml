@@ -1,0 +1,7 @@
+name = "stopthebus"
+type = "javascript"
+zone_id = ""
+account_id = ""
+route = ""
+workers_dev = true
+compatibility_date = "2022-02-08"
