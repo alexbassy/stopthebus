@@ -7,7 +7,7 @@ import React, {
   useLayoutEffect,
 } from 'react'
 import Head from 'next/head'
-import { RoundResults, GameStage } from '@/typings/game'
+import { RoundResults } from '@/typings/game'
 import { Button, Input, Item, List, Spacing } from './visual'
 import { Grid } from './Grid'
 import Lanes from './Lanes'
@@ -17,10 +17,12 @@ import {
   manager,
   useGameConfigCategories,
   useGameRoundLetter,
-  useGameStateStage,
+  useGameRoundEndingPlayer,
 } from '@/hooks/database'
 import { endRoundWithGameID } from '@/client/rest'
 import usePlayer from '@/hooks/usePlayer'
+import Dialog from '@/components/Dialog'
+import EndRoundOverlay from '@/components/overlay/EndRoundOverlay'
 
 const Wrap = styled.div`
   max-width: 400px;
@@ -32,10 +34,11 @@ interface QuestionPositions {
 
 export default function ActiveRound() {
   const [player] = usePlayer()
-  const gameStateStage = useGameStateStage()
   const gameConfigCategories = useGameConfigCategories()
   const gameRoundLetter = useGameRoundLetter()
+  const gameRoundEndingPlayer = useGameRoundEndingPlayer()
   const [values, setValues] = useState<RoundResults>({})
+  const [lastFocusedCategory, setLastFocusedCategory] = useState<string>('')
   const [hasEnded, setHasEnded] = useState<boolean>(false)
   const formRef = useRef<HTMLFormElement>(null)
   const [questionPositions, setQuestionPositions] = useState<QuestionPositions>({})
@@ -82,11 +85,21 @@ export default function ActiveRound() {
   }, [gameConfigCategories])
 
   useEffect(() => {
-    if (gameStateStage === GameStage.REVIEW && !hasEnded) {
-      setHasEnded(true)
-      console.log('FILLED_ANSWER', values)
+    if (!gameRoundEndingPlayer || hasEnded) {
+      return
     }
-  }, [gameStateStage, values, hasEnded])
+
+    console.log('has ended', gameRoundEndingPlayer, hasEnded)
+    setHasEnded(true)
+    manager.setRoundAnswer(lastFocusedCategory, values[lastFocusedCategory])
+  }, [gameRoundEndingPlayer, hasEnded, values, lastFocusedCategory])
+
+  // useEffect(() => {
+  //   if (gameStateStage === GameStage.REVIEW && !hasEnded) {
+  //     // setHasEnded(true)
+  //     // console.log('FILLED_ANSWER', values)
+  //   }
+  // }, [gameStateStage, values, hasEnded])
 
   // useEffect(() => {
   //   if (gameStateStage === GameStage.ACTIVE) {
@@ -109,6 +122,7 @@ export default function ActiveRound() {
   }
 
   const handleFocus = (event: SyntheticEvent<HTMLInputElement>) => {
+    setLastFocusedCategory(event.currentTarget.name)
     console.log('FOCUSSED_ANSWER', gameConfigCategories.indexOf(event.currentTarget.name))
   }
 
@@ -176,6 +190,9 @@ export default function ActiveRound() {
           <Lanes questionPositions={questionPositions} />
         </Grid>
       </Wrap>
+      {/* <Dialog>
+        <EndRoundOverlay text={`Ended by Phyllis`} duration={0} />
+      </Dialog> */}
     </div>
   )
 }

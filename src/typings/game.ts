@@ -1,6 +1,8 @@
 import { q } from '@/client/fauna'
 import { query } from 'faunadb'
 
+export type DocumentRef = typeof query.Ref
+
 /**
  * GAME CONFIG
  */
@@ -91,10 +93,9 @@ export interface Scores {
 export interface GameRound {
   index: number
   letter: string
-  nextLetter?: string
-  timeStarted: number // Time the round started
-  timeEnded?: number // The time the round ended, more applicable for races
-  endedByPlayer?: string // The player who ended the round
+  timeStarted: number
+  timeEnded?: number | null
+  endedByPlayer?: string | null
   answers: Round
   scores: Scores
 }
@@ -104,7 +105,7 @@ export interface GameRound {
  */
 
 export interface GameResponse {
-  ref: typeof query.Ref
+  ref: DocumentRef
   ts: number
   data: Game
 }

@@ -2,7 +2,7 @@ import React from 'react'
 import Head from 'next/head'
 import { Button } from './visual'
 import Dialog from './Dialog'
-import Countdown from './Countdown'
+import Countdown from './overlay/Countdown'
 import ResultsTable from '@/components/round-review/ResultsTable'
 import {
   useGameConfigCategories,

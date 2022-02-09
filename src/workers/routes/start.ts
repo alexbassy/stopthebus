@@ -78,6 +78,8 @@ const handleStart: Handler = async (req, res) => {
           getPreviouslyPlayedLetters(previousRounds)
         ),
         timeStarted: startTime,
+        timeEnded: null,
+        endedByPlayer: null,
         answers: {},
         scores: {},
       }

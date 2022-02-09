@@ -34,9 +34,7 @@ function DialogWithOverlay(props: DialogProps) {
     <AnimatePresence>
       {props.children && (
         <Underlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <Modal initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {props.children}
-          </Modal>
+          {props.children}
         </Underlay>
       )}
     </AnimatePresence>

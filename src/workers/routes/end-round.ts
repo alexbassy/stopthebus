@@ -1,8 +1,8 @@
-import { getNextLetterForGame } from '@/helpers/letters'
+import servertime from 'servertime'
 import { getInitialScores } from '@/helpers/scores'
 import {
+  DocumentRef,
   FdbAllAnswersQuery,
-  Game,
   GameResponse,
   GameRound,
   GameStage,
@@ -18,13 +18,6 @@ import { errors } from 'faunadb'
 
 function getGame(id: string): Promise<GameResponse> {
   return workerClient.query<GameResponse>(q.Get(q.Match(q.Index('game_by_id'), id)))
-}
-
-function getPreviouslyPlayedLetters(rounds: GameRound[] | null) {
-  if (!rounds || !rounds.length) {
-    return []
-  }
-  return rounds.map((round) => round.letter)
 }
 
 async function getAnswers(gameId: string, round: number): Promise<Round> {
@@ -48,9 +41,24 @@ function fillEmptyAnswers(answers: Round, categories: string[], players: Player[
   }, {})
 }
 
+function updateRoundEnd(roundRef: DocumentRef, player: Player) {
+  const endedRound: Partial<GameRound> = {
+    endedByPlayer: player.id,
+    timeEnded: Date.now(),
+  }
+  return workerClient.query(q.Update(roundRef, { data: { currentRound: endedRound } }))
+}
+
+function sleep(duration: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), duration)
+  })
+}
+
 type RequestBody = { id?: string; player?: Player }
 
-const handleX: Handler = async (req, res) => {
+const handleEndRound: Handler = async (req, res) => {
+  const timer = servertime.createTimer({ clock: 'ms' })
   const body = await req.body<RequestBody>()
 
   const id = body?.id
@@ -59,7 +67,9 @@ const handleX: Handler = async (req, res) => {
   if (!id) return res.send(httpStatuses.UNPROCESSABLE_ENTITY, { message: 'Game ID required' })
   if (!player) return res.send(httpStatuses.UNPROCESSABLE_ENTITY, { message: 'Player required' })
 
+  timer.start('getGame', 'Verify game')
   const { ref, data: game } = await getGame(id)
+  timer.end('getGame')
 
   if (!game) {
     return res.send(httpStatuses.NOT_FOUND, { message: 'Game not found' })
@@ -71,6 +81,13 @@ const handleX: Handler = async (req, res) => {
   if (!wasStarted || !game.currentRound) {
     return res.send(httpStatuses.NOT_ACCEPTABLE, { message: 'The game has not been started' })
   }
+
+  timer.start('updateEnd', 'Mark game as ended')
+  await updateRoundEnd(ref, player)
+  timer.end('updateEnd')
+
+  // Wait for players to submit final answers
+  await sleep(2000)
 
   let answers: Round
   let scores: Scores
@@ -95,19 +112,9 @@ const handleX: Handler = async (req, res) => {
   }
 
   try {
-    const nextLetter = getNextLetterForGame(
-      game.config.letters.split(''),
-      getPreviouslyPlayedLetters([...(game.previousRounds || []), game.currentRound])
-    )
+    const newCurrentRound: Partial<GameRound> = { answers, scores }
 
-    const newCurrentRound: Partial<GameRound> = {
-      timeEnded: Date.now(),
-      endedByPlayer: player.id,
-      nextLetter,
-      answers,
-      scores,
-    }
-
+    timer.start('updateStage', 'Set game to review')
     await workerClient.query(
       q.Update(ref, {
         data: {
@@ -116,13 +123,15 @@ const handleX: Handler = async (req, res) => {
         },
       })
     )
+    timer.end('updateStage')
   } catch (e) {
     console.error(e)
     const error = getFaunaError(e as errors.FaunaHTTPError)
     return res.send(error.status, { message: error.description })
   }
 
+  res.setHeader('Server-Timing', timer.getHeader()!)
   return res.send(httpStatuses.ACCEPTED)
 }
 
-export default handleX
+export default handleEndRound

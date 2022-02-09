@@ -3545,6 +3545,11 @@ object.values@^1.1.5:
     define-properties "^1.1.3"
     es-abstract "^1.19.1"
 
+on-headers@^1.0.1:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/on-headers/-/on-headers-1.0.2.tgz#772b0ae6aaa525c399e489adfad90c403eb3c28f"
+  integrity sha512-pZAE+FJLoyITytdqK0U5s+FIpjN0JP3OzFi/u8Rx+EV5/W+JTWGXG8xFzevE7AjBfDqHv/8vL8qQsIhHnqRkrA==
+
 once@^1.3.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/once/-/once-1.4.0.tgz#583b1aa775961d4b113ac17d9c50baef9dd76bd1"
@@ -3954,6 +3959,13 @@ semver@^7.2.1, semver@^7.3.2, semver@^7.3.5:
   integrity sha512-PoeGJYh8HK4BTO/a9Tf6ZG3veo/A7ZVsYrSA6J8ny9nb3B1VrpkuN+z9OE5wfE5p6H4LchYZsegiQgbJD94ZFQ==
   dependencies:
     lru-cache "^6.0.0"
+
+servertime@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/servertime/-/servertime-3.1.1.tgz#f31e1f198766609ea909ec74c640a1c89feea7aa"
+  integrity sha512-4V+UzTJvy7jtl1+eGwbvmz5hZMq4ipWOCIDir3pdFBn1t9FN1TN9wAFirCUWw3HPDa/RmamwPrHygJHmc8WKsA==
+  dependencies:
+    on-headers "^1.0.1"
 
 shebang-command@^2.0.0:
   version "2.0.0"

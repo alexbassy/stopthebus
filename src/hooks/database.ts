@@ -297,16 +297,16 @@ class Manager {
     return this.gameRound$.pipe(map((round) => round?.timeStarted ?? 0))
   }
 
+  get gameRoundTimeEnded$() {
+    return this.gameRound$.pipe(map((round) => round?.timeEnded ?? 0))
+  }
+
   get gameRoundDuration$() {
     return this.gameRound$.pipe(map((round) => (round?.timeEnded ?? 0) - (round?.timeStarted ?? 0)))
   }
 
   get gameRoundLetter$() {
     return this.gameRound$.pipe(map((round) => round?.letter))
-  }
-
-  get gameRoundNextLetter$() {
-    return this.gameRound$.pipe(map((round) => round?.nextLetter))
   }
 
   get gameRoundEndingPlayer$() {
@@ -420,6 +420,7 @@ export const [useGameStateNextGameId] = bind(() => manager.gameStateNextGameId$,
 
 // GAME ROUNDS
 export const [useGameRoundTimeStarted] = bind(() => manager.gameRoundTimeStarted$, 0)
+export const [useGameRoundTimeEnded] = bind(() => manager.gameRoundTimeEnded$, 0)
 export const [useGameRoundDuration] = bind(() => manager.gameRoundDuration$, 0)
 export const [useGameRoundLetter] = bind(() => manager.gameRoundLetter$, null)
 export const [useGameRoundIndex] = bind(() => manager.gameRoundIndex$, 0)
@@ -428,4 +429,3 @@ export const [useGameRoundAllAnswers] = bind(() => manager.gameRoundAllAnswers$,
 export const [useGameRoundAnswersByCategory] = bind(() => manager.gameRoundAnswersByCategory$, null)
 export const [useGameRoundAllScores] = bind(() => manager.gameRoundAllScores$, null)
 export const [useGameRoundScoresByPlayer] = bind(() => manager.gameRoundScoresByCategory$, null)
-export const [useGameRoundNextLetter] = bind(() => manager.gameRoundNextLetter$, null)
