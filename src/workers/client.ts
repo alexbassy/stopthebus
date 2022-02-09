@@ -1,4 +1,4 @@
-import * as faunadb from 'faunadb'
+import faunadb from 'faunadb'
 
 export const workerClient = new faunadb.Client({
   secret: WORKER_FAUNA_KEY as string,

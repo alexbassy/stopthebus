@@ -1,4 +1,4 @@
-const API_BASE = 'https://stopthebus.abass.workers.dev'
+const API_BASE = 'https://api.stopthebus.xyz'
 
 export const API_ROUTES = {
   createGame: `${API_BASE}/create`,
