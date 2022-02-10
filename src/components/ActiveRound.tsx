@@ -23,6 +23,7 @@ import { endRoundWithGameID } from '@/client/rest'
 import usePlayer from '@/hooks/usePlayer'
 import Dialog from '@/components/Dialog'
 import EndRoundOverlay from '@/components/overlay/EndRoundOverlay'
+import { fromEvent, startWith } from 'rxjs'
 
 const Wrap = styled.div`
   max-width: 400px;
@@ -54,8 +55,10 @@ export default function ActiveRound() {
   useScrollToTop()
 
   useLayoutEffect(() => {
+    console.log(gameConfigCategories)
     const onResize = () => {
-      if (!formRef.current || !gameConfigCategories) return
+      if (!formRef.current || !gameConfigCategories.length) return
+      console.log('onResize')
       const formYOffset = formRef.current.offsetTop
       const offsets: QuestionPositions = {}
       const elements = Array.from(formRef.current.elements) as HTMLElement[]
@@ -65,7 +68,7 @@ export default function ActiveRound() {
         const name = question.getAttribute('name') || ''
         const index = gameConfigCategories.indexOf(name)
         if (question.tagName !== 'INPUT' || typeof index !== 'number') continue
-        offsets[index] =
+        offsets[name] =
           // The offset starts from the form, which is the adjacent sibling of the <Lane/>
           question.offsetTop -
           // Minus the offset Y value of the question input
@@ -73,14 +76,14 @@ export default function ActiveRound() {
           // Plus half the height of the input, to center the player pin
           inputHeight / 2
       }
+      console.log({ offsets })
       setQuestionPositions(offsets)
     }
 
-    window.addEventListener('resize', onResize)
-    onResize()
+    const resize$ = fromEvent(window, 'resize').pipe(startWith(0)).subscribe(onResize)
 
     return () => {
-      window.removeEventListener('resize', onResize)
+      resize$.unsubscribe()
     }
   }, [gameConfigCategories])
 
@@ -89,30 +92,9 @@ export default function ActiveRound() {
       return
     }
 
-    console.log('has ended', gameRoundEndingPlayer, hasEnded)
     setHasEnded(true)
     manager.setRoundAnswer(lastFocusedCategory, values[lastFocusedCategory])
   }, [gameRoundEndingPlayer, hasEnded, values, lastFocusedCategory])
-
-  // useEffect(() => {
-  //   if (gameStateStage === GameStage.REVIEW && !hasEnded) {
-  //     // setHasEnded(true)
-  //     // console.log('FILLED_ANSWER', values)
-  //   }
-  // }, [gameStateStage, values, hasEnded])
-
-  // useEffect(() => {
-  //   if (gameStateStage === GameStage.ACTIVE) {
-  //     emit('RETRIEVE_ANSWERS')
-  //   }
-  // }, [emit, gameStateStage])
-
-  // const answers = game?.answers
-  // useEffect(() => {
-  //   if (answers) {
-  //     setValues(answers)
-  //   }
-  // }, [answers])
 
   const handleChange = (category: string) => (event: ChangeEvent<HTMLInputElement>) => {
     setValues((currentValues) => ({
@@ -123,7 +105,7 @@ export default function ActiveRound() {
 
   const handleFocus = (event: SyntheticEvent<HTMLInputElement>) => {
     setLastFocusedCategory(event.currentTarget.name)
-    console.log('FOCUSSED_ANSWER', gameConfigCategories.indexOf(event.currentTarget.name))
+    manager.setPlayerProgress(event.currentTarget.name)
   }
 
   const pushAnswer = (category: string, answer: string) => {
@@ -187,7 +169,7 @@ export default function ActiveRound() {
             </List>
             <Button disabled={hasEnded}>{hasEnded ? 'Out of time!' : 'Finished'}</Button>
           </form>
-          <Lanes questionPositions={questionPositions} />
+          <Lanes {...questionPositions} />
         </Grid>
       </Wrap>
       {/* <Dialog>

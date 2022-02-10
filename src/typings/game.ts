@@ -59,11 +59,6 @@ export interface QuestionPositions {
   [categoryIndex: string]: number // value is X offset
 }
 
-// Map of UUID:questionIndex, to show where each player is.
-export interface OpponentProgress {
-  [player: string]: number
-}
-
 export interface FinalScores {
   [player: string]: number
 }
@@ -82,6 +77,8 @@ export interface Round {
   [player: string]: RoundResults
 }
 
+export type OpponentProgress = Record<Player['id'], string>
+
 export interface PlayerScores {
   [category: string]: number
 }
@@ -96,6 +93,7 @@ export interface GameRound {
   timeStarted: number
   timeEnded?: number | null
   endedByPlayer?: string | null
+  opponentProgress: OpponentProgress | null
   answers: Round
   scores: Scores
 }

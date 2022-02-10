@@ -1,14 +1,11 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { css } from '@emotion/react'
 import styled from '@emotion/styled'
-import { QuestionPositions } from '@/typings/game'
 import { SMALL_SCREEN_BREAKPOINT } from '@/constants/styles'
 import { Pin } from './Player'
-import GameContext from '../contexts/GameContext'
+import { useGamePlayers, usegameRoundOpponentProgress } from '@/hooks/database'
 
-interface LanesProps {
-  questionPositions: QuestionPositions
-}
+interface LanesProps extends Record<string, number> {}
 
 const Wrapper = styled.div`
   display: flex;
@@ -41,24 +38,26 @@ const PlayerPinWrapper = styled.span<PinWrapperProps>`
 `
 
 function Lanes(props: LanesProps) {
-  const game = useContext(GameContext)
+  const gamePlayers = useGamePlayers()
+  const opponentProgress = usegameRoundOpponentProgress()
+  const numPlayers = gamePlayers.length
 
-  if (!game || !game.players) {
+  if (!opponentProgress) {
     return null
   }
 
   return (
     <Wrapper>
-      {game.players.map((player) => {
-        const numPlayers = game.players.length
-        const currentQuestion = game?.opponentProgress?.[player.id] ?? 0
-        const playerOffset = props.questionPositions[currentQuestion]
+      {gamePlayers.map((player) => {
+        const currentQuestion = opponentProgress?.[player.id]
+        const playerOffset = props[currentQuestion]
+
         return (
           <PlayerPinWrapper
             key={player.id}
             count={numPlayers}
             style={{
-              transform: `translateY(${playerOffset + currentQuestion}px)`,
+              transform: `translateY(${playerOffset}px)`,
             }}
           >
             <Pin colour={player.colour} small />
@@ -69,12 +68,4 @@ function Lanes(props: LanesProps) {
   )
 }
 
-// Compare the offsets against each other to determine
-// whether the component should rerender. This prevents
-// rerendering when typing into the fields.
-export default React.memo(Lanes, (prevProps, nextProps) => {
-  return (
-    Object.values(prevProps.questionPositions).join('') ===
-    Object.values(nextProps.questionPositions).join('')
-  )
-})
+export default Lanes

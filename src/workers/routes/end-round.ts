@@ -30,6 +30,12 @@ async function getAnswers(gameId: string, round: number): Promise<Round> {
   }, {})
 }
 
+async function deleteAnswers(gameId: string, round: number): Promise<void> {
+  return workerClient
+    .query<void>(q.Call('clear-answers-for-round', gameId, round))
+    .then(() => undefined)
+}
+
 // Create a full answer record replacing missing entries with empty strings
 // This is because the `currentRound` needs to be overwritten, as fauna writes are partial
 function fillEmptyAnswers(answers: Round, categories: string[], players: Player[]): Round {
@@ -112,7 +118,9 @@ const handleEndRound: Handler = async (req, res) => {
   }
 
   try {
-    const newCurrentRound: Partial<GameRound> = { answers, scores }
+    const newCurrentRound: Partial<GameRound> = { answers, scores, opponentProgress: null }
+
+    await deleteAnswers(game.id, game.currentRound.index)
 
     timer.start('updateStage', 'Set game to review')
     await workerClient.query(

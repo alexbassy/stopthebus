@@ -199,7 +199,10 @@ class Manager {
   }
 
   get gameConfigCategories$() {
-    return this.gameConfig$.pipe(map((config) => config.categories))
+    return this.gameConfig$.pipe(
+      map((config) => config.categories),
+      distinctUntilChanged((prev, current) => prev.join('') === current.join(''))
+    )
   }
 
   async toggleCategory(category: string) {
@@ -313,6 +316,8 @@ class Manager {
     return this.gameRound$.pipe(map((round) => round?.endedByPlayer))
   }
 
+  // ROUND ANSWERS
+
   getRoundAnswers(): Observable<RoundResults> {
     return this.gameRoundIndex$.pipe(
       withLatestFrom(this.player$),
@@ -328,7 +333,6 @@ class Manager {
     )
   }
 
-  // ROUND ANSWERS
   setRoundAnswer(question: string, answer: string) {
     return this.gameRoundIndex$
       .pipe(
@@ -341,6 +345,23 @@ class Manager {
       )
       .subscribe()
       .unsubscribe()
+  }
+
+  setPlayerProgress(category: string) {
+    return this.player$
+      .pipe(
+        switchMap((player) =>
+          queryAsObservable(
+            q.Call(DatabaseFunctions.UpdateProgress, this.gameId, player.id, category)
+          )
+        )
+      )
+      .subscribe()
+      .unsubscribe()
+  }
+
+  get gameRoundOpponentProgress$() {
+    return this.gameRound$.pipe(map((round) => round?.opponentProgress))
   }
 
   get gameRoundAllAnswers$() {
@@ -429,3 +450,4 @@ export const [useGameRoundAllAnswers] = bind(() => manager.gameRoundAllAnswers$,
 export const [useGameRoundAnswersByCategory] = bind(() => manager.gameRoundAnswersByCategory$, null)
 export const [useGameRoundAllScores] = bind(() => manager.gameRoundAllScores$, null)
 export const [useGameRoundScoresByPlayer] = bind(() => manager.gameRoundScoresByCategory$, null)
+export const [usegameRoundOpponentProgress] = bind(() => manager.gameRoundOpponentProgress$, null)
