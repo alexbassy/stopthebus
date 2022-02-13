@@ -6,6 +6,7 @@ import { globalStyles, Background, GameWrapper, Spacing, ExternalLink, HiddenLab
 import styled from '@emotion/styled'
 import { Flex } from './Grid'
 import themes, { Themes } from '../themes'
+import PageBackground from './visual/PageBackground'
 
 interface ThemedProps {
   children: ReactNode
@@ -70,6 +71,7 @@ const Themed: React.FC<ThemedProps> = ({ children }) => {
       </Head>
       <Global styles={globalStyles} />
       <Background>
+        <PageBackground />
         <GameWrapper>
           {children}
           <Spacing t={2} />

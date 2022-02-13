@@ -10,11 +10,11 @@ const StyledLink = styled.a`
 const Title = styled.div`
   font-family: ${(props) => props.theme?.fonts?.title.name};
   color: ${(props) => props.theme?.colours?.yellow};
-  background: linear-gradient(#f857a6, #ff5858);
+  background: linear-gradient(60deg, #e23f90, #de40cb, #bd3fea, #783ee7, #4c6ce6, #4895ef);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-transform: uppercase;
   font-size: 5rem;
+  letter-spacing: -2px;
   margin: 0;
   text-align: center;
 
@@ -48,7 +48,7 @@ const PageTitle: React.FC<TitleProps> = (props) => {
   return (
     <StyledLink href='/' onClick={handleClick}>
       <Title>
-        Stop The Bus <Logo src='/bus.svg' alt='Bus Icon' />
+        <Logo src='/bus.svg' alt='' /> Stop The Bus
       </Title>
     </StyledLink>
   )

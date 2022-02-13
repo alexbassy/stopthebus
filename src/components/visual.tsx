@@ -3,6 +3,22 @@ import RouterLink from 'next/link'
 import styled from '@emotion/styled'
 
 export const globalStyles = css`
+  :root {
+    --blue-fg: hsla(211 73% 56% / 1);
+    --blue-bg: hsla(211 73% 56% / 0.24);
+
+    --red-fg: hsla(2 80% 63% / 1);
+    --red-bg: hsla(2 80% 63% / 0.24);
+
+    --green-fg: hsla(109 39% 52% / 1);
+    --green-bg: hsla(109 39% 52% / 0.24);
+
+    --yellow-fg: hsla(37 80% 59% / 1);
+    --yellow-bg: hsla(37 80% 59% / 0.24);
+
+    --container-radius: 8px;
+  }
+
   *,
   *::before,
   *::after {
@@ -16,7 +32,6 @@ export const globalStyles = css`
     font-family: sans-serif;
     margin: 0;
     height: 100%;
-    background: #132339;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -28,7 +43,6 @@ export const globalStyles = css`
 export const Background = styled.div`
   width: 100%;
   min-height: 100%;
-  background-color: ${(props) => props.theme?.colours?.pageBackground};
   padding: 1px 0;
 
   @media screen and (max-width: 768px) {
@@ -41,12 +55,10 @@ export const GameWrapper = styled.div`
   flex-direction: column;
   max-width: 760px;
   margin: 2rem auto 0;
-  background: ${(props) => props.theme?.colours?.gameBackground};
   font-family: ${(props) => props.theme?.fonts.body.name};
   padding: 0.5rem;
   color: #fff;
   font-size: 120%;
-  border: 10px solid ${(props) => props.theme?.colours?.gameBorder};
 
   @media screen and (max-width: 768px) {
     min-height: 100%;
@@ -255,7 +267,7 @@ export const Spacing = styled.div<SpacingProps>`
 `
 
 export const Lighter = styled.span`
-  color: rgb(255 255 255 / 60%);
+  opacity: 0.6;
   font-weight: 400;
 `
 

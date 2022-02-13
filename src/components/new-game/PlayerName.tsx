@@ -8,13 +8,12 @@ const PlayerName: React.FC = () => {
   const [player, updatePlayerName] = usePlayer()
   const [username, setUsername] = useState('')
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault()
     if (!player?.id) return
-    manager.setGamePlayerName(player.id, username).then(() => {
-      updatePlayerName(username)
-      setUsername('')
-    })
+    await manager.setGamePlayerName(player.id, username)
+    updatePlayerName(username)
+    setUsername('')
   }
 
   return (

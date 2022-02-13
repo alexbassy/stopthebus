@@ -8,7 +8,6 @@ import Alliteration from '@/components/new-game/Alliteration'
 import CategoriesList from '@/components/new-game/CategoriesList'
 import CurrentPlayer from '@/components/new-game/CurrentPlayer'
 import Letters from '@/components/new-game/Letters'
-import PlayerName from '@/components/new-game/PlayerName'
 import Players from '@/components/new-game/Players'
 import {
   useGameConfigCategories,
@@ -49,7 +48,6 @@ export default function NewGame() {
       <Spacing y={1}>
         <CurrentPlayer />
       </Spacing>
-      <PlayerName />
       <Grid columns={[2, 1]} stackOnMobile>
         <Letters />
         <Players />
