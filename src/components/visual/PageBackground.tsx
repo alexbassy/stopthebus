@@ -2,13 +2,22 @@ import styled from '@emotion/styled'
 import React from 'react'
 
 const Svg = styled.svg`
+  width: 100%;
+  height: 100%;
+  right: 0;
   position: fixed;
   pointer-events: none;
   z-index: -1;
 `
 
 const PageBackground: React.FC = (props) => (
-  <Svg width={1147} height={932} fill='none' xmlns='http://www.w3.org/2000/svg' {...props}>
+  <Svg
+    fill='none'
+    xmlns='http://www.w3.org/2000/svg'
+    viewBox='0 0 1147 932'
+    preserveAspectRatio='xMinYMin slice'
+    {...props}
+  >
     <g opacity={0.3} filter='url(#a)' clipPath='url(#b)'>
       <path
         d='M836 233c0 128.682-101.855 233-227.5 233S381 361.682 381 233C381 104.318 482.855 0 608.5 0S836 104.318 836 233Z'

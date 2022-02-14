@@ -1,11 +1,11 @@
 import React, { SyntheticEvent } from 'react'
 import styled from '@emotion/styled'
-import { ExternalLink } from './visual'
+import Link from 'next/link'
 
 const StyledLink = styled.a`
   text-decoration: none;
   --webkit-tap-highlight-color: transparent;
-`.withComponent(ExternalLink)
+`
 
 const Title = styled.div`
   font-family: ${(props) => props.theme?.fonts?.title.name};
@@ -14,7 +14,8 @@ const Title = styled.div`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-size: 5rem;
-  letter-spacing: -2px;
+  font-weight: 700;
+  letter-spacing: -4px;
   margin: 0;
   text-align: center;
 
@@ -28,8 +29,8 @@ const Logo = styled.img`
   height: 3.75rem;
 
   @media screen and (max-width: 760px) {
-    height: 8vw;
-    vertical-align: top;
+    height: 9vw;
+    vertical-align: initial;
   }
 `
 
@@ -46,11 +47,13 @@ const PageTitle: React.FC<TitleProps> = (props) => {
   }
 
   return (
-    <StyledLink href='/' onClick={handleClick}>
-      <Title>
-        <Logo src='/bus.svg' alt='' /> Stop The Bus
-      </Title>
-    </StyledLink>
+    <Link href='/' passHref>
+      <StyledLink onClick={handleClick}>
+        <Title>
+          <Logo src='/bus.svg' alt='' /> Stop The Bus
+        </Title>
+      </StyledLink>
+    </Link>
   )
 }
 

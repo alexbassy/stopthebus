@@ -1,12 +1,12 @@
 import { useGamePlayers } from '@/hooks/database'
-import { H3, Item, List } from '@/components/visual'
+import { H3, Item, List, SectionContainer } from '@/components/visual'
 import Player from '@/components/Player'
 
 const Players: React.FC = () => {
   const gamePlayers = useGamePlayers()
 
   return (
-    <section>
+    <SectionContainer colour='yellow'>
       <H3>Players</H3>
       <List>
         {gamePlayers &&
@@ -16,7 +16,7 @@ const Players: React.FC = () => {
             </Item>
           ))}
       </List>
-    </section>
+    </SectionContainer>
   )
 }
 

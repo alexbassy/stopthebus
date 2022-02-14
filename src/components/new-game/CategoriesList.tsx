@@ -1,7 +1,17 @@
 import React, { ChangeEvent, SyntheticEvent, useState } from 'react'
 import { categories as defaultCategories } from '@/constants/game'
 import { Flex } from '@/components/Grid'
-import { Button, Checkbox, Input, Item, List, HiddenLabel, H3, Lighter } from '@/components/visual'
+import {
+  Button,
+  Checkbox,
+  Input,
+  Item,
+  List,
+  HiddenLabel,
+  H3,
+  Lighter,
+  SectionContainer,
+} from '@/components/visual'
 import { manager, useGameConfigCategories } from '@/hooks/database'
 import useSound from 'use-sound'
 
@@ -31,7 +41,7 @@ const CategoriesList: React.FC = () => {
   }
 
   return (
-    <section>
+    <SectionContainer colour='green'>
       <H3>
         Categories
         <Lighter> ({selectedCategories?.length ?? 0} selected)</Lighter>
@@ -70,7 +80,7 @@ const CategoriesList: React.FC = () => {
           <Button>Add</Button>
         </form>
       </div>
-    </section>
+    </SectionContainer>
   )
 }
 

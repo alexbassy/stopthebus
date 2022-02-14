@@ -1,6 +1,9 @@
 import { css } from '@emotion/react'
 import RouterLink from 'next/link'
 import styled from '@emotion/styled'
+import isPropValid from '@emotion/is-prop-valid'
+
+export type AccentColour = 'blue' | 'red' | 'green' | 'yellow' | 'purple'
 
 export const globalStyles = css`
   :root {
@@ -13,8 +16,11 @@ export const globalStyles = css`
     --green-fg: hsla(109 39% 52% / 1);
     --green-bg: hsla(109 39% 52% / 0.24);
 
-    --yellow-fg: hsla(37 80% 59% / 1);
-    --yellow-bg: hsla(37 80% 59% / 0.24);
+    --yellow-fg: hsla(37 60% 50% / 1);
+    --yellow-bg: hsla(37 60% 50% / 0.24);
+
+    --purple-fg: hsla(288 52% 55% / 1);
+    --purple-bg: hsla(288 52% 55% / 0.24);
 
     --container-radius: 8px;
   }
@@ -68,10 +74,10 @@ export const GameWrapper = styled.div`
 `
 
 export const H2 = styled.h2`
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
   letter-spacing: -0.5px;
-  text-shadow: 1px 1px rgb(0 0 0 / 40%);
+  margin: 0;
 `
 
 export const H3 = H2.withComponent('h3')
@@ -91,25 +97,26 @@ interface InputProps {
 
 export const Input = styled.input<InputProps>`
   font-size: 1.1rem;
+  font-weight: 500;
   padding: 0.75rem;
   -webkit-appearance: none;
   font-family: inherit;
   border: none;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
-  color: ${(props) => (props.readOnly ? `rgb(220, 220, 220)` : `rgb(255 255 255)`)};
+  color: var(--accent-fg);
   outline: none;
-  box-shadow: 0 0 0 0 ${(props) => props.theme?.colours?.pink};
-  background-color: ${(props) => props.theme?.colours?.inputBackground};
+  box-shadow: 0 0 0 0 var(--accent-fg);
+  background-color: var(--accent-bg);
   transition: box-shadow 0.25s ease;
   width: ${(props) => (props.grow ? '100%' : 'auto')};
 
   ::placeholder {
-    color: rgb(255 255 255 / 80%);
+    color: var(--accent-fg);
   }
 
   :focus {
-    box-shadow: 0 0 0 3px ${(props) => props.theme?.colours?.pink};
+    box-shadow: 0 0 0 3px var(--accent-fg);
   }
 `
 
@@ -118,14 +125,16 @@ export const Checkbox = styled.input`
   padding: 0 0.4rem;
   -webkit-appearance: none;
   border: none;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
-  border-radius: 2px;
-  background-color: ${(props) => props.theme?.colours?.inputBackground};
+  box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
+  border-radius: 3px;
+  color: inherit;
+  background-color: var(--accent-fg);
   width: 1.5rem;
   height: 1.5rem;
   vertical-align: middle;
-  color: #fff;
   margin-right: 0.5rem;
+  transition: 0.1s ease-in-out;
+  transition-property: opacity, transform;
 
   ${(props) =>
     props.checked &&
@@ -137,19 +146,20 @@ export const Checkbox = styled.input`
 
   :focus {
     outline: none;
-    box-shadow: 0 0 0 2px ${(props) => props.theme?.colours?.pink};
+    box-shadow: 0 0 0 2px var(--accent-bg);
   }
 
   :active {
-    background-color: #274672;
+    opacity: 0.8;
+    transform: scale(0.95);
   }
 
   :disabled {
-    background-color: #274672;
+    opacity: 0.8;
   }
 `
 
-const DownArrow = `<svg width="10" height="6" xmlns="http://www.w3.org/2000/svg"><path d="M.6 0a.59.59 0 00-.42.19.69.69 0 000 .92l4.39 4.7a.58.58 0 00.86 0l4.38-4.7A.68.68 0 009.83.2a.58.58 0 00-.86 0L5 4.44 1.03.2A.59.59 0 00.6 0z" fill="white" fill-rule="nonzero"/></svg>`
+const DownArrow = `<svg width="10" height="6" xmlns="http://www.w3.org/2000/svg"><path d="M.6 0a.59.59 0 00-.42.19.69.69 0 000 .92l4.39 4.7a.58.58 0 00.86 0l4.38-4.7A.68.68 0 009.83.2a.58.58 0 00-.86 0L5 4.44 1.03.2A.59.59 0 00.6 0z" style="fill:var(--accent-fg);" fill-rule="nonzero"/></svg>`
 
 export const Select = styled.select`
   font-size: 1rem;
@@ -157,14 +167,14 @@ export const Select = styled.select`
   -webkit-appearance: none;
   font-family: inherit;
   border: none;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
   border-radius: 2px;
-  background-color: ${(props) => props.theme?.colours?.inputBackground};
+  color: var(--accent-fg);
+  background-color: var(--accent-bg);
   background-image: url('data:image/svg+xml;utf8,${DownArrow}');
   background-position: center right 0.5rem;
   background-repeat: no-repeat;
   vertical-align: middle;
-  color: #fff;
   margin-right: 0.5rem;
 
   :focus {
@@ -185,10 +195,10 @@ export const Button = styled.button<ButtonProps>`
   -webkit-appearance: none;
   font-size: ${(props) => (props.large ? '1.25rem' : '1rem')};
   padding: 0.75rem;
-  background: ${(props) => props.theme?.colours?.buttonBackground};
+  color: var(--accent-fg);
+  background-color: var(--accent-bg);
   font-family: inherit;
   font-weight: 500;
-  color: #fff;
   border: none;
   border-radius: 8px;
 
@@ -239,6 +249,20 @@ export const List = styled.ul<ListProps>`
       : ''}
 `
 
+interface ISectionContainerProps {
+  colour: AccentColour
+}
+const scOptions = { shouldForwardProp: isPropValid }
+export const SectionContainer = styled('section', scOptions)<ISectionContainerProps>`
+  --accent-fg: var(${(props) => `--${props.colour}-fg`});
+  --accent-bg: var(${(props) => `--${props.colour}-bg`});
+
+  color: var(--accent-fg);
+  background-color: var(--accent-bg);
+  padding: 1rem;
+  border-radius: var(--container-radius);
+`
+
 interface ListItemProps {
   inline?: boolean
 }
@@ -271,6 +295,6 @@ export const Lighter = styled.span`
   font-weight: 400;
 `
 
-export const Description = styled(Lighter)`
+export const Description = styled.span`
   font-size: 0.85rem;
 `

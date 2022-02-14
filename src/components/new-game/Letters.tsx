@@ -1,5 +1,5 @@
 import { manager, useGameConfigLetters } from '@/hooks/database'
-import { Checkbox, H3, Item, List, Spacing } from '@/components/visual'
+import { Checkbox, H3, Item, List, SectionContainer, Spacing } from '@/components/visual'
 import { ENGLISH_LETTERS } from '@/constants/letters'
 import { Flex } from '@/components/Grid'
 import useSound from 'use-sound'
@@ -16,7 +16,7 @@ const Letters: React.FC = () => {
   }
 
   return (
-    <section>
+    <SectionContainer colour='purple'>
       <H3>Letters</H3>
       <List>
         {gameLetters &&
@@ -40,7 +40,7 @@ const Letters: React.FC = () => {
             )
           })}
       </List>
-    </section>
+    </SectionContainer>
   )
 }
 

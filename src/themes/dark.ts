@@ -14,8 +14,8 @@ const palette = {
 const dark: Theme = {
   fonts: {
     title: {
-      name: 'Raleway, sans-serif',
-      href: 'https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Raleway:wght@700&display=swap',
+      name: '"Inter", sans-serif',
+      href: 'https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Inter:wght@700&display=swap',
     },
     body: {
       name: '"Sora"',

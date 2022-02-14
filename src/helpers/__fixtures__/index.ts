@@ -28,6 +28,7 @@ export const rounds: GameRound[] = [
       },
     },
     endedByPlayer: '8c86d893-9b55-4019-b8bf-a1c92daa4c64',
+    opponentProgress: {},
   },
   {
     index: 1,
@@ -58,6 +59,7 @@ export const rounds: GameRound[] = [
       },
     },
     endedByPlayer: '06c245a4-7b87-43fe-bb55-c3b3607fa3bd',
+    opponentProgress: {},
   },
   {
     index: 2,
@@ -88,5 +90,6 @@ export const rounds: GameRound[] = [
       },
     },
     endedByPlayer: '06c245a4-7b87-43fe-bb55-c3b3607fa3bd',
+    opponentProgress: {},
   },
 ]

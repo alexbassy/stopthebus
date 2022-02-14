@@ -4,7 +4,6 @@ import { Grid } from '@/components/Grid'
 import { Button, Spacing } from '@/components/visual'
 import Dialog from '@/components/Dialog'
 import Countdown from '@/components/overlay/Countdown'
-import Alliteration from '@/components/new-game/Alliteration'
 import CategoriesList from '@/components/new-game/CategoriesList'
 import CurrentPlayer from '@/components/new-game/CurrentPlayer'
 import Letters from '@/components/new-game/Letters'
@@ -14,10 +13,10 @@ import {
   useGameRoundLetter,
   useGameRoundTimeStarted,
 } from '@/hooks/database'
-import RaceRounds from '@/components/new-game/RaceRounds'
 import { cancelStartGameWithID, startGameWithID } from '@/client/rest'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 import usePlayer from '@/hooks/usePlayer'
+import Options from './new-game/Options'
 
 export default function NewGame() {
   const gameId = useGameIdFromRoute()
@@ -48,11 +47,11 @@ export default function NewGame() {
       <Spacing y={1}>
         <CurrentPlayer />
       </Spacing>
-      <Grid columns={[2, 1]} stackOnMobile>
+      <Grid columns={[2, 1]} gap={1} stackOnMobile>
         <Letters />
         <Players />
       </Grid>
-
+      <Spacing b={1} />
       <CategoriesList />
 
       {/* <H3>Mode</H3>
@@ -79,9 +78,7 @@ export default function NewGame() {
           )}
         </div> */}
       <Spacing b={2} />
-      <RaceRounds />
-      <Spacing b={2} />
-      <Alliteration />
+      <Options />
       <Spacing b={2} />
 
       <Button large onClick={handleStartGameClick}>
