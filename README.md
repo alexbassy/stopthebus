@@ -37,4 +37,4 @@ yarn dev
 
 ### Cloudflare worker
 
-Cloudflare worker routes live in `/src/workers` and can be built with `yarn build-worker` and published with `yarn publish`
+Cloudflare worker routes live in `/src/workers` and can be built with `yarn worker:build` and published with `yarn worker:publish`

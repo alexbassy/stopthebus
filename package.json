@@ -7,8 +7,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "build-worker": "esbuild src/workers/index.ts --bundle --target=es2019 --format=esm --outfile=src/workers/dist/worker.js",
-    "publish-worker": "(cd src/workers && wrangler publish)"
+    "worker:build": "esbuild src/workers/index.ts --bundle --target=es2019 --format=esm --outfile=src/workers/dist/worker.js",
+    "worker:publish": "(cd src/workers && wrangler publish)",
+    "worker:all": "yarn worker:build && yarn worker:publish"
   },
   "dependencies": {
     "@emotion/react": "^11.6.0",

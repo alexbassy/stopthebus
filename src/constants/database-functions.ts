@@ -1,7 +1,7 @@
 export enum DatabaseFunctions {
   UpdatePlayerName = 'update-nickname',
   UpdateLetters = 'update-letters',
-  UpdateRounds = 'update-update-rounds',
+  UpdateRounds = 'update-rounds',
   UpdateAlliteration = 'update-alliteration',
   UpdateCategories = 'update-categories',
   GetRound = 'get-round',

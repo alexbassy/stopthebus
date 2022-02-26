@@ -41,9 +41,9 @@ export default function Home() {
     try {
       await createGameWithID(newGameID, player)
       router.push(APP_ROUTES.game(newGameID))
-    } catch (e) {
-      console.error('Something went wrong while creating a game', e)
-      alert('Sorry, something went wrong')
+    } catch (error: any) {
+      console.error('Something went wrong while creating a game', error)
+      alert(`There was an error: ${error.message}`)
     }
   }
 

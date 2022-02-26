@@ -21,6 +21,6 @@ jobs:
           preCommands: |
             echo "*** PRE COMMAND ***"
             pwd
-            (cd ../.. && yarn && yarn build-worker)
+            (cd ../.. && yarn && yarn worker:build)
         env:
           WORKER_FAUNA_KEY: ${{ secrets.WORKER_FAUNA_KEY }}
