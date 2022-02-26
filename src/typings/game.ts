@@ -13,14 +13,11 @@ export enum GameMode {
 }
 
 export interface GameConfig {
-  id: string
-  name: string
   categories: string[]
   numRounds: number
   mode: GameMode
   time?: number
   letters: string
-  created: number
   lastAuthor?: string
   alliteration: boolean
 }

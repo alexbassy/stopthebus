@@ -1,26 +1,10 @@
-import { GameMode, GameResponse, GameStage, Player } from '@/typings/game'
-import { GameConfig, GameState } from '@/typings/game'
+import { GameConfig, Player } from '@/typings/game'
 import { Handler } from 'worktop'
 import { getFaunaError } from '../fauna-error'
-import { workerClient, q } from '../client'
 import httpStatuses from '@/constants/http-codes'
 import { errors } from 'faunadb'
-
-function createGameConfig(): Partial<GameConfig> {
-  return {
-    categories: [],
-    numRounds: 3,
-    mode: GameMode.RACE,
-    alliteration: false,
-    letters: 'abcdefghijklmnoprstuvwyz',
-  }
-}
-
-function createGameState(): Partial<GameState> {
-  return {
-    stage: GameStage.PRE,
-  }
-}
+import { createGameConfig, createGameState } from '../lib/game'
+import { createGameQuery } from '../lib/fauna'
 
 type RequestBody = { id?: string; player?: Player }
 
@@ -33,20 +17,13 @@ const handleCreate: Handler = async (req, res) => {
   if (!id) return res.send(httpStatuses.UNPROCESSABLE_ENTITY, { message: 'Game ID required' })
   if (!player) return res.send(httpStatuses.UNPROCESSABLE_ENTITY, { message: 'Player required' })
 
-  const gameConfig = createGameConfig()
-  const gameState = createGameState()
-
   try {
-    const response = await workerClient.query<GameResponse>(
-      q.Create(q.Collection('game'), {
-        data: {
-          id,
-          state: gameState,
-          config: gameConfig,
-          players: [player],
-        },
-      })
-    )
+    const response = await createGameQuery({
+      id,
+      state: createGameState(),
+      config: createGameConfig() as GameConfig,
+      players: [player],
+    })
 
     if (!response.ref) {
       return res.send(httpStatuses.BAD_REQUEST, { message: JSON.stringify(response) })

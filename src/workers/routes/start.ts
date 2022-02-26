@@ -7,6 +7,8 @@ import { getFinalScores } from '@/helpers/scores'
 import { getNextLetterForGame } from '@/helpers/letters'
 import httpStatuses from '@/constants/http-codes'
 import { errors } from 'faunadb'
+import { createGameQuery } from '../lib/fauna'
+import { createGameConfigFromPrevious, createGameState } from '../lib/game'
 
 function getGame(id: string): Promise<GameResponse> {
   return workerClient.query<GameResponse>(q.Get(q.Match(q.Index('game_by_id'), id)))
@@ -53,14 +55,25 @@ const handleStart: Handler = async (req, res) => {
 
     const isLastRound = game.currentRound?.index === game.config.numRounds - 1
 
+    let nextGameRequest: Promise<any> = Promise.resolve()
+
     if (isLastRound) {
       const allRounds = [...(game.previousRounds || []), game.currentRound as GameRound]
       const finalScores = getFinalScores(allRounds)
+
+      const nextGameId = getGameName()
+      nextGameRequest = createGameQuery({
+        id: nextGameId,
+        config: createGameConfigFromPrevious(game.config, getPreviouslyPlayedLetters(allRounds)),
+        state: createGameState(),
+        players: [],
+      })
+
       newData = {
         state: {
           stage: GameStage.FINISHED,
           finalScores,
-          nextGameId: getGameName(),
+          nextGameId,
         },
         previousRounds: allRounds,
         currentRound: null,
@@ -94,7 +107,10 @@ const handleStart: Handler = async (req, res) => {
       }
     }
 
-    await workerClient.query<GameResponse>(q.Update(ref, { data: newData }))
+    await Promise.all([
+      workerClient.query<GameResponse>(q.Update(ref, { data: newData })),
+      nextGameRequest,
+    ])
   } catch (e) {
     console.error(e)
     const error = getFaunaError(e as errors.FaunaHTTPError)
