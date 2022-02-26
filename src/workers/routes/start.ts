@@ -82,6 +82,7 @@ const handleStart: Handler = async (req, res) => {
         endedByPlayer: null,
         answers: {},
         scores: {},
+        opponentProgress: null,
       }
 
       newData = {

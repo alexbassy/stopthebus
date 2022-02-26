@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import { Container } from '@/components/overlay/visual'
+import { OverlayContainer } from '@/components/overlay/visual'
 
 interface BaseOverlayProps {
   isShown: boolean
@@ -15,7 +15,7 @@ const overlayStates = {
 
 const Base: React.FC<BaseOverlayProps> = ({ isShown, onShown, children }) => {
   return (
-    <Container
+    <OverlayContainer
       variants={overlayStates}
       initial='shown'
       animate={isShown ? 'shown' : 'hidden'}
@@ -25,7 +25,7 @@ const Base: React.FC<BaseOverlayProps> = ({ isShown, onShown, children }) => {
       transition={{ duration: 0.25 }}
     >
       <AnimatePresence>{children}</AnimatePresence>
-    </Container>
+    </OverlayContainer>
   )
 }
 
