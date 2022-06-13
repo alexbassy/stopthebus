@@ -36,6 +36,13 @@ const handleCreate: Handler = async (req, res) => {
       data: { country: req.headers.get('cf-ipcountry') || undefined },
     })
 
+    console.log('tracked', {
+      SB_TOKEN,
+      event: 'create game',
+      playerId: player.id,
+      country: req.headers.get('cf-ipcountry') || undefined,
+    })
+
     return res.send(httpStatuses.CREATED, response.data)
   } catch (e) {
     console.error(e)
