@@ -30,7 +30,9 @@ const handleCreate: Handler = async (req, res) => {
       return res.send(httpStatuses.BAD_REQUEST, { message: JSON.stringify(response) })
     }
 
-    analytics.track({
+    res.send(httpStatuses.CREATED, response.data)
+
+    await analytics.track({
       userId: player.id,
       event: 'create game',
       data: { country: req.headers.get('cf-ipcountry') || undefined },
@@ -42,12 +44,10 @@ const handleCreate: Handler = async (req, res) => {
       playerId: player.id,
       country: req.headers.get('cf-ipcountry') || undefined,
     })
-
-    return res.send(httpStatuses.CREATED, response.data)
   } catch (e) {
     console.error(e)
     const error = getFaunaError(e as errors.FaunaHTTPError)
-    return res.send(error.status, { message: error.description })
+    res.send(error.status, { message: error.description })
   }
 }
 

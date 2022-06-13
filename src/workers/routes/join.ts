@@ -63,12 +63,6 @@ const handleJoinOrLeave: Handler = async (req, res) => {
     ? [...players, newPlayer]
     : players.filter((gamePlayer) => gamePlayer.id !== player.id)
 
-  analytics.track({
-    userId: player.id,
-    event: 'join game',
-    data: { country: req.headers.get('cf-ipcountry') || undefined },
-  })
-
   try {
     await workerClient.query(q.Update(ref, { data: { players } }))
   } catch (e) {
@@ -76,7 +70,13 @@ const handleJoinOrLeave: Handler = async (req, res) => {
     return res.send(error.status, { message: error.description })
   }
 
-  return res.send(httpStatuses.ACCEPTED)
+  res.send(httpStatuses.ACCEPTED)
+
+  await analytics.track({
+    userId: player.id,
+    event: 'join game',
+    data: { country: req.headers.get('cf-ipcountry') || undefined },
+  })
 }
 
 export default handleJoinOrLeave
