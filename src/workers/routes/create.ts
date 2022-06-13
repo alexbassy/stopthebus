@@ -5,6 +5,7 @@ import httpStatuses from '@/constants/http-codes'
 import { errors } from 'faunadb'
 import { createGameConfig, createGameState } from '../lib/game'
 import { createGameQuery } from '../lib/fauna'
+import { analytics } from '../lib/analytics'
 
 type RequestBody = { id?: string; player?: Player }
 
@@ -28,6 +29,12 @@ const handleCreate: Handler = async (req, res) => {
     if (!response.ref) {
       return res.send(httpStatuses.BAD_REQUEST, { message: JSON.stringify(response) })
     }
+
+    analytics.track({
+      userId: player.id,
+      event: 'create game',
+      data: { country: req.headers.get('cf-ipcountry') || undefined },
+    })
 
     return res.send(httpStatuses.CREATED, response.data)
   } catch (e) {

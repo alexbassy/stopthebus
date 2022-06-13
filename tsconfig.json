@@ -20,6 +20,6 @@
     },
     "types": ["@cloudflare/workers-types"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/workers/shim.d.ts"],
   "exclude": ["node_modules"]
 }

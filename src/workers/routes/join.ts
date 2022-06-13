@@ -4,6 +4,7 @@ import httpStatuses from '@/constants/http-codes'
 import { getFaunaError } from '../fauna-error'
 import { workerClient, q } from '../client'
 import { errors } from 'faunadb'
+import { analytics } from '../lib/analytics'
 
 function getGame(id: string): Promise<GameResponse> {
   return workerClient.query<GameResponse>(q.Get(q.Match(q.Index('game_by_id'), id)))
@@ -61,6 +62,12 @@ const handleJoinOrLeave: Handler = async (req, res) => {
   players = isJoining
     ? [...players, newPlayer]
     : players.filter((gamePlayer) => gamePlayer.id !== player.id)
+
+  analytics.track({
+    userId: player.id,
+    event: 'join game',
+    data: { country: req.headers.get('cf-ipcountry') || undefined },
+  })
 
   try {
     await workerClient.query(q.Update(ref, { data: { players } }))
