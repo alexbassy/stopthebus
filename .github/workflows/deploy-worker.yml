@@ -18,9 +18,11 @@ jobs:
           workingDirectory: 'src/workers'
           secrets: |
             WORKER_FAUNA_KEY
+            SB_TOKEN
           preCommands: |
             echo "*** PRE COMMAND ***"
             pwd
             (cd ../.. && yarn && yarn worker:build)
         env:
           WORKER_FAUNA_KEY: ${{ secrets.WORKER_FAUNA_KEY }}
+          SB_TOKEN: ${{ secrets.SB_TOKEN }}
