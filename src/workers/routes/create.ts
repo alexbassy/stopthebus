@@ -32,11 +32,16 @@ const handleCreate: Handler = async (req, res) => {
 
     res.send(httpStatuses.CREATED, response.data)
 
-    await analytics.track({
-      userId: player.id,
-      event: 'create game',
-      data: { country: req.headers.get('cf-ipcountry') || undefined },
-    })
+    try {
+      const tracking = await analytics.track({
+        userId: player.id,
+        event: 'create game',
+        data: { country: req.headers.get('cf-ipcountry') || undefined },
+      })
+      console.log('tracked', tracking)
+    } catch (e) {
+      console.log('analytics.track error', e)
+    }
 
     console.log('tracked', {
       SB_TOKEN,
