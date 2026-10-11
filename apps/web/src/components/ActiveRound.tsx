@@ -6,7 +6,6 @@ import React, {
   useRef,
   useLayoutEffect,
 } from 'react'
-import Head from 'next/head'
 import { Answers } from '@stopthebus/shared'
 import { Button, Input, Item, List, Spacing } from './visual'
 import { Grid } from './Grid'
@@ -132,9 +131,7 @@ export default function ActiveRound() {
 
   return (
     <div>
-      <Head>
         <title>Letter {gameRoundLetter?.toUpperCase()} - Stop The Bus</title>
-      </Head>
       <p>
         The letter is <strong style={{ fontSize: '2rem' }}>{gameRoundLetter?.toUpperCase()}</strong>
       </p>

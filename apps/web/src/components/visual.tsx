@@ -1,5 +1,4 @@
 import { css } from '@emotion/react'
-import RouterLink from 'next/link'
 import styled from '@emotion/styled'
 
 export const globalStyles = css`
@@ -197,8 +196,6 @@ export const ExternalLink = styled.a`
     color: #fff;
   }
 `
-
-export const Link = ExternalLink.withComponent(RouterLink)
 
 interface ListProps {
   columns?: number[]

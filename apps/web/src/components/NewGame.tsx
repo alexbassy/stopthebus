@@ -1,5 +1,4 @@
 import React from 'react'
-import Head from 'next/head'
 import { Grid } from '@/components/Grid'
 import { Button, Spacing } from '@/components/visual'
 import Dialog from '@/components/Dialog'
@@ -43,9 +42,7 @@ export default function NewGame() {
 
   return (
     <>
-      <Head>
         <title>New Game - Stop The Bus</title>
-      </Head>
       <Spacing y={1}>
         <CurrentPlayer />
       </Spacing>

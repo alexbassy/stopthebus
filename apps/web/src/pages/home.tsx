@@ -1,6 +1,5 @@
 import React, { useState, SyntheticEvent, useEffect } from 'react'
-import Head from 'next/head'
-import { useRouter } from 'next/router'
+import { useLocation } from 'wouter'
 import * as random from '@/helpers/random'
 import { Input, Button, H2, Spacing } from '@/components/visual'
 import PageTitle from '@/components/PageTitle'
@@ -12,7 +11,7 @@ import { getUserSession } from '@/helpers/getPersistedPlayer'
 import { APP_ROUTES } from '@/client/api-routes'
 
 export default function Home() {
-  const router = useRouter()
+  const [, navigate] = useLocation()
   const [player, setPlayer] = useState<Player>()
   const [gameID, setGameID] = useState<string>('')
   const [newGameID, setNewGameID] = useState<string>('')
@@ -26,7 +25,7 @@ export default function Home() {
     ev.preventDefault()
     const sanitised = gameID.trim().toLowerCase()
     if (sanitised.length) {
-      router.push(APP_ROUTES.game(gameID))
+      navigate(APP_ROUTES.game(gameID))
     }
   }
 
@@ -40,7 +39,7 @@ export default function Home() {
 
     try {
       await createGameWithID(newGameID, player)
-      router.push(APP_ROUTES.game(newGameID))
+      navigate(APP_ROUTES.game(newGameID))
     } catch (error: any) {
       console.error('Something went wrong while creating a game', error)
       alert(`There was an error: ${error.message}`)
@@ -49,9 +48,7 @@ export default function Home() {
 
   return (
     <Themed>
-      <Head>
-        <title>Start or join - Stop the Bus</title>
-      </Head>
+      <title>Start or join - Stop the Bus</title>
       <PageTitle />
       <H2>Join a game</H2>
       <form onSubmit={handleJoinGame}>

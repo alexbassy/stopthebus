@@ -1,5 +1,4 @@
 import React from 'react'
-import Head from 'next/head'
 import PageTitle from '@/components/PageTitle'
 import { ExternalLink, Spacing } from '@/components/visual'
 import styled from '@emotion/styled'
@@ -11,9 +10,7 @@ const StyledLink = styled.a`
 export default function Acknowledgements() {
   return (
     <div>
-      <Head>
-        <title>Acknowledgements - Stop The Bus</title>
-      </Head>
+      <title>Acknowledgements - Stop The Bus</title>
       <PageTitle />
       <Spacing y={1}>
         <StyledLink onClick={() => window.history.back()}>← Go Back</StyledLink>

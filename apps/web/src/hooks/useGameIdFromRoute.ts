@@ -1,7 +1,5 @@
-import { useRouter } from 'next/router'
+import { useParams } from 'wouter'
 
 export default function useGameIdFromRoute() {
-  const { query } = useRouter()
-  const { id } = query
-  return id as string
+  return useParams<{ id: string }>().id
 }

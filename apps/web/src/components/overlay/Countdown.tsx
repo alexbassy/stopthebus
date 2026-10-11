@@ -18,16 +18,16 @@ const overlayStates = {
 }
 
 const Countdown: React.FC<CountdownProps> = ({
-  from,
+  from = 3,
   onComplete,
-  interval,
+  interval = 1000,
   showAfter,
-  afterMessageDuration,
+  afterMessageDuration = 1500,
   onCancel,
 }) => {
   const [isOverlayShown, setIsOverlayShown] = useState<boolean>(true)
   const [isAfterMessageShown, setIsAfterMessageShown] = useState<boolean>(false)
-  const intervalRef = useRef<number>()
+  const intervalRef = useRef<number | undefined>(undefined)
   const [timeLeft, setTimeLeft] = useState<number>(from)
   const [playCountdown, { stop: stopCountdown }] = useSound('/sounds/countdown.mp3', {
     volume: 0.5,
@@ -105,12 +105,6 @@ const Countdown: React.FC<CountdownProps> = ({
       {onCancel && <Button onClick={handleCancel}>Cancel</Button>}
     </OverlayContainer>
   )
-}
-
-Countdown.defaultProps = {
-  from: 3,
-  interval: 1000,
-  afterMessageDuration: 1500,
 }
 
 export default Countdown

@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] `pnpm dev` runs the site with hot reload
-- [ ] Deep links such as `/game/abc` load through the SPA fallback
-- [ ] Page titles come from React's built-in head support, not `next/head`
+- [x] `pnpm dev` runs the site with hot reload
+- [x] Deep links such as `/game/abc` load through the SPA fallback
+- [x] Page titles come from React's built-in head support, not `next/head`
 - [ ] A push to main deploys, and the site loads on `stopthebus.bass.dev`
-- [ ] No Next dependency remains
+- [x] No Next dependency remains

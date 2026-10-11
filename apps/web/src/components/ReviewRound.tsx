@@ -1,5 +1,4 @@
 import React from 'react'
-import Head from 'next/head'
 import { Button } from './visual'
 import Dialog from './Dialog'
 import Countdown from './overlay/Countdown'
@@ -43,9 +42,7 @@ export default function ReviewRound() {
 
   return (
     <div>
-      <Head>
         <title>Review - Stop The Bus</title>
-      </Head>
 
       <ReviewHeader />
 

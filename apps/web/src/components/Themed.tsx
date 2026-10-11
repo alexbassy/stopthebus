@@ -1,5 +1,4 @@
 import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react'
-import Head from 'next/head'
 import { ThemeProvider } from '@emotion/react'
 import { Global } from '@emotion/react'
 import { globalStyles, Background, GameWrapper, Spacing, ExternalLink, HiddenLabel } from './visual'
@@ -65,9 +64,7 @@ const Themed: React.FC<ThemedProps> = ({ children }) => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Head>
-        <link href={theme.fonts.title.href} rel='stylesheet' />
-      </Head>
+      <link href={theme.fonts.title.href} rel='stylesheet' precedence='default' />
       <Global styles={globalStyles} />
       <Background>
         <GameWrapper>
@@ -83,7 +80,7 @@ const Themed: React.FC<ThemedProps> = ({ children }) => {
         </GameWrapper>
         <Footer yCentre xCentre>
           <Spacing y={1}>
-            @{process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 7) ?? 'local'}
+            @{import.meta.env.VITE_COMMIT_SHA}
             <Spacing l={0.5} r={0.5} inline>
               &bull;
             </Spacing>

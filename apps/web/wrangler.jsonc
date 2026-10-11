@@ -1,0 +1,7 @@
+{
+  "name": "stopthebus",
+  "compatibility_date": "2026-01-01",
+  "workers_dev": true,
+  "routes": [{ "pattern": "stopthebus.bass.dev", "custom_domain": true }],
+  "assets": { "not_found_handling": "single-page-application" }
+}

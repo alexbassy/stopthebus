@@ -6,7 +6,7 @@ import usePlayer from '@/hooks/usePlayer'
 import { JoinState, manager, useGameStateStage, useJoinState } from '@/hooks/database'
 import { GameStage } from '@stopthebus/shared'
 
-const EntryController: React.FC = (props) => {
+const EntryController: React.FC<React.PropsWithChildren> = (props) => {
   const gameId = useGameIdFromRoute()
   const [player] = usePlayer()
   const joinState = useJoinState()

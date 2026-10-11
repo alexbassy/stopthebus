@@ -13,7 +13,7 @@ const overlayStates = {
   hidden: { opacity: 0 },
 }
 
-const EndRoundOverlay: React.FC<EndRoundOverlayProps> = ({ text, duration }) => {
+const EndRoundOverlay: React.FC<EndRoundOverlayProps> = ({ text, duration = 1000 }) => {
   const [isOverlayShown, setIsOverlayShown] = useState<boolean>(true)
   const [playGameOver, { stop: stopGameOver }] = useSound('/sounds/game-over.mp3', {
     volume: 0.5,
@@ -52,10 +52,6 @@ const EndRoundOverlay: React.FC<EndRoundOverlayProps> = ({ text, duration }) => 
       </AnimatePresence>
     </OverlayContainer>
   )
-}
-
-EndRoundOverlay.defaultProps = {
-  duration: 1000,
 }
 
 export default EndRoundOverlay

@@ -13,7 +13,7 @@ const overlayStates = {
   hidden: { opacity: 0 },
 }
 
-const Base: React.FC<BaseOverlayProps> = ({ isShown, onShown, children }) => {
+const Base: React.FC<React.PropsWithChildren<BaseOverlayProps>> = ({ isShown, onShown, children }) => {
   return (
     <OverlayContainer
       variants={overlayStates}

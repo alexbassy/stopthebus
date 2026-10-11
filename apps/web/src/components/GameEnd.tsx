@@ -1,4 +1,3 @@
-import Head from 'next/head'
 import { Player as PlayerType } from '@stopthebus/shared'
 import { Item, List, ExternalLink, Spacing } from './visual'
 import Player from './Player'
@@ -22,9 +21,7 @@ export default function ReviewRound() {
 
   return (
     <div>
-      <Head>
         <title>Game Finished - Stop The Bus</title>
-      </Head>
       <List>
         {sortedScores.map(([playerID, score], index) => {
           const playerData = gamePlayers.find(({ id }) => id === playerID) as PlayerType
