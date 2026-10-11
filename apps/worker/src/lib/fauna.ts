@@ -1,4 +1,5 @@
-import { Game, GameResponse } from '@/typings/game'
+import { Game } from '@stopthebus/shared'
+import { GameResponse } from '@/typings/game'
 import { q, workerClient } from '../client'
 
 export function createGameQuery(data: Partial<Game>): Promise<GameResponse> {

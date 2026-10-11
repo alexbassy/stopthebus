@@ -1,4 +1,5 @@
-import { GameResponse, GameRound, GameStage } from '@/typings/game'
+import { GameStage, Round } from '@stopthebus/shared'
+import { GameResponse } from '@/typings/game'
 import { Handler } from 'worktop'
 import { getFaunaError } from '../fauna-error'
 import { workerClient, q } from '../client'
@@ -9,7 +10,7 @@ function getGame(id: string): Promise<GameResponse> {
   return workerClient.query<GameResponse>(q.Get(q.Match(q.Index('game_by_id'), id)))
 }
 
-function getNewRounds(previousRounds: GameRound[] | null): [GameRound | null, GameRound[] | null] {
+function getNewRounds(previousRounds: Round[] | null): [Round | null, Round[] | null] {
   const newPreviousRounds = [...(previousRounds || [])]
   const currentRound = newPreviousRounds.pop() || null
   return [currentRound, newPreviousRounds.length ? newPreviousRounds : null]
@@ -29,7 +30,7 @@ const handleCancel: Handler = async (req, res) => {
   if (!game) return res.send(httpStatuses.NOT_FOUND, { message: 'Game not found' })
 
   const currentStage = game?.state.stage
-  const wasStarted = currentStage === GameStage.ACTIVE
+  const wasStarted = currentStage === GameStage.active
 
   if (!wasStarted) {
     return res.send(httpStatuses.NOT_ACCEPTABLE, { message: 'The game has not been started' })
@@ -37,7 +38,7 @@ const handleCancel: Handler = async (req, res) => {
 
   try {
     const [currentRound, previousRounds] = getNewRounds(game.previousRounds)
-    const previousStage = !!currentRound ? GameStage.REVIEW : GameStage.PRE
+    const previousStage = !!currentRound ? GameStage.review : GameStage.pre
     await workerClient.query(
       q.Update(ref, {
         data: {
@@ -45,7 +46,7 @@ const handleCancel: Handler = async (req, res) => {
           previousRounds,
           currentRound,
         },
-      })
+      }),
     )
   } catch (e) {
     console.error(e)

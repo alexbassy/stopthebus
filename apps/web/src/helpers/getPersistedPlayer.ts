@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import { Player } from '@/typings/game'
+import { Player } from '@stopthebus/shared'
 import * as random from './random'
 import { COLOUR_VALUES } from '@/constants/colours'
 

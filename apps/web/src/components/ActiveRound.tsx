@@ -7,7 +7,7 @@ import React, {
   useLayoutEffect,
 } from 'react'
 import Head from 'next/head'
-import { RoundResults } from '@/typings/game'
+import { Answers } from '@stopthebus/shared'
 import { Button, Input, Item, List, Spacing } from './visual'
 import { Grid } from './Grid'
 import Lanes from './Lanes'
@@ -38,7 +38,7 @@ export default function ActiveRound() {
   const gameConfigCategories = useGameConfigCategories()
   const gameRoundLetter = useGameRoundLetter()
   const gameRoundEndingPlayer = useGameRoundEndingPlayer()
-  const [values, setValues] = useState<RoundResults>({})
+  const [values, setValues] = useState<Answers>({})
   const [lastFocusedCategory, setLastFocusedCategory] = useState<string>('')
   const [hasEnded, setHasEnded] = useState<boolean>(false)
   const formRef = useRef<HTMLFormElement>(null)
@@ -121,7 +121,7 @@ export default function ActiveRound() {
     let shouldEndRound = true
     if (!hasAnswerForAllCategories) {
       shouldEndRound = window.confirm(
-        `You haven’t filled in all answers. Are you sure you want to end the round?`
+        `You haven’t filled in all answers. Are you sure you want to end the round?`,
       )
     }
     if (!player) {

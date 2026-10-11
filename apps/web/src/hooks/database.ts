@@ -1,4 +1,5 @@
-import { FfbGame, FinalScores, Game, GameStage, Player, RoundResults } from '@/typings/game'
+import { Answers, FinalScores, Game, GameStage, Player } from '@stopthebus/shared'
+import { FfbGame } from '@/typings/game'
 import { bind, shareLatest } from '@react-rxjs/core'
 import { from, map, merge, Observable, of, ReplaySubject, Subject, throwError, timer } from 'rxjs'
 import {
@@ -87,7 +88,7 @@ class Manager {
     return this.joinState$.pipe(
       filter((state) => state === JoinState.CanJoin),
       mapTo(true),
-      distinctUntilChanged()
+      distinctUntilChanged(),
     )
   }
 
@@ -109,7 +110,7 @@ class Manager {
           this.gameRef$.next(data.ref)
           this.player$.next(getUserSession())
         }),
-        map((res) => res.data)
+        map((res) => res.data),
       )
     }
     return this.sharedGameRequest$
@@ -138,9 +139,9 @@ class Manager {
           errors.pipe(
             tap(() => this.isConnected$.next(false)),
             delayWhen(() => timer(2000)),
-            take(15)
-          )
-        )
+            take(15),
+          ),
+        ),
       )
     }
     return this.sharedGameSubscription$
@@ -151,7 +152,7 @@ class Manager {
     if (!this.sharedGame$) {
       this.sharedGame$ = merge(this.gameSubscription$, this.fetchGame$).pipe(
         filter(Boolean),
-        shareLatest()
+        shareLatest(),
       )
     }
     return this.sharedGame$
@@ -168,13 +169,13 @@ class Manager {
 
   async setGamePlayerName(playerId: string, newName: string) {
     return queryAsObservable(
-      q.Call(DatabaseFunctions.UpdatePlayerName, this.gameId, playerId, newName)
+      q.Call(DatabaseFunctions.UpdatePlayerName, this.gameId, playerId, newName),
     )
       .pipe(
         tap(() => {
           updatePersistedUserName(newName)
           this.player$.next(getUserSession())
-        })
+        }),
       )
       .subscribe()
   }
@@ -193,7 +194,7 @@ class Manager {
       .pipe(
         tap((response: any) => {
           if (response.errors) return throwError(response.errors)
-        })
+        }),
       )
       .subscribe()
   }
@@ -201,7 +202,7 @@ class Manager {
   get gameConfigCategories$() {
     return this.gameConfig$.pipe(
       map((config) => config.categories),
-      distinctUntilChanged((prev, current) => prev.join('') === current.join(''))
+      distinctUntilChanged((prev, current) => prev.join('') === current.join('')),
     )
   }
 
@@ -227,7 +228,7 @@ class Manager {
 
   setGameConfigAlliteration(alliteration: boolean) {
     return queryAsObservable(
-      q.Call(DatabaseFunctions.UpdateAlliteration, this.gameId, alliteration)
+      q.Call(DatabaseFunctions.UpdateAlliteration, this.gameId, alliteration),
     )
       .subscribe()
       .unsubscribe()
@@ -252,21 +253,21 @@ class Manager {
         // If the round is being started, delay the `stage` update to the view
         // layer so that the countdown can be shown
         const isStartingRound =
-          (oldStage === GameStage.PRE || oldStage === GameStage.REVIEW) &&
-          newStage === GameStage.ACTIVE
+          (oldStage === GameStage.pre || oldStage === GameStage.review) &&
+          newStage === GameStage.active
         if (isStartingRound) {
           return timer(4500).pipe(
             takeUntil(this.cancelTimer$),
-            map(() => newStage)
+            map(() => newStage),
           )
         }
 
         // If cancelling the start of the round, kill the timer
-        if (oldStage === GameStage.ACTIVE) {
+        if (oldStage === GameStage.active) {
           this.cancelTimer$.next(true)
         }
         return of(newStage)
-      })
+      }),
     )
   }
 
@@ -280,7 +281,7 @@ class Manager {
 
   endRound() {
     return this.gameRef$.pipe(
-      switchMap((ref) => from(browserClient.query(q.Call(DatabaseFunctions.EndRound, ref))))
+      switchMap((ref) => from(browserClient.query(q.Call(DatabaseFunctions.EndRound, ref)))),
     )
   }
 
@@ -292,7 +293,7 @@ class Manager {
   get gameRoundIndex$() {
     return this.gameRound$.pipe(
       map((round) => round?.index),
-      distinctUntilChanged()
+      distinctUntilChanged(),
     )
   }
 
@@ -313,23 +314,23 @@ class Manager {
   }
 
   get gameRoundEndingPlayer$() {
-    return this.gameRound$.pipe(map((round) => round?.endedByPlayer))
+    return this.gameRound$.pipe(map((round) => round?.stopperId))
   }
 
   // ROUND ANSWERS
 
-  getRoundAnswers(): Observable<RoundResults> {
+  getRoundAnswers(): Observable<Answers> {
     return this.gameRoundIndex$.pipe(
       withLatestFrom(this.player$),
       switchMap(([index, player]) =>
-        queryAsObservable(q.Call(DatabaseFunctions.GetRound, this.gameId, player.id, index!))
+        queryAsObservable(q.Call(DatabaseFunctions.GetRound, this.gameId, player.id, index!)),
       ),
-      map((response) => (response as any).data.answers as RoundResults),
+      map((response) => (response as any).data.answers as Answers),
       take(1),
       catchError((error) => {
         console.log(error)
-        return of({} as RoundResults)
-      })
+        return of({} as Answers)
+      }),
     )
   }
 
@@ -339,9 +340,9 @@ class Manager {
         withLatestFrom(this.player$),
         switchMap(([index, player]) =>
           queryAsObservable(
-            q.Call(DatabaseFunctions.SaveAnswers, this.gameId, player.id, index!, question, answer)
-          )
-        )
+            q.Call(DatabaseFunctions.SaveAnswers, this.gameId, player.id, index!, question, answer),
+          ),
+        ),
       )
       .subscribe()
       .unsubscribe()
@@ -352,9 +353,9 @@ class Manager {
       .pipe(
         switchMap((player) =>
           queryAsObservable(
-            q.Call(DatabaseFunctions.UpdateProgress, this.gameId, player.id, category)
-          )
-        )
+            q.Call(DatabaseFunctions.UpdateProgress, this.gameId, player.id, category),
+          ),
+        ),
       )
       .subscribe()
       .unsubscribe()
@@ -378,11 +379,11 @@ class Manager {
           categories.map((category) => [
             category,
             Object.fromEntries(
-              answerEntries.map(([player, playerAnswers]) => [player, playerAnswers[category]])
+              answerEntries.map(([player, playerAnswers]) => [player, playerAnswers[category]]),
             ),
-          ])
+          ]),
         )
-      })
+      }),
     )
   }
 
@@ -400,18 +401,18 @@ class Manager {
           categories.map((category) => [
             category,
             Object.fromEntries(
-              scoreEntries.map(([player, playerAnswers]) => [player, playerAnswers[category]])
+              scoreEntries.map(([player, playerAnswers]) => [player, playerAnswers[category]]),
             ),
-          ])
+          ]),
         )
-      })
+      }),
     )
   }
 
   // ROUND SCORES
   updateScore(playerId: string, category: string, newScore: number) {
     return queryAsObservable(
-      q.Call(DatabaseFunctions.UpdateScore, this.gameId, playerId, category, newScore)
+      q.Call(DatabaseFunctions.UpdateScore, this.gameId, playerId, category, newScore),
     )
       .subscribe()
       .unsubscribe()

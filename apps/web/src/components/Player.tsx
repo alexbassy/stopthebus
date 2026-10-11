@@ -1,5 +1,5 @@
 import React from 'react'
-import { Player as PlayerType } from '@/typings/game'
+import { Player as PlayerType } from '@stopthebus/shared'
 import styled from '@emotion/styled'
 import { Spacing, Lighter } from './visual'
 import usePlayer from '@/hooks/usePlayer'

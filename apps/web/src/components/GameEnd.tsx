@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { Player as PlayerType } from '@/typings/game'
+import { Player as PlayerType } from '@stopthebus/shared'
 import { Item, List, ExternalLink, Spacing } from './visual'
 import Player from './Player'
 import { APP_ROUTES } from '@/client/api-routes'

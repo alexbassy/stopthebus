@@ -1,9 +1,9 @@
 import { Handler } from 'worktop'
-import { Game, GameResponse, GameRound, GameStage } from '@/typings/game'
+import { Game, GameStage, Round, getFinalScores } from '@stopthebus/shared'
+import { GameResponse } from '@/typings/game'
 import { getFaunaError } from '../fauna-error'
 import { workerClient, q } from '../client'
 import { getGameName } from '@/helpers/random'
-import { getFinalScores } from '@/helpers/scores'
 import { getNextLetterForGame } from '@/helpers/letters'
 import httpStatuses from '@/constants/http-codes'
 import { errors } from 'faunadb'
@@ -14,14 +14,14 @@ function getGame(id: string): Promise<GameResponse> {
   return workerClient.query<GameResponse>(q.Get(q.Match(q.Index('game_by_id'), id)))
 }
 
-function getPreviouslyPlayedLetters(previousRounds: GameRound[] | null) {
+function getPreviouslyPlayedLetters(previousRounds: Round[] | null) {
   if (!previousRounds || !previousRounds.length) {
     return []
   }
   return previousRounds.map((round) => round.letter)
 }
 
-function getPreviousRounds(currentRound: GameRound | null, previousRounds: GameRound[] | null) {
+function getPreviousRounds(currentRound: Round | null, previousRounds: Round[] | null) {
   const newPreviousRounds = [...(previousRounds || [])]
   if (currentRound?.timeEnded) {
     newPreviousRounds.push(currentRound)
@@ -44,7 +44,7 @@ const handleStart: Handler = async (req, res) => {
   }
 
   const currentStage = game?.state.stage
-  const canStart = currentStage && [GameStage.PRE, GameStage.REVIEW].includes(currentStage)
+  const canStart = currentStage === GameStage.pre || currentStage === GameStage.review
 
   if (!canStart) {
     return res.send(400, { message: 'The game is either finished or already in play' })
@@ -58,7 +58,7 @@ const handleStart: Handler = async (req, res) => {
     let nextGameRequest: Promise<any> = Promise.resolve()
 
     if (isLastRound) {
-      const allRounds = [...(game.previousRounds || []), game.currentRound as GameRound]
+      const allRounds = [...(game.previousRounds || []), game.currentRound as Round]
       const finalScores = getFinalScores(allRounds)
 
       const nextGameId = getGameName()
@@ -71,7 +71,7 @@ const handleStart: Handler = async (req, res) => {
 
       newData = {
         state: {
-          stage: GameStage.FINISHED,
+          stage: GameStage.finished,
           finalScores,
           nextGameId,
         },
@@ -84,15 +84,15 @@ const handleStart: Handler = async (req, res) => {
 
       const previousRounds = getPreviousRounds(game.currentRound, game.previousRounds)
 
-      const newRound: GameRound = {
+      const newRound: Round = {
         index: previousRounds.length,
         letter: getNextLetterForGame(
           game.config.letters.split(''),
-          getPreviouslyPlayedLetters(previousRounds)
+          getPreviouslyPlayedLetters(previousRounds),
         ),
         timeStarted: startTime,
         timeEnded: null,
-        endedByPlayer: null,
+        stopperId: null,
         answers: {},
         scores: {},
         opponentProgress: null,
@@ -100,7 +100,7 @@ const handleStart: Handler = async (req, res) => {
 
       newData = {
         state: {
-          stage: GameStage.ACTIVE,
+          stage: GameStage.active,
         },
         previousRounds,
         currentRound: newRound,

@@ -1,15 +1,13 @@
 import { createTimer } from '../lib/timer'
-import { getInitialScores } from '@/helpers/scores'
 import {
-  DocumentRef,
-  FdbAllAnswersQuery,
-  GameResponse,
-  GameRound,
+  getInitialScores,
   GameStage,
   Player,
   Round,
+  RoundAnswers,
   Scores,
-} from '@/typings/game'
+} from '@stopthebus/shared'
+import { DocumentRef, FdbAllAnswersQuery, GameResponse } from '@/typings/game'
 import { Handler } from 'worktop'
 import { getFaunaError } from '../fauna-error'
 import { workerClient, q } from '../client'
@@ -20,11 +18,11 @@ function getGame(id: string): Promise<GameResponse> {
   return workerClient.query<GameResponse>(q.Get(q.Match(q.Index('game_by_id'), id)))
 }
 
-async function getAnswers(gameId: string, round: number): Promise<Round> {
+async function getAnswers(gameId: string, round: number): Promise<RoundAnswers> {
   const answers = await workerClient.query<FdbAllAnswersQuery>(
-    q.Call('get-answers-for-round', gameId, round)
+    q.Call('get-answers-for-round', gameId, round),
   )
-  return answers.data.reduce<Round>((accum, data) => {
+  return answers.data.reduce<RoundAnswers>((accum, data) => {
     accum[data.playerId] = data.answers
     return accum
   }, {})
@@ -38,18 +36,22 @@ async function deleteAnswers(gameId: string, round: number): Promise<void> {
 
 // Create a full answer record replacing missing entries with empty strings
 // This is because the `currentRound` needs to be overwritten, as fauna writes are partial
-function fillEmptyAnswers(answers: Round, categories: string[], players: Player[]): Round {
-  return players.reduce<Round>((accum, player) => {
+function fillEmptyAnswers(
+  answers: RoundAnswers,
+  categories: string[],
+  players: Player[],
+): RoundAnswers {
+  return players.reduce<RoundAnswers>((accum, player) => {
     accum[player.id] = Object.fromEntries(
-      categories.map((category) => [category, answers?.[player.id]?.[category] || ''])
+      categories.map((category) => [category, answers?.[player.id]?.[category] || '']),
     )
     return accum
   }, {})
 }
 
 function updateRoundEnd(roundRef: DocumentRef, player: Player) {
-  const endedRound: Partial<GameRound> = {
-    endedByPlayer: player.id,
+  const endedRound: Partial<Round> = {
+    stopperId: player.id,
     timeEnded: Date.now(),
   }
   return workerClient.query(q.Update(roundRef, { data: { currentRound: endedRound } }))
@@ -82,7 +84,7 @@ const handleEndRound: Handler = async (req, res) => {
   }
 
   const currentStage = game?.state.stage
-  const wasStarted = currentStage === GameStage.ACTIVE
+  const wasStarted = currentStage === GameStage.active
 
   if (!wasStarted || !game.currentRound) {
     return res.send(httpStatuses.NOT_ACCEPTABLE, { message: 'The game has not been started' })
@@ -95,7 +97,7 @@ const handleEndRound: Handler = async (req, res) => {
   // Wait for players to submit final answers
   await sleep(2000)
 
-  let answers: Round
+  let answers: RoundAnswers
   let scores: Scores
   try {
     answers = await getAnswers(id, game.currentRound.index)
@@ -118,7 +120,7 @@ const handleEndRound: Handler = async (req, res) => {
   }
 
   try {
-    const newCurrentRound: Partial<GameRound> = { answers, scores, opponentProgress: null }
+    const newCurrentRound: Partial<Round> = { answers, scores, opponentProgress: null }
 
     await deleteAnswers(game.id, game.currentRound.index)
 
@@ -126,10 +128,10 @@ const handleEndRound: Handler = async (req, res) => {
     await workerClient.query(
       q.Update(ref, {
         data: {
-          state: { stage: GameStage.REVIEW },
+          state: { stage: GameStage.review },
           currentRound: newCurrentRound,
         },
-      })
+      }),
     )
     timer.end('updateStage')
   } catch (e) {

@@ -1,5 +1,5 @@
 import httpStatuses from '@/constants/http-codes'
-import { Game, Player } from '@/typings/game'
+import { Game, Player } from '@stopthebus/shared'
 import API_ROUTES from './api-routes'
 
 export class RequestError extends Error {

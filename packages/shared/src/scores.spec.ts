@@ -1,13 +1,9 @@
+import { beforeEach, describe, expect, it } from 'vitest'
 import { scoreAnswer, getInitialScores, getFinalScores } from './scores'
-import { rounds } from './__fixtures__'
-import { GameConfig, Game, Player, Round } from '../typings/game'
+import { rounds } from './__fixtures__/rounds'
+import type { GameConfig, Player, RoundAnswers } from './schemas'
 
 describe('scoreAnswer()', () => {
-  const gameConfig = { alliteration: false } as GameConfig
-  const gameConfigWithAlliteration = {
-    alliteration: true,
-  } as GameConfig
-
   it('scores invalid answer', () => {
     expect(scoreAnswer(false, 'e', '')).toBe(0)
     expect(scoreAnswer(false, 'z', 'eggs')).toBe(0)
@@ -35,11 +31,10 @@ describe('scoreAnswer()', () => {
 })
 
 describe('getInitialScores()', () => {
-  let game: Game
   let config: GameConfig
   let players: Player[]
   let letter: string
-  let answers: Round
+  let answers: RoundAnswers
 
   beforeEach(() => {
     config = { alliteration: false, categories: ['animals', 'people'] } as GameConfig
@@ -67,6 +62,12 @@ describe('getInitialScores()', () => {
       one: { animals: 1, people: 2 },
       two: { animals: 1, people: 1 },
     })
+  })
+
+  it('scores one per answer without alliteration', () => {
+    answers.one.people = 'cady carson'
+    const results = getInitialScores(answers, letter, config, players)
+    expect(results.one.people).toBe(1)
   })
 
   it('excludes duplicates', () => {

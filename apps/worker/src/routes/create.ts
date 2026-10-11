@@ -1,4 +1,4 @@
-import { GameConfig, Player } from '@/typings/game'
+import { GameConfig, Player } from '@stopthebus/shared'
 import { Handler } from 'worktop'
 import { getFaunaError } from '../fauna-error'
 import httpStatuses from '@/constants/http-codes'

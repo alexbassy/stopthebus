@@ -1,6 +1,6 @@
-import { GameRound } from '@/typings/game'
+import type { Round } from '../schemas'
 
-export const rounds: GameRound[] = [
+export const rounds: Round[] = [
   {
     index: 0,
     timeStarted: 1592866015263,
@@ -27,7 +27,7 @@ export const rounds: GameRound[] = [
         'a word in german': 0,
       },
     },
-    endedByPlayer: '8c86d893-9b55-4019-b8bf-a1c92daa4c64',
+    stopperId: '8c86d893-9b55-4019-b8bf-a1c92daa4c64',
     opponentProgress: {},
   },
   {
@@ -58,7 +58,7 @@ export const rounds: GameRound[] = [
         'a word in german': 1,
       },
     },
-    endedByPlayer: '06c245a4-7b87-43fe-bb55-c3b3607fa3bd',
+    stopperId: '06c245a4-7b87-43fe-bb55-c3b3607fa3bd',
     opponentProgress: {},
   },
   {
@@ -89,7 +89,7 @@ export const rounds: GameRound[] = [
         'a word in german': 0,
       },
     },
-    endedByPlayer: '06c245a4-7b87-43fe-bb55-c3b3607fa3bd',
+    stopperId: '06c245a4-7b87-43fe-bb55-c3b3607fa3bd',
     opponentProgress: {},
   },
 ]

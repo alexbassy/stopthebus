@@ -1,5 +1,5 @@
 import { useGameStateStage, useIsConnected } from '@/hooks/database'
-import { GameStage } from '@/typings/game'
+import { GameStage } from '@stopthebus/shared'
 import NewGame from '@/components/NewGame'
 import ActiveRound from '@/components/ActiveRound'
 import ReviewRound from '@/components/ReviewRound'
@@ -15,23 +15,23 @@ const GameViewController: React.FC = () => {
   let Component
 
   switch (gameStateStage) {
-    case GameStage.ACTIVE:
+    case GameStage.active:
       Component = ActiveRound
       break
-    case GameStage.REVIEW:
+    case GameStage.review:
       Component = ReviewRound
       break
-    case GameStage.FINISHED:
+    case GameStage.finished:
       Component = GameEnd
       break
-    case GameStage.PRE:
+    case GameStage.pre:
       Component = NewGame
   }
 
   return (
     <>
-      <PageTitle isInGame={gameStateStage !== GameStage.PRE} />
-      <GameName isShareable={gameStateStage === GameStage.PRE} />
+      <PageTitle isInGame={gameStateStage !== GameStage.pre} />
+      <GameName isShareable={gameStateStage === GameStage.pre} />
       {/* <p>Connected: {isConnected ? 'Yes' : 'no'}</p> */}
       <EntryController>{Component ? <Component /> : null}</EntryController>
     </>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { getUserSession, updatePersistedUserName } from '@/helpers/getPersistedPlayer'
-import { Player } from '@/typings/game'
+import { Player } from '@stopthebus/shared'
 import { manager, useGamePlayer } from '@/hooks/database'
 
 function usePlayer(): [Player | null, (playerName: string) => void] {
@@ -15,7 +15,7 @@ function usePlayer(): [Player | null, (playerName: string) => void] {
       if (!player?.id) return
       manager.setGamePlayerName(player.id, playerName)
     },
-    [player?.id]
+    [player?.id],
   )
 
   return [player, updatePlayerName]

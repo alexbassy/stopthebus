@@ -4,7 +4,7 @@ import { joinGameWithID, leaveGameWithID, RequestError } from '@/client/rest'
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 import usePlayer from '@/hooks/usePlayer'
 import { JoinState, manager, useGameStateStage, useJoinState } from '@/hooks/database'
-import { GameStage } from '@/typings/game'
+import { GameStage } from '@stopthebus/shared'
 
 const EntryController: React.FC = (props) => {
   const gameId = useGameIdFromRoute()
@@ -13,7 +13,7 @@ const EntryController: React.FC = (props) => {
   const gameStateStage = useGameStateStage()
   const [hasJoined, setHasJoined] = useState<boolean>(false)
   const [errorMessage, setErrorMessage] = useState<string>()
-  const hasGameStarted = gameStateStage !== null && gameStateStage !== GameStage.PRE
+  const hasGameStarted = gameStateStage !== null && gameStateStage !== GameStage.pre
 
   const joinGame = useCallback(async () => {
     if (!gameId || !player || joinState !== JoinState.NotRequested) return
@@ -38,7 +38,7 @@ const EntryController: React.FC = (props) => {
     return fromEvent(document, 'visibilitychange').pipe(
       startWith(false),
       map(() => document.visibilityState === 'hidden'),
-      distinctUntilChanged()
+      distinctUntilChanged(),
     )
   }, [hasGameStarted])
 

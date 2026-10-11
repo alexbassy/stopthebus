@@ -7,7 +7,7 @@ import PageTitle from '@/components/PageTitle'
 import FormControl from '@/components/FormControl'
 import Themed from '@/components/Themed'
 import { createGameWithID } from '@/client/rest'
-import { Player } from '@/typings/game'
+import { Player } from '@stopthebus/shared'
 import { getUserSession } from '@/helpers/getPersistedPlayer'
 import { APP_ROUTES } from '@/client/api-routes'
 

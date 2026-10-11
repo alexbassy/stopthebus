@@ -1,5 +1,6 @@
 import { Handler } from 'worktop'
-import { GameResponse, GameStage, Player } from '@/typings/game'
+import { GameStage, Player } from '@stopthebus/shared'
+import { GameResponse } from '@/typings/game'
 import httpStatuses from '@/constants/http-codes'
 import { getFaunaError } from '../fauna-error'
 import { workerClient, q } from '../client'
@@ -42,7 +43,7 @@ const handleJoinOrLeave: Handler = async (req, res) => {
 
   const isInGame = players.find((gamePlayer) => gamePlayer.id === player.id)
 
-  if (!isInGame && data.state.stage !== GameStage.PRE) {
+  if (!isInGame && data.state.stage !== GameStage.pre) {
     return res.send(httpStatuses.FORBIDDEN)
   }
 
