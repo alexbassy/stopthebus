@@ -2,7 +2,7 @@
 
 **What to build:** Next is removed and the web app becomes Vite, React and wouter, built by the Cloudflare Vite plugin into one Worker with Static Assets. The home page, acknowledgements page and an empty game route render, with themes, sounds and emotion styling intact. It deploys through Workers Builds and is served at `stopthebus.bass.dev`, with `workers.dev` as the fallback while DNS is set up.
 
-**Blocked by:** 01
+**Blocked by:** 01 (done)
 
 **Status:** ready-for-agent
 

@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] `pnpm install`, `pnpm build`, `pnpm lint` and `pnpm test` run from the root through Turborepo
 - [x] The existing scoring test passes under Vitest

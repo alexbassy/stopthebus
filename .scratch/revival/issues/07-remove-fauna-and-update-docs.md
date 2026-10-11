@@ -1,8 +1,8 @@
-# 06: Remove Fauna and update docs
+# 07: Remove Fauna and update docs
 
 **What to build:** Everything left over from Fauna and the old deploy setup is deleted, and the project documents describe the new setup.
 
-**Blocked by:** 04, 05
+**Blocked by:** 05, 06
 
 **Status:** ready-for-agent
 
