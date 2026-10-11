@@ -1,11 +1,11 @@
 import { DurableObject } from 'cloudflare:workers'
 import type { Game as GameState, ServerMessage } from '@stopthebus/shared'
-import { GameRoom, type Connection } from './game-room'
+import { GameRules, type Connection } from './game-rules'
 
 // One per game. Sockets use the hibernation API, so the player a socket is
 // bound to lives in its attachment and survives the object being evicted.
 export class Game extends DurableObject {
-  private room = new GameRoom(
+  private rules = new GameRules(
     this.ctx.id.name ?? '',
     {
       get: () => this.ctx.storage.get<GameState>('game'),
@@ -29,7 +29,7 @@ export class Game extends DurableObject {
       playerId: ws.deserializeAttachment()?.playerId,
       send: (message: ServerMessage) => ws.send(JSON.stringify(message)),
     }
-    await this.room.onMessage(conn, data)
+    await this.rules.onMessage(conn, data)
     ws.serializeAttachment({ playerId: conn.playerId })
   }
 }

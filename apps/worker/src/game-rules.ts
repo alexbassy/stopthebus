@@ -22,7 +22,7 @@ export interface Connection {
 
 // The game's rules, free of Cloudflare APIs so tests can drive it directly.
 // The Durable Object wires it to real storage and sockets.
-export class GameRoom {
+export class GameRules {
   constructor(
     private id: string,
     private store: Store,
@@ -79,6 +79,7 @@ export class GameRoom {
       }
       case 'rename': {
         if (!conn.playerId) return fail('forbidden', 'Join the game first')
+        if (!game.players.some((p) => p.id === conn.playerId)) return
         const players = game.players.map((p) =>
           p.id === conn.playerId ? { ...p, name: msg.name } : p,
         )

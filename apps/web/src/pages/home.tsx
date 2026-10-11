@@ -38,7 +38,7 @@ export default function Home() {
     }
 
     try {
-      await createGame(newGameID, player)
+      await createGame(newGameID.trim().toLowerCase(), player)
       navigate(APP_ROUTES.game(newGameID))
     } catch (error: any) {
       console.error('Something went wrong while creating a game', error)

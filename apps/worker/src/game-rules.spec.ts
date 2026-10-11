@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Game, ServerMessage } from '@stopthebus/shared'
-import { GameRoom, type Connection } from './game-room'
+import { GameRules, type Connection } from './game-rules'
 
 const alex = { id: 'p1', name: 'Alex', colour: '#f00' }
 const sam = { id: 'p2', name: 'Sam', colour: '#0f0' }
@@ -8,7 +8,7 @@ const sam = { id: 'p2', name: 'Sam', colour: '#0f0' }
 function setup() {
   let stored: Game | undefined
   const broadcasts: ServerMessage[] = []
-  const room = new GameRoom(
+  const room = new GameRules(
     'happy-cat-12',
     { get: async () => stored, put: async (g) => void (stored = g) },
     (m) => broadcasts.push(m),
@@ -23,7 +23,7 @@ function setup() {
   return { room, connect, broadcasts, game: () => stored, seed }
 }
 
-describe('GameRoom', () => {
+describe('GameRules', () => {
   it('creates a game in the pre stage with the creator as its only player', async () => {
     const { connect, broadcasts, game } = setup()
     await connect().send({ type: 'create', player: alex })
@@ -97,6 +97,17 @@ describe('GameRoom', () => {
     await s.send({ type: 'join', player: sam })
     await s.send({ type: 'rename', name: 'Samantha' })
     expect(game()?.players).toEqual([alex, { ...sam, name: 'Samantha' }])
+  })
+
+  it('ignores a rename from a player who has left', async () => {
+    const { connect, broadcasts } = setup()
+    await connect().send({ type: 'create', player: alex })
+    const s = connect()
+    await s.send({ type: 'join', player: sam })
+    await s.send({ type: 'leave' })
+    const before = broadcasts.length
+    await s.send({ type: 'rename', name: 'Ghost' })
+    expect(broadcasts).toHaveLength(before)
   })
 
   it('rejects bad messages and edits from the wrong socket without throwing', async () => {
