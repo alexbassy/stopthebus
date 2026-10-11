@@ -1,5 +1,13 @@
 import { bind, shareLatest } from '@react-rxjs/core'
-import { Answers, FinalScores, Game, GameStage, Player, ServerMessage } from '@stopthebus/shared'
+import {
+  Answers,
+  FinalScores,
+  Game,
+  GameStage,
+  Player,
+  Round,
+  ServerMessage,
+} from '@stopthebus/shared'
 import { BehaviorSubject, Observable, ReplaySubject, Subject, map, of, timer } from 'rxjs'
 import {
   distinctUntilChanged,
@@ -203,11 +211,10 @@ class Manager {
     return this.game$.pipe(map((game) => game.currentRound))
   }
 
-  get gameRoundIndex$() {
-    return this.gameRound$.pipe(
-      map((round) => round?.index),
-      distinctUntilChanged(),
-    )
+  // The last round that was stopped. Unlike `gameRound$` it keeps pointing at the
+  // round under review while the next one counts down.
+  get reviewedRound$() {
+    return this.gameRound$.pipe(filter((round): round is Round => !!round?.timeEnded))
   }
 
   get gameRoundTimeStarted$() {
@@ -216,10 +223,6 @@ class Manager {
 
   get gameRoundTimeEnded$() {
     return this.gameRound$.pipe(map((round) => round?.timeEnded ?? 0))
-  }
-
-  get gameRoundDuration$() {
-    return this.gameRound$.pipe(map((round) => (round?.timeEnded ?? 0) - (round?.timeStarted ?? 0)))
   }
 
   get gameRoundLetter$() {
@@ -269,6 +272,9 @@ class Manager {
           ]),
         )
       }),
+      // A round that has just started has no answers or scores yet. Emit nothing
+      // for it, so the review stays on screen with its countdown to the next round.
+      filter(Boolean),
     )
   }
 
@@ -292,6 +298,9 @@ class Manager {
           ]),
         )
       }),
+      // A round that has just started has no answers or scores yet. Emit nothing
+      // for it, so the review stays on screen with its countdown to the next round.
+      filter(Boolean),
     )
   }
 
@@ -325,9 +334,8 @@ export const [useGameStateNextGameId] = bind(() => manager.gameStateNextGameId$,
 // GAME ROUNDS
 export const [useGameRoundTimeStarted] = bind(() => manager.gameRoundTimeStarted$, 0)
 export const [useGameRoundTimeEnded] = bind(() => manager.gameRoundTimeEnded$, 0)
-export const [useGameRoundDuration] = bind(() => manager.gameRoundDuration$, 0)
+export const [useReviewedRound] = bind(() => manager.reviewedRound$, null)
 export const [useGameRoundLetter] = bind(() => manager.gameRoundLetter$, null)
-export const [useGameRoundIndex] = bind(() => manager.gameRoundIndex$, 0)
 export const [useGameRoundEndingPlayer] = bind(() => manager.gameRoundEndingPlayer$, null)
 export const [useGameRoundAllAnswers] = bind(() => manager.gameRoundAllAnswers$, null)
 export const [useGameRoundAnswersByCategory] = bind(() => manager.gameRoundAnswersByCategory$, null)

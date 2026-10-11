@@ -25,7 +25,11 @@ const EntryController: React.FC<React.PropsWithChildren> = (props) => {
     return () => document.removeEventListener('visibilitychange', onVisibilityChange)
   }, [player, hasGameStarted])
 
-  if (error) {
+  const isInGame = players.some((p) => p.id === player?.id)
+
+  // Joining failed, or the game has expired. Any other error, such as a message
+  // the server didn't accept, shouldn't take the game away from a player in it.
+  if (error && (!isInGame || error.code === 'notFound')) {
     return (
       <>
         <p>{error.code === 'notFound' ? 'We couldn’t find a game by that name.' : error.message}</p>
@@ -34,7 +38,7 @@ const EntryController: React.FC<React.PropsWithChildren> = (props) => {
     )
   }
 
-  if (!players.some((p) => p.id === player?.id)) {
+  if (!isInGame) {
     return <p>Connecting…</p>
   }
 

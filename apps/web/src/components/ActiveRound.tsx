@@ -91,7 +91,11 @@ export default function ActiveRound() {
     }
 
     setHasEnded(true)
-    manager.setRoundAnswer(lastFocusedCategory, values[lastFocusedCategory])
+    // Send the answer being typed when the round was stopped, if there is one
+    const lastAnswer = values[lastFocusedCategory]
+    if (lastFocusedCategory && lastAnswer !== undefined) {
+      manager.setRoundAnswer(lastFocusedCategory, lastAnswer)
+    }
   }, [gameRoundEndingPlayer, hasEnded, values, lastFocusedCategory])
 
   const handleChange = (category: string) => (event: ChangeEvent<HTMLInputElement>) => {

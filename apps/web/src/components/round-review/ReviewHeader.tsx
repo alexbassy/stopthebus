@@ -1,28 +1,21 @@
-import {
-  useGameConfigRounds,
-  useGamePlayers,
-  useGameRoundDuration,
-  useGameRoundEndingPlayer,
-  useGameRoundIndex,
-} from '@/hooks/database'
+import { useGameConfigRounds, useGamePlayers, useReviewedRound } from '@/hooks/database'
 
 const ReviewHeader: React.FC = () => {
-  const duration = useGameRoundDuration()
-  const roundEndingPlayer = useGameRoundEndingPlayer()
+  const round = useReviewedRound()
   const players = useGamePlayers()
   const numRounds = useGameConfigRounds()
-  const roundIndex = useGameRoundIndex()
 
-  const playerWhoEndedRound =
-    players.find(({ id }) => id === roundEndingPlayer)?.name || roundEndingPlayer
+  const duration = (round?.timeEnded ?? 0) - (round?.timeStarted ?? 0)
+  const stopperId = round?.stopperId
+  const stopper = players.find(({ id }) => id === stopperId)?.name || stopperId
 
   return (
     <>
       <h2>
-        End of round {(roundIndex || 0) + 1}/{numRounds}
+        End of round {(round?.index ?? 0) + 1}/{numRounds}
       </h2>
       <p>
-        Round finished by <strong>{playerWhoEndedRound}</strong> in {Math.floor(duration / 1000)}s
+        Round finished by <strong>{stopper}</strong> in {Math.floor(duration / 1000)}s
       </p>
     </>
   )

@@ -7,10 +7,10 @@ import {
   useGameConfigCategories,
   useGameConfigRounds,
   useGameRoundAnswersByCategory,
-  useGameRoundIndex,
   useGameRoundLetter,
   useGameRoundScoresByPlayer,
   useGameRoundTimeStarted,
+  useReviewedRound,
 } from '@/hooks/database'
 
 import Dialog from './Dialog'
@@ -24,7 +24,7 @@ export default function ReviewRound() {
   const gameRoundLetter = useGameRoundLetter()
   const categories = useGameConfigCategories()
   const numRounds = useGameConfigRounds()
-  const roundIndex = useGameRoundIndex()
+  const reviewedRound = useReviewedRound()
 
   if (!gameAnswers || !gameScores) {
     return null
@@ -38,7 +38,7 @@ export default function ReviewRound() {
     manager.cancelStart()
   }
 
-  const isLastRound = (roundIndex || 0) + 1 === numRounds
+  const isLastRound = (reviewedRound?.index ?? 0) + 1 === numRounds
 
   return (
     <div>
