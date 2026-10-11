@@ -1,7 +1,7 @@
 import type { Game, GameConfig, RoundAnswers, ServerMessage } from '@stopthebus/shared'
 import { describe, expect, it } from 'vitest'
 
-import { type Connection, GameRules, STOP_GRACE_MS } from './game-rules'
+import { type Connection, EXPIRY_MS, GameRules, STOP_GRACE_MS } from './game-rules'
 
 const alex = { id: 'p1', name: 'Alex', colour: '#f00' }
 const sam = { id: 'p2', name: 'Sam', colour: '#0f0' }
@@ -9,6 +9,7 @@ const sam = { id: 'p2', name: 'Sam', colour: '#0f0' }
 function setup() {
   let stored: Game | undefined
   let answers: RoundAnswers | undefined
+  let activity: number | undefined
   const broadcasts: ServerMessage[] = []
   const clock = { now: 1_000_000 }
   const created: { id: string; config: GameConfig }[] = []
@@ -20,6 +21,13 @@ function setup() {
       put: async (g) => void (stored = g),
       getAnswers: async () => answers,
       putAnswers: async (a) => void (answers = a),
+      getActivity: async () => activity,
+      putActivity: async (t) => void (activity = t),
+      clear: async () => {
+        stored = undefined
+        answers = undefined
+        activity = undefined
+      },
     },
     (m) => broadcasts.push(m),
     {
@@ -301,7 +309,7 @@ describe('stop and review', () => {
 
     clock.now += 60_000
     await a.send({ type: 'stop' })
-    expect(alarms).toEqual([clock.now + STOP_GRACE_MS])
+    expect(alarms.at(-1)).toBe(clock.now + STOP_GRACE_MS)
     expect(game()?.currentRound).toMatchObject({ stopperId: 'p1', timeEnded: clock.now })
     expect(game()?.state.stage).toBe('active')
 
@@ -324,7 +332,7 @@ describe('stop and review', () => {
     clock.now += STOP_GRACE_MS - 1
     await room.onAlarm()
     expect(game()?.state.stage).toBe('active')
-    expect(alarms).toHaveLength(2)
+    expect(alarms.at(-1)).toBe(clock.now - (STOP_GRACE_MS - 1) + STOP_GRACE_MS)
     await room.onAlarm() // a stray alarm outside a Stop does nothing
     clock.now += 1
     await room.onAlarm()
@@ -418,5 +426,58 @@ describe('finishing', () => {
     })
     await room.createWithConfig({ categories: [], numRounds: 1, letters: '', alliteration: false })
     expect(game()?.config.letters).toBe('ab')
+  })
+})
+
+describe('expiry', () => {
+  it('deletes the game after a day without activity, and then it is not found', async () => {
+    const { connect, game, room, clock, alarms } = await lobby()
+    const last = clock.now
+    expect(alarms.at(-1)).toBe(last + EXPIRY_MS)
+
+    clock.now = last + EXPIRY_MS
+    await room.onAlarm()
+    expect(game()).toBeUndefined()
+
+    const late = connect()
+    await late.send({ type: 'join', player: alex })
+    expect(late.sent[0]).toMatchObject({ type: 'error', code: 'notFound' })
+  })
+
+  it('is pushed back by every message', async () => {
+    const { a, game, room, clock, alarms } = await lobby()
+    const start = clock.now
+    clock.now += EXPIRY_MS - 1000
+    await a.send({ type: 'toggleCategory', category: 'City' })
+    expect(alarms.at(-1)).toBe(clock.now + EXPIRY_MS)
+
+    // The earlier alarm fires now: the game is not idle yet, so it survives
+    clock.now = start + EXPIRY_MS
+    await room.onAlarm()
+    expect(game()).toBeDefined()
+    expect(alarms.at(-1)).toBe(clock.now - 1000 + EXPIRY_MS)
+  })
+
+  it('does not set an alarm for a game that does not exist', async () => {
+    const { connect, alarms } = setup()
+    await connect().send({ type: 'join', player: alex })
+    expect(alarms).toHaveLength(0)
+  })
+
+  it('keeps the Stop deadline ahead of expiry, then goes back to expiry', async () => {
+    const { a, game, room, clock, alarms } = await lobby()
+    await a.send({ type: 'start' })
+    await a.send({ type: 'stop' })
+    expect(alarms.at(-1)).toBe(clock.now + STOP_GRACE_MS)
+    clock.now += STOP_GRACE_MS
+    await room.onAlarm()
+    expect(game()?.state.stage).toBe('review')
+    expect(alarms.at(-1)).toBe(clock.now - STOP_GRACE_MS + EXPIRY_MS)
+  })
+
+  it('arms an alarm for a rematch game too', async () => {
+    const { room, clock, alarms } = setup()
+    await room.createWithConfig({ categories: [], numRounds: 1, letters: 'a', alliteration: false })
+    expect(alarms.at(-1)).toBe(clock.now + EXPIRY_MS)
   })
 })

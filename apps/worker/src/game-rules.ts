@@ -21,6 +21,11 @@ export interface Store {
   // we broadcast can never include them
   getAnswers(): Promise<RoundAnswers | undefined>
   putAnswers(answers: RoundAnswers): Promise<void>
+  // When the game last received a message
+  getActivity(): Promise<number | undefined>
+  putActivity(at: number): Promise<void>
+  // Deletes everything the game has stored
+  clear(): Promise<void>
 }
 
 // What the rules need from the outside world
@@ -44,6 +49,8 @@ export interface Connection {
 export const START_DELAY_MS = 3500
 // How long the other players have to get their final answers in after a Stop
 export const STOP_GRACE_MS = 2000
+// A game with no activity for this long is deleted
+export const EXPIRY_MS = 24 * 60 * 60 * 1000
 
 // The game's rules, free of Cloudflare APIs so tests can drive it directly.
 // The Durable Object wires it to real storage and sockets.
@@ -56,6 +63,11 @@ export class GameRules {
   ) {}
 
   async onMessage(conn: Connection, raw: string) {
+    await this.handle(conn, raw)
+    await this.touch()
+  }
+
+  private async handle(conn: Connection, raw: string) {
     const fail = (code: ErrorCode, message: string) => conn.send({ type: 'error', code, message })
 
     let json: unknown
@@ -214,10 +226,9 @@ export class GameRules {
           return fail('refused', 'No round is in play')
         }
         const timeEnded = this.env.now()
-        await save({ ...game, currentRound: { ...round, stopperId: me, timeEnded } })
-        // The other players get a moment to send their final answers. An alarm
-        // rather than a timer, so a restart can't strand the game mid-Stop.
-        return this.env.setAlarm(timeEnded + STOP_GRACE_MS)
+        // The other players get a moment to send their final answers; `arm`
+        // sets an alarm for the end of it, so a restart can't strand the game
+        return save({ ...game, currentRound: { ...round, stopperId: me, timeEnded } })
       }
       case 'setScore': {
         if (stage !== GameStage.review || !round) return fail('refused', 'Not in review')
@@ -238,19 +249,51 @@ export class GameRules {
     this.broadcast({ type: 'state', game })
   }
 
-  // Called when the alarm fires. Once the grace window after a Stop is over,
-  // scores the round and moves the game to review. Reads the game afresh,
-  // because answers keep arriving during the window.
-  // ponytail: ticket 06's expiry must share this single alarm, so it should
-  // re-arm the Stop deadline rather than overwrite it.
+  // Records activity and pushes the expiry back. Games that don't exist have
+  // nothing to expire, so merely connecting to a random name sets no alarm.
+  private async touch() {
+    const game = await this.store.get()
+    if (!game) return
+    const now = this.env.now()
+    await this.store.putActivity(now)
+    await this.arm(game, now)
+  }
+
+  // There is one alarm per Durable Object, so it is set to whichever comes
+  // first: the end of the grace window after a Stop, or the game expiring.
+  private async arm(game: Game, lastActivity: number) {
+    const round = game.currentRound
+    const stopDeadline =
+      game.state.stage === GameStage.active && round?.timeEnded
+        ? round.timeEnded + STOP_GRACE_MS
+        : Infinity
+    await this.env.setAlarm(Math.min(lastActivity + EXPIRY_MS, stopDeadline))
+  }
+
+  // Called when the alarm fires: deletes an idle game, or once the grace window
+  // after a Stop is over, scores the round and moves the game to review. Reads
+  // the game afresh, because answers keep arriving during the window.
   async onAlarm() {
     const game = await this.store.get()
-    const round = game?.currentRound
-    if (!game || !round?.timeEnded || game.state.stage !== GameStage.active) return
+    if (!game) return
 
-    const due = round.timeEnded + STOP_GRACE_MS
-    if (this.env.now() < due) return this.env.setAlarm(due)
+    const now = this.env.now()
+    const lastActivity = (await this.store.getActivity()) ?? now
+    if (now >= lastActivity + EXPIRY_MS) return this.store.clear()
 
+    const round = game.currentRound
+    if (
+      game.state.stage === GameStage.active &&
+      round?.timeEnded &&
+      now >= round.timeEnded + STOP_GRACE_MS
+    ) {
+      await this.review(game, round)
+    }
+    // Not due yet, or nothing left to do but wait for expiry
+    await this.arm((await this.store.get()) ?? game, lastActivity)
+  }
+
+  private async review(game: Game, round: Round) {
     const saved = (await this.store.getAnswers()) ?? {}
     const { categories } = game.config
     // Missing answers become empty strings
@@ -294,6 +337,7 @@ export class GameRules {
   async createWithConfig(config: GameConfig) {
     if (await this.store.get()) return
     await this.store.put(newGame(this.id, config, []))
+    await this.touch()
   }
 }
 

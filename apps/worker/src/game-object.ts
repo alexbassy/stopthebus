@@ -16,6 +16,9 @@ export class Game extends DurableObject<Bindings> {
       put: (game) => this.ctx.storage.put('game', game),
       getAnswers: () => this.ctx.storage.get<RoundAnswers>('answers'),
       putAnswers: (answers) => this.ctx.storage.put('answers', answers),
+      getActivity: () => this.ctx.storage.get<number>('activity'),
+      putActivity: (at) => this.ctx.storage.put('activity', at),
+      clear: () => this.ctx.storage.deleteAll(),
     },
     (message) => this.ctx.getWebSockets().forEach((ws) => ws.send(JSON.stringify(message))),
     {
