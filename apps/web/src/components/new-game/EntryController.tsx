@@ -1,66 +1,39 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { distinctUntilChanged, fromEvent, map, of, startWith } from 'rxjs'
-import { joinGameWithID, leaveGameWithID, RequestError } from '@/client/rest'
-import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
+import React, { useEffect } from 'react'
+import { Link } from 'wouter'
 import usePlayer from '@/hooks/usePlayer'
-import { JoinState, manager, useGameStateStage, useJoinState } from '@/hooks/database'
+import { manager, useGameError, useGamePlayers, useGameStateStage } from '@/hooks/database'
 import { GameStage } from '@stopthebus/shared'
 
+// Shows the game once the server has confirmed this player is in it, or says why not
 const EntryController: React.FC<React.PropsWithChildren> = (props) => {
-  const gameId = useGameIdFromRoute()
   const [player] = usePlayer()
-  const joinState = useJoinState()
+  const error = useGameError()
+  const players = useGamePlayers()
   const gameStateStage = useGameStateStage()
-  const [hasJoined, setHasJoined] = useState<boolean>(false)
-  const [errorMessage, setErrorMessage] = useState<string>()
   const hasGameStarted = gameStateStage !== null && gameStateStage !== GameStage.pre
 
-  const joinGame = useCallback(async () => {
-    if (!gameId || !player || joinState !== JoinState.NotRequested) return
-    try {
-      await joinGameWithID(gameId, player)
-      manager.setJoinState(JoinState.CanJoin)
-      setHasJoined(true)
-    } catch (error) {
-      setErrorMessage(error instanceof RequestError ? error.message : 'Something went wrong')
-    }
-  }, [gameId, joinState, player])
-
-  const leaveGame = useCallback(() => {
-    if (joinState !== JoinState.CanJoin || !player || hasGameStarted) return
-    leaveGameWithID(gameId, player)
-    setHasJoined(false)
-    manager.setJoinState(JoinState.NotRequested)
-  }, [gameId, joinState, player, hasGameStarted])
-
-  const visibility$ = useMemo(() => {
-    if (hasGameStarted || typeof document === 'undefined') return of(true)
-    return fromEvent(document, 'visibilitychange').pipe(
-      startWith(false),
-      map(() => document.visibilityState === 'hidden'),
-      distinctUntilChanged(),
-    )
-  }, [hasGameStarted])
-
-  // Join/leave game when visibility changes
+  // Leave while the tab is hidden so the player list stays accurate. Once play
+  // has begun players stay in the game so they can come back.
   useEffect(() => {
-    // Do not leave game when in play, so it is possible to reenter
-    if (!player || hasGameStarted || typeof document === 'undefined') return
-
-    const onVisibilityChange = visibility$.subscribe((isHidden) => {
-      isHidden ? leaveGame() : joinGame()
-    })
-
-    return () => {
-      onVisibilityChange.unsubscribe()
+    if (!player || hasGameStarted) return
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') manager.leave()
+      else manager.join()
     }
-  }, [joinGame, leaveGame, hasGameStarted, visibility$, player])
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [player, hasGameStarted])
 
-  if (errorMessage) {
-    return <p>{errorMessage}</p>
+  if (error) {
+    return (
+      <>
+        <p>{error.code === 'notFound' ? 'We couldn’t find a game by that name.' : error.message}</p>
+        <Link href='/'>Back to the start</Link>
+      </>
+    )
   }
 
-  if (!hasJoined) {
+  if (!players.some((p) => p.id === player?.id)) {
     return <p>Connecting…</p>
   }
 

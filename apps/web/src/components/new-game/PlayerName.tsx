@@ -1,4 +1,3 @@
-import { manager } from '@/hooks/database'
 import { Button, Description, Input, Spacing } from '@/components/visual'
 import FormControl from '@/components/FormControl'
 import { FormEventHandler, useState } from 'react'
@@ -11,10 +10,8 @@ const PlayerName: React.FC = () => {
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()
     if (!player?.id) return
-    manager.setGamePlayerName(player.id, username).then(() => {
-      updatePlayerName(username)
-      setUsername('')
-    })
+    updatePlayerName(username)
+    setUsername('')
   }
 
   return (

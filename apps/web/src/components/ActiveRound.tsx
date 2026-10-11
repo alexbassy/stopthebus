@@ -18,8 +18,6 @@ import {
   useGameRoundLetter,
   useGameRoundEndingPlayer,
 } from '@/hooks/database'
-import { endRoundWithGameID } from '@/client/rest'
-import usePlayer from '@/hooks/usePlayer'
 import Dialog from '@/components/Dialog'
 import EndRoundOverlay from '@/components/overlay/EndRoundOverlay'
 import { fromEvent, startWith } from 'rxjs'
@@ -33,7 +31,6 @@ interface QuestionPositions {
 }
 
 export default function ActiveRound() {
-  const [player] = usePlayer()
   const gameConfigCategories = useGameConfigCategories()
   const gameRoundLetter = useGameRoundLetter()
   const gameRoundEndingPlayer = useGameRoundEndingPlayer()
@@ -123,15 +120,12 @@ export default function ActiveRound() {
         `You haven’t filled in all answers. Are you sure you want to end the round?`,
       )
     }
-    if (!player) {
-      return
-    }
-    if (shouldEndRound) endRoundWithGameID(manager.gameId, player)
+    if (shouldEndRound) manager.stop()
   }
 
   return (
     <div>
-        <title>Letter {gameRoundLetter?.toUpperCase()} - Stop The Bus</title>
+      <title>Letter {gameRoundLetter?.toUpperCase()} - Stop The Bus</title>
       <p>
         The letter is <strong style={{ fontSize: '2rem' }}>{gameRoundLetter?.toUpperCase()}</strong>
       </p>

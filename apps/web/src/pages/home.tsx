@@ -5,7 +5,7 @@ import { Input, Button, H2, Spacing } from '@/components/visual'
 import PageTitle from '@/components/PageTitle'
 import FormControl from '@/components/FormControl'
 import Themed from '@/components/Themed'
-import { createGameWithID } from '@/client/rest'
+import { createGame } from '@/client/socket'
 import { Player } from '@stopthebus/shared'
 import { getUserSession } from '@/helpers/getPersistedPlayer'
 import { APP_ROUTES } from '@/client/api-routes'
@@ -38,7 +38,7 @@ export default function Home() {
     }
 
     try {
-      await createGameWithID(newGameID, player)
+      await createGame(newGameID, player)
       navigate(APP_ROUTES.game(newGameID))
     } catch (error: any) {
       console.error('Something went wrong while creating a game', error)

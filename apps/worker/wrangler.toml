@@ -1,4 +1,0 @@
-name = "stopthebus"
-main = "dist/worker.js"
-workers_dev = true
-compatibility_date = "2026-01-01"

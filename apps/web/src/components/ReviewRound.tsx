@@ -4,6 +4,7 @@ import Dialog from './Dialog'
 import Countdown from './overlay/Countdown'
 import ResultsTable from '@/components/round-review/ResultsTable'
 import {
+  manager,
   useGameConfigCategories,
   useGameConfigRounds,
   useGameRoundAnswersByCategory,
@@ -13,11 +14,8 @@ import {
   useGameRoundTimeStarted,
 } from '@/hooks/database'
 import ReviewHeader from '@/components/round-review/ReviewHeader'
-import { cancelStartGameWithID, startGameWithID } from '@/client/rest'
-import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 
 export default function ReviewRound() {
-  const gameId = useGameIdFromRoute()
   const gameAnswers = useGameRoundAnswersByCategory()
   const gameScores = useGameRoundScoresByPlayer()
   const gameRoundTimeStarted = useGameRoundTimeStarted()
@@ -31,18 +29,18 @@ export default function ReviewRound() {
   }
 
   const handleNextRoundClick = () => {
-    startGameWithID(gameId)
+    manager.start()
   }
 
   const handleCancelStartGame = () => {
-    cancelStartGameWithID(gameId)
+    manager.cancelStart()
   }
 
   const isLastRound = (roundIndex || 0) + 1 === numRounds
 
   return (
     <div>
-        <title>Review - Stop The Bus</title>
+      <title>Review - Stop The Bus</title>
 
       <ReviewHeader />
 

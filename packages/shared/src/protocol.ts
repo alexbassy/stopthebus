@@ -8,7 +8,7 @@ import {
   TextSchema,
 } from './schemas'
 
-const message = <T extends string, S extends z.ZodRawShape>(type: T, shape?: S) =>
+const message = <T extends string, S extends z.ZodRawShape = {}>(type: T, shape?: S) =>
   z.object({ type: z.literal(type), ...shape } as { type: z.ZodLiteral<T> } & S)
 
 // Sent by a browser over the game's socket. The socket is bound to the player

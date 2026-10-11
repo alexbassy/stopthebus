@@ -32,7 +32,7 @@ const GameViewController: React.FC = () => {
     <>
       <PageTitle isInGame={gameStateStage !== GameStage.pre} />
       <GameName isShareable={gameStateStage === GameStage.pre} />
-      {/* <p>Connected: {isConnected ? 'Yes' : 'no'}</p> */}
+      {!isConnected && <p role='status'>Connection lost. Reconnecting…</p>}
       <EntryController>{Component ? <Component /> : null}</EntryController>
     </>
   )

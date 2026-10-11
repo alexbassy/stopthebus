@@ -1,25 +1,13 @@
-import { Router, listen } from 'worktop'
-import * as CORS from 'worktop/cors'
+import { Hono } from 'hono'
+import { Game } from './game-object'
 
-import handleCreate from './routes/create'
-import handleJoinOrLeave from './routes/join'
-import handleStart from './routes/start'
-import handleCancel from './routes/cancel'
-import handleEndRound from './routes/end-round'
+export { Game }
 
-const API = new Router()
+const app = new Hono<{ Bindings: { GAME: DurableObjectNamespace<Game> } }>()
 
-API.prepare = CORS.preflight({
-  origin:
-    /(192\.168\.2\.115:3000|localhost:3000|stopthebus\.xyz|(alexbass|stopthebus)\.vercel\.app$)/,
-  headers: ['Cache-Control', 'Content-Type', 'X-Count'],
-  methods: ['POST'],
+app.get('/ws/:gameId', (c) => {
+  const name = c.req.param('gameId').toLowerCase()
+  return c.env.GAME.get(c.env.GAME.idFromName(name)).fetch(c.req.raw)
 })
 
-API.add('POST', '/create', handleCreate)
-API.add('POST', '/join', handleJoinOrLeave)
-API.add('POST', '/start', handleStart)
-API.add('POST', '/cancel', handleCancel)
-API.add('POST', '/end-round', handleEndRound)
-
-listen(API.run)
+export default app

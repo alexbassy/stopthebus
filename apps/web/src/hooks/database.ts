@@ -1,159 +1,80 @@
-import { Answers, FinalScores, Game, GameStage, Player } from '@stopthebus/shared'
-import { FfbGame } from '@/typings/game'
+import { Answers, FinalScores, Game, GameStage, Player, ServerMessage } from '@stopthebus/shared'
 import { bind, shareLatest } from '@react-rxjs/core'
-import { from, map, merge, Observable, of, ReplaySubject, Subject, throwError, timer } from 'rxjs'
+import { BehaviorSubject, map, Observable, of, ReplaySubject, Subject, timer } from 'rxjs'
 import {
-  catchError,
-  delayWhen,
   distinctUntilChanged,
   filter,
-  mapTo,
   pairwise,
-  retryWhen,
   startWith,
   switchMap,
   take,
   takeUntil,
-  tap,
-  withLatestFrom,
 } from 'rxjs/operators'
-import { browserClient, q } from '@/client/fauna'
+import { GameSocket } from '@/client/socket'
 import { getUserSession, updatePersistedUserName } from '@/helpers/getPersistedPlayer'
-import { ExprArg } from 'faunadb'
-import { DatabaseFunctions } from '@/constants/database-functions'
 
-export enum JoinState {
-  NotRequested,
-  Requested,
-  CanJoin,
-  CannotJoin,
-}
-
-type GameResponse = {
-  ref: typeof q.Ref
-  ts: number
-  data: Game
-}
-
-function queryAsObservable<T = any>(expression: ExprArg): Observable<T> {
-  return from(browserClient.query<T>(expression)).pipe(take(1))
-}
-
-function fetchGame(id: string) {
-  return queryAsObservable<FfbGame>(q.Get(q.Match(q.Index('game_by_id'), id)))
-}
-
-const subscribeToGame = (ref: typeof q.Ref) => {
-  return new Observable<[boolean | null, Game | null]>((subscriber) => {
-    const realtimeSubscription = browserClient.stream
-      .document(q.Ref(ref))
-      .on('version', (payload) => subscriber.next([null, (payload.document as FfbGame).data]))
-      .on('error', () => subscriber.error())
-      .on('start', () => subscriber.next([true, null]))
-      .start()
-
-    return () => {
-      realtimeSubscription.close()
-    }
-  })
-}
+export type GameError = Extract<ServerMessage, { type: 'error' }>
 
 class Manager {
   gameId!: string
 
-  isConnected$ = new ReplaySubject<boolean>(1)
+  private socket?: GameSocket
 
-  joinState$ = new Subject<JoinState>()
+  isConnected$ = new BehaviorSubject<boolean>(true)
+
+  // The latest error the server sent, e.g. the game doesn't exist
+  error$ = new BehaviorSubject<GameError | null>(null)
 
   player$ = new ReplaySubject<Player>(1)
 
-  gameRef$ = new ReplaySubject<typeof q.Ref>(1)
+  private gameSubject$ = new BehaviorSubject<Game | null>(null)
 
-  sharedGameRequest$!: Observable<Game>
-
-  sharedGameSubscription$!: Observable<Game>
+  private ownAnswers$ = new ReplaySubject<Answers>(1)
 
   sharedGame$!: Observable<Game>
 
-  setId(gameId: string) {
-    if (typeof gameId !== 'string') return
+  // Connects to the game's socket and joins it as the current player. Joins
+  // again on every reconnect, which also resyncs the full game state.
+  connect(gameId: string) {
+    this.disconnect()
     this.gameId = gameId
+    this.gameSubject$.next(null)
+    this.error$.next(null)
+    this.player$.next(getUserSession())
+    this.socket = new GameSocket(gameId, {
+      onOpen: () => this.join(),
+      onConnection: (isConnected) => this.isConnected$.next(isConnected),
+      onMessage: (message) => {
+        if (message.type === 'state') {
+          this.error$.next(null)
+          this.gameSubject$.next(message.game)
+        } else if (message.type === 'answers') this.ownAnswers$.next(message.answers)
+        else this.error$.next(message)
+      },
+    })
   }
 
-  setJoinState(state: JoinState) {
-    this.joinState$.next(state)
+  disconnect() {
+    this.socket?.close()
+    this.socket = undefined
   }
 
-  get canJoin$() {
-    return this.joinState$.pipe(
-      filter((state) => state === JoinState.CanJoin),
-      mapTo(true),
-      distinctUntilChanged(),
-    )
+  join() {
+    this.socket?.send({ type: 'join', player: getUserSession() })
   }
 
-  logError(error: Error) {
-    console.error(error)
+  leave() {
+    this.socket?.send({ type: 'leave' })
   }
 
   get isConnectedState$() {
     return this.isConnected$.pipe(shareLatest())
   }
 
-  // Multicasted game rest request
-  get fetchGame$() {
-    if (!this.gameId) return of(null)
-    if (!this.sharedGameRequest$) {
-      this.sharedGameRequest$ = this.canJoin$.pipe(
-        switchMap(() => fetchGame(this.gameId)),
-        tap((data) => {
-          this.gameRef$.next(data.ref)
-          this.player$.next(getUserSession())
-        }),
-        map((res) => res.data),
-      )
-    }
-    return this.sharedGameRequest$
-  }
-
-  // Multicasted game update subscription
-  get gameSubscription$() {
-    if (!this.gameId) return of(null)
-    if (!this.sharedGameSubscription$) {
-      // The game subscription also notifies the manager when
-      // the connection has broken by sending an array where
-      // the first element is whether the connection is active.
-      // It's a bit crappy and I don't love it.
-      this.sharedGameSubscription$ = this.gameRef$.pipe(
-        switchMap((ref) => subscribeToGame(ref)),
-        switchMap(([connection, data]) => {
-          if (connection) {
-            this.isConnected$.next(true)
-            return of()
-          } else {
-            return of(data as Game)
-          }
-        }),
-        // Retry every 2 seconds if connection breaks
-        retryWhen((errors) =>
-          errors.pipe(
-            tap(() => this.isConnected$.next(false)),
-            delayWhen(() => timer(2000)),
-            take(15),
-          ),
-        ),
-      )
-    }
-    return this.sharedGameSubscription$
-  }
-
-  // Emit the game object (rest) and any updates to follow (websocket)
+  // Every state the server sends, as the full game
   get game$() {
     if (!this.sharedGame$) {
-      this.sharedGame$ = merge(this.gameSubscription$, this.fetchGame$).pipe(
-        filter(Boolean),
-        shareLatest(),
-      )
+      this.sharedGame$ = this.gameSubject$.pipe(filter(Boolean), shareLatest())
     }
     return this.sharedGame$
   }
@@ -167,17 +88,12 @@ class Manager {
     return this.player$.pipe(shareLatest())
   }
 
-  async setGamePlayerName(playerId: string, newName: string) {
-    return queryAsObservable(
-      q.Call(DatabaseFunctions.UpdatePlayerName, this.gameId, playerId, newName),
-    )
-      .pipe(
-        tap(() => {
-          updatePersistedUserName(newName)
-          this.player$.next(getUserSession())
-        }),
-      )
-      .subscribe()
+  setGamePlayerName(newName: string) {
+    const name = newName.trim()
+    if (!name) return
+    updatePersistedUserName(name)
+    this.player$.next(getUserSession())
+    this.socket?.send({ type: 'rename', name })
   }
 
   // GAME CONFIG
@@ -189,14 +105,8 @@ class Manager {
     return this.gameConfig$.pipe(map((config) => config.letters.split('')))
   }
 
-  async setGameConfigLetters(letters: string[]) {
-    return queryAsObservable(q.Call(DatabaseFunctions.UpdateLetters, this.gameId, letters.join('')))
-      .pipe(
-        tap((response: any) => {
-          if (response.errors) return throwError(response.errors)
-        }),
-      )
-      .subscribe()
+  setGameConfigLetters(letters: string[]) {
+    this.socket?.send({ type: 'updateConfig', config: { letters: letters.join('') } })
   }
 
   get gameConfigCategories$() {
@@ -206,20 +116,16 @@ class Manager {
     )
   }
 
-  async toggleCategory(category: string) {
-    return queryAsObservable(q.Call(DatabaseFunctions.UpdateCategories, this.gameId, category))
-      .subscribe()
-      .unsubscribe()
+  toggleCategory(category: string) {
+    this.socket?.send({ type: 'toggleCategory', category })
   }
 
   get gameConfigRounds$() {
     return this.gameConfig$.pipe(map((config) => config.numRounds))
   }
 
-  setGameConfigRounds(rounds: number) {
-    return queryAsObservable(q.Call(DatabaseFunctions.UpdateRounds, this.gameId, rounds))
-      .subscribe()
-      .unsubscribe()
+  setGameConfigRounds(numRounds: number) {
+    this.socket?.send({ type: 'updateConfig', config: { numRounds } })
   }
 
   get gameConfigAlliteration$() {
@@ -227,11 +133,7 @@ class Manager {
   }
 
   setGameConfigAlliteration(alliteration: boolean) {
-    return queryAsObservable(
-      q.Call(DatabaseFunctions.UpdateAlliteration, this.gameId, alliteration),
-    )
-      .subscribe()
-      .unsubscribe()
+    this.socket?.send({ type: 'updateConfig', config: { alliteration } })
   }
 
   // GAME STATE
@@ -279,10 +181,17 @@ class Manager {
     return this.gameState$.pipe(map((state) => state.nextGameId))
   }
 
-  endRound() {
-    return this.gameRef$.pipe(
-      switchMap((ref) => from(browserClient.query(q.Call(DatabaseFunctions.EndRound, ref)))),
-    )
+  start() {
+    this.socket?.send({ type: 'start' })
+  }
+
+  cancelStart() {
+    this.socket?.send({ type: 'cancelStart' })
+  }
+
+  // The sender becomes the stopper
+  stop() {
+    this.socket?.send({ type: 'stop' })
   }
 
   // GAME CURRENT ROUND
@@ -319,46 +228,17 @@ class Manager {
 
   // ROUND ANSWERS
 
+  // The player's own saved answers, sent by the server when they join mid-round
   getRoundAnswers(): Observable<Answers> {
-    return this.gameRoundIndex$.pipe(
-      withLatestFrom(this.player$),
-      switchMap(([index, player]) =>
-        queryAsObservable(q.Call(DatabaseFunctions.GetRound, this.gameId, player.id, index!)),
-      ),
-      map((response) => (response as any).data.answers as Answers),
-      take(1),
-      catchError((error) => {
-        console.log(error)
-        return of({} as Answers)
-      }),
-    )
+    return this.ownAnswers$.pipe(take(1))
   }
 
-  setRoundAnswer(question: string, answer: string) {
-    return this.gameRoundIndex$
-      .pipe(
-        withLatestFrom(this.player$),
-        switchMap(([index, player]) =>
-          queryAsObservable(
-            q.Call(DatabaseFunctions.SaveAnswers, this.gameId, player.id, index!, question, answer),
-          ),
-        ),
-      )
-      .subscribe()
-      .unsubscribe()
+  setRoundAnswer(category: string, answer: string) {
+    this.socket?.send({ type: 'saveAnswer', category, answer })
   }
 
   setPlayerProgress(category: string) {
-    return this.player$
-      .pipe(
-        switchMap((player) =>
-          queryAsObservable(
-            q.Call(DatabaseFunctions.UpdateProgress, this.gameId, player.id, category),
-          ),
-        ),
-      )
-      .subscribe()
-      .unsubscribe()
+    this.socket?.send({ type: 'setProgress', category })
   }
 
   get gameRoundOpponentProgress$() {
@@ -410,19 +290,15 @@ class Manager {
   }
 
   // ROUND SCORES
-  updateScore(playerId: string, category: string, newScore: number) {
-    return queryAsObservable(
-      q.Call(DatabaseFunctions.UpdateScore, this.gameId, playerId, category, newScore),
-    )
-      .subscribe()
-      .unsubscribe()
+  updateScore(playerId: string, category: string, score: number) {
+    this.socket?.send({ type: 'setScore', playerId, category, score })
   }
 }
 
 export const manager = new Manager()
 
 // INTERNALISH
-export const [useJoinState] = bind(() => manager.joinState$, JoinState.NotRequested)
+export const [useGameError] = bind(() => manager.error$, null)
 export const [useIsConnected] = bind(() => manager.isConnectedState$, true)
 
 // GAME PLAYERS

@@ -1,10 +1,8 @@
-import { q } from '@/client/fauna'
-import { query } from 'faunadb'
 import type { Answers, Game } from '@stopthebus/shared'
 
-// FAUNADB TYPES, removed with Fauna in ticket 05
+// FAUNADB TYPES, used only by the old worker routes until they are ported (ticket 05)
 
-export type DocumentRef = typeof query.Ref
+export type DocumentRef = any
 
 export interface GameResponse {
   ref: DocumentRef
@@ -13,7 +11,7 @@ export interface GameResponse {
 }
 
 export interface FfbGame {
-  ref: typeof q.Ref
+  ref: DocumentRef
   data: Game
 }
 

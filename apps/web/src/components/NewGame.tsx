@@ -10,17 +10,15 @@ import Letters from '@/components/new-game/Letters'
 import PlayerName from '@/components/new-game/PlayerName'
 import Players from '@/components/new-game/Players'
 import {
+  manager,
   useGameConfigCategories,
   useGameRoundLetter,
   useGameRoundTimeStarted,
 } from '@/hooks/database'
 import RaceRounds from '@/components/new-game/RaceRounds'
-import { cancelStartGameWithID, startGameWithID } from '@/client/rest'
-import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 import usePlayer from '@/hooks/usePlayer'
 
 export default function NewGame() {
-  const gameId = useGameIdFromRoute()
   const [currentPlayer] = usePlayer()
   const gameConfigCategories = useGameConfigCategories()
   const gameRoundTimeStarted = useGameRoundTimeStarted()
@@ -31,18 +29,18 @@ export default function NewGame() {
       alert('Please choose some categories to play with first')
       return
     }
-    startGameWithID(gameId)
+    manager.start()
   }
 
   const handleCancelStartGame = () => {
-    cancelStartGameWithID(gameId)
+    manager.cancelStart()
   }
 
   if (!currentPlayer) return null
 
   return (
     <>
-        <title>New Game - Stop The Bus</title>
+      <title>New Game - Stop The Bus</title>
       <Spacing y={1}>
         <CurrentPlayer />
       </Spacing>

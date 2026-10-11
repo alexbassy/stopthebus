@@ -13,7 +13,7 @@ function usePlayer(): [Player | null, (playerName: string) => void] {
   const updatePlayerName = useCallback(
     (playerName: string) => {
       if (!player?.id) return
-      manager.setGamePlayerName(player.id, playerName)
+      manager.setGamePlayerName(playerName)
     },
     [player?.id],
   )

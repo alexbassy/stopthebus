@@ -3,24 +3,20 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm build && wrangler dev",
-    "build": "esbuild src/index.ts --bundle --target=es2019 --format=esm --main-fields=browser,module,main --outfile=dist/worker.js",
-    "deploy": "pnpm build && wrangler deploy",
     "lint": "oxlint .",
     "typecheck": "../../node_modules/.bin/tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@stopthebus/shared": "workspace:*",
     "@splitbee/node": "^0.3.1",
+    "@stopthebus/shared": "workspace:*",
     "faunadb": "^4.8.2",
+    "hono": "^4.13.13",
     "human-readable-ids": "^1.0.4",
     "nanoid": "^3.2.0",
     "worktop": "^0.7.3"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261006.1",
-    "esbuild": "^0.28.2",
-    "wrangler": "^4.0.0"
+    "@cloudflare/workers-types": "^5.20261006.1"
   }
 }
