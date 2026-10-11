@@ -1,10 +1,10 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
-    "build": { "dependsOn": ["^build"], "env": ["NEXT_PUBLIC_*", "FAUNA_SECRET"], "outputs": [".next/**", "!.next/cache/**", "dist/**"] },
+    "build": { "inputs": ["$TURBO_DEFAULT$", ".env*", "../web/src/**"], "dependsOn": ["^build"], "env": ["NEXT_PUBLIC_*", "FAUNA_SECRET"], "outputs": [".next/**", "!.next/cache/**", "dist/**"] },
     "dev": { "cache": false, "persistent": true },
     "lint": {},
-    "typecheck": {},
+    "typecheck": { "inputs": ["$TURBO_DEFAULT$", "../web/src/**"] },
     "test": {}
   }
 }

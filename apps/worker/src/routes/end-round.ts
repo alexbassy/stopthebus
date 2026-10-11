@@ -1,4 +1,4 @@
-import servertime from 'servertime'
+import { createTimer } from '../lib/timer'
 import { getInitialScores } from '@/helpers/scores'
 import {
   DocumentRef,
@@ -64,7 +64,7 @@ function sleep(duration: number): Promise<void> {
 type RequestBody = { id?: string; player?: Player }
 
 const handleEndRound: Handler = async (req, res) => {
-  const timer = servertime.createTimer({ clock: 'ms' })
+  const timer = createTimer()
   const body = await req.body<RequestBody>()
 
   const id = body?.id

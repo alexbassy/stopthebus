@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.30.3",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=@stopthebus/web",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",

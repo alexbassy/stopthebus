@@ -5,9 +5,9 @@
   "type": "module",
   "exports": { ".": "./src/index.ts" },
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "../../node_modules/.bin/tsc --noEmit",
     "lint": "oxlint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "../../node_modules/.bin/tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   }
 }

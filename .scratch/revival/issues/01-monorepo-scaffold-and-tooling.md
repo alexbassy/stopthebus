@@ -17,6 +17,6 @@
 - **TS7 fallback:** Next 15 can't load the TS7 compiler API ("TypeScript 7 is not supported by this version of Next.js"; Next >= 16.2.11 supports it but needs React 19). So `apps/web` keeps `typescript@^6` as a devDependency for Next, and its `typecheck`/`build` run the root TS7 `tsc --noEmit` first. Next's own check is `ignoreBuildErrors`.
 - Held back to avoid rewrites: React 18, `@types/react` 17 (implicit `children`), Next 15, nanoid 3, framer-motion (bumped to 12 in package.json but untested visually).
 - worktop's exports map has no types, so the worker tsconfig maps `worktop` to its `.d.ts`.
-- Worker build is still esbuild (service-worker format, `--main-fields=browser`, node builtins external because `servertime` -> `on-headers` requires `http`). Not verified to deploy under wrangler 4; ticket 03/04 replaces it.
+- Worker build is still esbuild (service-worker format). `servertime` was replaced by `lib/timer.ts` because its `on-headers` dep needs Node `http`. Deploy under Wrangler 4 only dry-run verified; CI moved to wrangler-action@v3.
 - `next build` needs `NEXT_PUBLIC_FAUNA_KEY` (pre-existing); set it in `apps/web/.env.local`.
 - `pnpm lint` passes with 34 oxlint warnings, 0 errors.
