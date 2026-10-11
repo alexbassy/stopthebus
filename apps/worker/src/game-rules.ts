@@ -1,16 +1,34 @@
 import {
   ClientMessageSchema,
   Game,
+  GameConfig,
   GameStage,
   Player,
+  Round,
+  RoundAnswers,
   ServerMessage,
+  getFinalScores,
+  getInitialScores,
   type ErrorCode,
 } from '@stopthebus/shared'
-import { createGameConfig, createGameState } from './lib/game'
+import { createGameConfig, createGameConfigFromPrevious, createGameState } from './lib/game'
 
 export interface Store {
   get(): Promise<Game | undefined>
   put(game: Game): Promise<void>
+  // The current round's answers, kept apart from the game so that the state
+  // we broadcast can never include them
+  getAnswers(): Promise<RoundAnswers | undefined>
+  putAnswers(answers: RoundAnswers): Promise<void>
+}
+
+// What the rules need from the outside world
+export interface Env {
+  now(): number
+  sleep(ms: number): Promise<void>
+  newGameId(): string
+  // Creates the rematch game, with no players
+  createGame(id: string, config: GameConfig): Promise<void>
 }
 
 // One connected WebSocket. `playerId` is set when the socket joins a game and
@@ -20,6 +38,11 @@ export interface Connection {
   send(message: ServerMessage): void
 }
 
+// Clients show the countdown from the start time, so it is set a little ahead
+export const START_DELAY_MS = 3500
+// How long the other players have to get their final answers in after a Stop
+export const STOP_GRACE_MS = 2000
+
 // The game's rules, free of Cloudflare APIs so tests can drive it directly.
 // The Durable Object wires it to real storage and sockets.
 export class GameRules {
@@ -27,6 +50,7 @@ export class GameRules {
     private id: string,
     private store: Store,
     private broadcast: (message: ServerMessage) => void,
+    private env: Env,
   ) {}
 
   async onMessage(conn: Connection, raw: string) {
@@ -51,53 +75,224 @@ export class GameRules {
     if (msg.type === 'create') {
       if (game) return fail('refused', 'A game with that name already exists')
       conn.playerId = msg.player.id
-      return save(newGame(this.id, msg.player))
+      return save(newGame(this.id, createGameConfig(), [msg.player]))
     }
 
     if (!game) return fail('notFound', 'There’s no game by that name here')
+
+    const { stage } = game.state
+    const round = game.currentRound
+    const isMember = (id: string | undefined) => game.players.some((p) => p.id === id)
 
     switch (msg.type) {
       case 'join': {
         if (conn.playerId && conn.playerId !== msg.player.id) {
           return fail('forbidden', 'This connection belongs to another player')
         }
-        const isInGame = game.players.some((p) => p.id === msg.player.id)
-        if (!isInGame && game.state.stage !== GameStage.pre) {
+        const isInGame = isMember(msg.player.id)
+        if (!isInGame && stage !== GameStage.pre) {
           return fail('refused', 'The game has already started')
         }
         conn.playerId = msg.player.id
-        // Joining twice changes nothing, but still gets the sender the state
-        if (isInGame) return conn.send({ type: 'state', game })
-        return save({ ...game, players: [...game.players, msg.player] })
+        if (!isInGame) return save({ ...game, players: [...game.players, msg.player] })
+        // Joining twice changes nothing, but the sender still gets the state
+        // and, mid-round, their own saved answers back
+        conn.send({ type: 'state', game })
+        if (stage === GameStage.active) {
+          const answers = (await this.store.getAnswers()) ?? {}
+          conn.send({ type: 'answers', answers: answers[msg.player.id] ?? {} })
+        }
+        return
       }
       case 'leave': {
         // Once play has begun players stay in the game so they can come back
-        if (game.state.stage !== GameStage.pre) return
+        if (stage !== GameStage.pre) return
         const players = game.players.filter((p) => p.id !== conn.playerId)
         if (players.length === game.players.length) return
         return save({ ...game, players })
       }
       case 'rename': {
         if (!conn.playerId) return fail('forbidden', 'Join the game first')
-        if (!game.players.some((p) => p.id === conn.playerId)) return
+        if (!isMember(conn.playerId)) return
         const players = game.players.map((p) =>
           p.id === conn.playerId ? { ...p, name: msg.name } : p,
         )
         return save({ ...game, players })
       }
-      default:
-        return fail('refused', `"${msg.type}" is not supported yet`)
     }
+
+    // Everything below is for players in the game
+    const me = conn.playerId
+    if (!me || !isMember(me)) return fail('forbidden', 'Join the game first')
+
+    switch (msg.type) {
+      case 'updateConfig': {
+        if (stage !== GameStage.pre) return fail('refused', 'The game has already started')
+        return save({ ...game, config: { ...game.config, ...msg.config } })
+      }
+      case 'toggleCategory': {
+        if (stage !== GameStage.pre) return fail('refused', 'The game has already started')
+        const { categories } = game.config
+        const next = categories.includes(msg.category)
+          ? categories.filter((c) => c !== msg.category)
+          : [...categories, msg.category]
+        return save({ ...game, config: { ...game.config, categories: next } })
+      }
+      case 'start': {
+        if (stage !== GameStage.pre && stage !== GameStage.review) {
+          return fail('refused', 'The game is either finished or already in play')
+        }
+        const previousRounds = [...(game.previousRounds ?? [])]
+        if (round?.timeEnded) previousRounds.push(round)
+
+        if (round && round.index === game.config.numRounds - 1) {
+          return this.finish(game, previousRounds, save)
+        }
+
+        const letters = game.config.letters
+          .split('')
+          .filter((letter) => !previousRounds.some((r) => r.letter === letter))
+        if (!letters.length) return fail('refused', 'There are no letters left to play')
+
+        const next: Round = {
+          index: previousRounds.length,
+          letter: letters[Math.floor(Math.random() * letters.length)],
+          timeStarted: this.env.now() + START_DELAY_MS,
+          timeEnded: null,
+          stopperId: null,
+          opponentProgress: null,
+          answers: {},
+          scores: {},
+        }
+        await this.store.putAnswers({})
+        return save({
+          ...game,
+          state: { stage: GameStage.active },
+          previousRounds,
+          currentRound: next,
+        })
+      }
+      case 'cancelStart': {
+        // Too late once someone has stopped the round
+        if (stage !== GameStage.active || round?.timeEnded) {
+          return fail('refused', 'The game has not been started')
+        }
+        // Go back to the round being reviewed, if there was one
+        const previousRounds = [...(game.previousRounds ?? [])]
+        const reviewed = previousRounds.pop() ?? null
+        await this.store.putAnswers({})
+        return save({
+          ...game,
+          state: { stage: reviewed ? GameStage.review : GameStage.pre },
+          previousRounds: previousRounds.length ? previousRounds : null,
+          currentRound: reviewed,
+        })
+      }
+      case 'saveAnswer': {
+        if (stage !== GameStage.active || !round) return fail('refused', 'No round is in play')
+        if (!game.config.categories.includes(msg.category)) {
+          return fail('invalid', 'Unknown category')
+        }
+        const answers = (await this.store.getAnswers()) ?? {}
+        await this.store.putAnswers({
+          ...answers,
+          [me]: { ...answers[me], [msg.category]: msg.answer },
+        })
+        return
+      }
+      case 'setProgress': {
+        if (stage !== GameStage.active || !round) return fail('refused', 'No round is in play')
+        return save({
+          ...game,
+          currentRound: {
+            ...round,
+            opponentProgress: { ...round.opponentProgress, [me]: msg.category },
+          },
+        })
+      }
+      case 'stop': {
+        if (stage !== GameStage.active || !round || round.timeEnded) {
+          return fail('refused', 'No round is in play')
+        }
+        await save({
+          ...game,
+          currentRound: { ...round, stopperId: me, timeEnded: this.env.now() },
+        })
+        // Wait for the other players' final answers
+        await this.env.sleep(STOP_GRACE_MS)
+        return this.review(save)
+      }
+      case 'setScore': {
+        if (stage !== GameStage.review || !round) return fail('refused', 'Not in review')
+        if (!round.scores[msg.playerId] || !game.config.categories.includes(msg.category)) {
+          return fail('invalid', 'Unknown player or category')
+        }
+        const scores = {
+          ...round.scores,
+          [msg.playerId]: { ...round.scores[msg.playerId], [msg.category]: msg.score },
+        }
+        return save({ ...game, currentRound: { ...round, scores } })
+      }
+    }
+  }
+
+  // Scores the stopped round and moves the game to review. Reads the game
+  // afresh, because answers keep arriving during the grace window.
+  private async review(save: (game: Game) => Promise<void>) {
+    const game = await this.store.get()
+    const round = game?.currentRound
+    if (!game || !round?.timeEnded || game.state.stage !== GameStage.active) return
+
+    const saved = (await this.store.getAnswers()) ?? {}
+    const { categories } = game.config
+    // Missing answers become empty strings
+    const answers: RoundAnswers = Object.fromEntries(
+      game.players.map(({ id }) => [
+        id,
+        Object.fromEntries(categories.map((c) => [c, saved[id]?.[c] ?? ''])),
+      ]),
+    )
+    const scores = getInitialScores(answers, round.letter, game.config, game.players)
+
+    await this.store.putAnswers({})
+    await save({
+      ...game,
+      state: { stage: GameStage.review },
+      currentRound: { ...round, answers, scores, opponentProgress: null },
+    })
+  }
+
+  private async finish(game: Game, rounds: Round[], save: (game: Game) => Promise<void>) {
+    const nextGameId = this.env.newGameId()
+    await save({
+      ...game,
+      state: { stage: GameStage.finished, finalScores: getFinalScores(rounds), nextGameId },
+      previousRounds: rounds,
+      currentRound: null,
+    })
+    await this.env.createGame(
+      nextGameId,
+      createGameConfigFromPrevious(
+        game.config,
+        rounds.map((r) => r.letter),
+      ),
+    )
+  }
+
+  // Sets up a game that has no players yet: the rematch of a finished game
+  async createWithConfig(config: GameConfig) {
+    if (await this.store.get()) return
+    await this.store.put(newGame(this.id, config, []))
   }
 }
 
-function newGame(id: string, creator: Player): Game {
+function newGame(id: string, config: GameConfig, players: Player[]): Game {
   return {
     id,
     state: createGameState(),
-    config: createGameConfig(),
+    config,
     currentRound: null,
     previousRounds: null,
-    players: [creator],
+    players,
   }
 }

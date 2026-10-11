@@ -8,13 +8,9 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@splitbee/node": "^0.3.1",
     "@stopthebus/shared": "workspace:*",
-    "faunadb": "^4.8.2",
     "hono": "^4.13.13",
-    "human-readable-ids": "^1.0.4",
-    "nanoid": "^3.2.0",
-    "worktop": "^0.7.3"
+    "human-readable-ids": "^1.0.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261006.1"

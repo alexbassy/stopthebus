@@ -29,7 +29,8 @@ class Manager {
 
   private gameSubject$ = new BehaviorSubject<Game | null>(null)
 
-  private ownAnswers$ = new ReplaySubject<Answers>(1)
+  // Reset when no round is in play so a later round never sees an old round's answers
+  private ownAnswers$ = new BehaviorSubject<Answers | null>(null)
 
   sharedGame$!: Observable<Game>
 
@@ -47,6 +48,7 @@ class Manager {
       onMessage: (message) => {
         if (message.type === 'state') {
           this.error$.next(null)
+          if (message.game.state.stage !== GameStage.active) this.ownAnswers$.next(null)
           this.gameSubject$.next(message.game)
         } else if (message.type === 'answers') this.ownAnswers$.next(message.answers)
         else this.error$.next(message)
@@ -230,7 +232,7 @@ class Manager {
 
   // The player's own saved answers, sent by the server when they join mid-round
   getRoundAnswers(): Observable<Answers> {
-    return this.ownAnswers$.pipe(take(1))
+    return this.ownAnswers$.pipe(filter(Boolean), take(1))
   }
 
   setRoundAnswer(category: string, answer: string) {
@@ -254,6 +256,7 @@ class Manager {
       map((round) => {
         if (!round) return null
         const answerEntries = Object.entries(round.answers)
+        if (!answerEntries.length) return null
         const categories = Object.keys(answerEntries[0][1])
         return Object.fromEntries(
           categories.map((category) => [
@@ -276,6 +279,7 @@ class Manager {
       map((round) => {
         if (!round) return null
         const scoreEntries = Object.entries(round.scores)
+        if (!scoreEntries.length) return null
         const categories = Object.keys(scoreEntries[0][1])
         return Object.fromEntries(
           categories.map((category) => [

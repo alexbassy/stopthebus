@@ -52,29 +52,6 @@ export default function NewGame() {
 
       <CategoriesList />
 
-      {/* <H3>Mode</H3>
-        <p>You can race against each other, or with a time limit</p>
-        <div aria-hidden style={{ display: 'none' }}>
-          <label>
-            Play mode{' '}
-            <Select value={config?.mode} onBlur={handleModeChange} onChange={handleModeChange}>
-              <option value={GameMode.RACE}>Race</option>
-              <option value={GameMode.TIMER}>Timer</option>
-            </Select>
-          </label>
-        </div>
-        <div id='mode-timer'>
-          {config?.mode === GameMode.TIMER && (
-            <label>
-              Time (seconds){' '}
-              <Input
-                type='number'
-                value={Math.round(config.time ? config.time / 1000 : 60)}
-                onChange={handleTimeChange}
-              />
-            </label>
-          )}
-        </div> */}
       <Spacing b={2} />
       <RaceRounds />
       <Spacing b={2} />

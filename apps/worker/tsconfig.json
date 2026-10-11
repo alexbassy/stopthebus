@@ -1,12 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "paths": {
-      "@/*": ["../web/src/*"],
-      "worktop": ["./node_modules/worktop/router/index.d.ts"],
-      "worktop/*": ["./node_modules/worktop/*/index.d.ts"]
-    },
     "types": ["@cloudflare/workers-types"]
   },
-  "include": ["shim.d.ts", "src"]
+  "include": ["human-readable-ids.d.ts", "src"]
 }

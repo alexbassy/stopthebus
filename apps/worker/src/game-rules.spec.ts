@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Game, ServerMessage } from '@stopthebus/shared'
+import type { Game, GameConfig, RoundAnswers, ServerMessage } from '@stopthebus/shared'
 import { GameRules, type Connection } from './game-rules'
 
 const alex = { id: 'p1', name: 'Alex', colour: '#f00' }
@@ -7,11 +7,27 @@ const sam = { id: 'p2', name: 'Sam', colour: '#0f0' }
 
 function setup() {
   let stored: Game | undefined
+  let answers: RoundAnswers | undefined
   const broadcasts: ServerMessage[] = []
+  const clock = { now: 1_000_000 }
+  const created: { id: string; config: GameConfig }[] = []
+  // Stop waits on this; tests release it to end the grace window
+  let release = () => {}
   const room = new GameRules(
     'happy-cat-12',
-    { get: async () => stored, put: async (g) => void (stored = g) },
+    {
+      get: async () => stored,
+      put: async (g) => void (stored = g),
+      getAnswers: async () => answers,
+      putAnswers: async (a) => void (answers = a),
+    },
     (m) => broadcasts.push(m),
+    {
+      now: () => clock.now,
+      sleep: () => new Promise<void>((resolve) => (release = resolve)),
+      newGameId: () => 'next-game-1',
+      createGame: async (id, config) => void created.push({ id, config }),
+    },
   )
   const connect = () => {
     const sent: ServerMessage[] = []
@@ -20,7 +36,16 @@ function setup() {
     return { conn, sent, send }
   }
   const seed = (g: Game) => void (stored = g)
-  return { room, connect, broadcasts, game: () => stored, seed }
+  return {
+    room,
+    connect,
+    broadcasts,
+    clock,
+    created,
+    release: () => release(),
+    game: () => stored,
+    seed,
+  }
 }
 
 describe('GameRules', () => {
@@ -127,5 +152,261 @@ describe('GameRules', () => {
     await a.send('not json at all')
     expect(a.sent.at(-1)).toMatchObject({ type: 'error', code: 'invalid' })
     expect(game()?.players).toEqual([alex])
+  })
+})
+
+// A lobby with Alex and Sam, one category and a single letter so rounds are predictable
+async function lobby() {
+  const t = setup()
+  const a = t.connect()
+  const s = t.connect()
+  await a.send({ type: 'create', player: alex })
+  await s.send({ type: 'join', player: sam })
+  await a.send({ type: 'toggleCategory', category: 'Animal' })
+  await a.send({ type: 'updateConfig', config: { letters: 'c', numRounds: 2 } })
+  return { ...t, a, s }
+}
+
+describe('config', () => {
+  it('replaces fields as a whole and toggles categories', async () => {
+    const { a, s, game } = await lobby()
+    await s.send({ type: 'toggleCategory', category: 'City' })
+    expect(game()?.config.categories).toEqual(['Animal', 'City'])
+    await a.send({ type: 'toggleCategory', category: 'Animal' })
+    expect(game()?.config).toMatchObject({ categories: ['City'], letters: 'c', numRounds: 2 })
+    await a.send({ type: 'updateConfig', config: { alliteration: true } })
+    expect(game()?.config.alliteration).toBe(true)
+  })
+
+  it('is closed to outsiders and once the game has started', async () => {
+    const { a, connect, game } = await lobby()
+    const stranger = connect()
+    await stranger.send({ type: 'toggleCategory', category: 'City' })
+    expect(stranger.sent[0]).toMatchObject({ type: 'error', code: 'forbidden' })
+    await a.send({ type: 'start' })
+    await a.send({ type: 'toggleCategory', category: 'City' })
+    expect(a.sent.at(-1)).toMatchObject({ type: 'error', code: 'refused' })
+    expect(game()?.config.categories).toEqual(['Animal'])
+  })
+})
+
+describe('start and cancel', () => {
+  it('starts a round with an unplayed letter, a little in the future', async () => {
+    const { a, game, clock } = await lobby()
+    await a.send({ type: 'start' })
+    expect(game()?.state.stage).toBe('active')
+    expect(game()?.currentRound).toMatchObject({
+      index: 0,
+      letter: 'c',
+      timeStarted: clock.now + 3500,
+      timeEnded: null,
+      answers: {},
+    })
+    await a.send({ type: 'start' })
+    expect(a.sent.at(-1)).toMatchObject({ type: 'error', code: 'refused' })
+  })
+
+  it('refuses to start when no letters are left', async () => {
+    const { a, game } = await lobby()
+    await a.send({ type: 'updateConfig', config: { letters: '' } })
+    await a.send({ type: 'start' })
+    expect(a.sent.at(-1)).toMatchObject({ type: 'error', code: 'refused' })
+    expect(game()?.state.stage).toBe('pre')
+  })
+
+  it('cancelling the first start goes back to the lobby', async () => {
+    const { a, game } = await lobby()
+    await a.send({ type: 'start' })
+    await a.send({ type: 'cancelStart' })
+    expect(game()).toMatchObject({
+      state: { stage: 'pre' },
+      currentRound: null,
+      previousRounds: null,
+    })
+  })
+
+  it('cancelling a later start goes back to reviewing the last round', async () => {
+    const { a, s, game, release } = await lobby()
+    await a.send({ type: 'updateConfig', config: { letters: 'cd', numRounds: 3 } })
+    await a.send({ type: 'start' })
+    const stopping = a.send({ type: 'stop' })
+    await new Promise((r) => setTimeout(r))
+    release()
+    await stopping
+    const reviewed = game()!.currentRound
+    await s.send({ type: 'start' })
+    expect(game()?.currentRound).toMatchObject({ index: 1 })
+    expect(game()?.currentRound?.letter).not.toBe(reviewed?.letter)
+    await s.send({ type: 'cancelStart' })
+    expect(game()).toMatchObject({
+      state: { stage: 'review' },
+      currentRound: reviewed,
+      previousRounds: null,
+    })
+  })
+
+  it('cannot cancel outside the countdown stage or after a stop', async () => {
+    const { a, game } = await lobby()
+    await a.send({ type: 'cancelStart' })
+    expect(a.sent.at(-1)).toMatchObject({ type: 'error', code: 'refused' })
+    await a.send({ type: 'start' })
+    void a.send({ type: 'stop' })
+    await Promise.resolve()
+    await a.send({ type: 'cancelStart' })
+    await new Promise((r) => setTimeout(r))
+    expect(a.sent.at(-1)).toMatchObject({ type: 'error', code: 'refused' })
+    expect(game()?.state.stage).toBe('active')
+  })
+})
+
+describe('answers', () => {
+  it('never broadcasts answers, and gives a rejoining player their own back', async () => {
+    const { a, s, broadcasts, connect } = await lobby()
+    await a.send({ type: 'start' })
+    await a.send({ type: 'saveAnswer', category: 'Animal', answer: 'cat-secret' })
+    await s.send({ type: 'saveAnswer', category: 'Animal', answer: 'camel-secret' })
+    await a.send({ type: 'setProgress', category: 'Animal' })
+    expect(JSON.stringify(broadcasts)).not.toContain('secret')
+    expect(JSON.stringify(s.sent)).not.toContain('cat-secret')
+
+    const reloaded = connect()
+    await reloaded.send({ type: 'join', player: alex })
+    expect(reloaded.sent).toContainEqual({ type: 'answers', answers: { Animal: 'cat-secret' } })
+    expect(JSON.stringify(reloaded.sent)).not.toContain('camel-secret')
+  })
+
+  it('shares only which category each player is on', async () => {
+    const { a, game } = await lobby()
+    await a.send({ type: 'start' })
+    await a.send({ type: 'setProgress', category: 'Animal' })
+    expect(game()?.currentRound?.opponentProgress).toEqual({ p1: 'Animal' })
+  })
+
+  it('rejects answers outside a round or for unknown categories', async () => {
+    const { a } = await lobby()
+    await a.send({ type: 'saveAnswer', category: 'Animal', answer: 'cat' })
+    expect(a.sent.at(-1)).toMatchObject({ code: 'refused' })
+    await a.send({ type: 'start' })
+    await a.send({ type: 'saveAnswer', category: 'Nope', answer: 'cat' })
+    expect(a.sent.at(-1)).toMatchObject({ code: 'invalid' })
+  })
+})
+
+describe('stop and review', () => {
+  it('keeps answers that arrive in the grace window, then scores the round', async () => {
+    const { a, s, game, clock, release } = await lobby()
+    await a.send({ type: 'start' })
+    await a.send({ type: 'saveAnswer', category: 'Animal', answer: 'Cat' })
+
+    clock.now += 60_000
+    const stopping = a.send({ type: 'stop' })
+    await new Promise((r) => setTimeout(r))
+    expect(game()?.currentRound).toMatchObject({ stopperId: 'p1', timeEnded: clock.now })
+    expect(game()?.state.stage).toBe('active')
+
+    await s.send({ type: 'saveAnswer', category: 'Animal', answer: 'camel' })
+    release()
+    await stopping
+
+    expect(game()?.state.stage).toBe('review')
+    expect(game()?.currentRound).toMatchObject({
+      answers: { p1: { Animal: 'Cat' }, p2: { Animal: 'camel' } },
+      scores: { p1: { Animal: 1 }, p2: { Animal: 1 } },
+    })
+    await s.send({ type: 'saveAnswer', category: 'Animal', answer: 'late' })
+    expect(s.sent.at(-1)).toMatchObject({ code: 'refused' })
+  })
+
+  it('fills missing answers with empty strings and ignores a second stop', async () => {
+    const { a, s, game, release } = await lobby()
+    await a.send({ type: 'start' })
+    await a.send({ type: 'saveAnswer', category: 'Animal', answer: 'cat' })
+    const stopping = a.send({ type: 'stop' })
+    await new Promise((r) => setTimeout(r))
+    await s.send({ type: 'stop' })
+    expect(s.sent.at(-1)).toMatchObject({ code: 'refused' })
+    expect(game()?.currentRound?.stopperId).toBe('p1')
+    release()
+    await stopping
+    expect(game()?.currentRound?.answers.p2).toEqual({ Animal: '' })
+    expect(game()?.currentRound?.scores.p2).toEqual({ Animal: 0 })
+  })
+
+  it('lets any player change any score in review, and only in review', async () => {
+    const { a, s, game, release } = await lobby()
+    await a.send({ type: 'start' })
+    await s.send({ type: 'setScore', playerId: 'p1', category: 'Animal', score: 5 })
+    expect(s.sent.at(-1)).toMatchObject({ code: 'refused' })
+    const stopping = a.send({ type: 'stop' })
+    await new Promise((r) => setTimeout(r))
+    release()
+    await stopping
+    await s.send({ type: 'setScore', playerId: 'p1', category: 'Animal', score: 5 })
+    expect(game()?.currentRound?.scores.p1).toEqual({ Animal: 5 })
+    await s.send({ type: 'setScore', playerId: 'nobody', category: 'Animal', score: 1 })
+    expect(s.sent.at(-1)).toMatchObject({ code: 'invalid' })
+  })
+})
+
+describe('finishing', () => {
+  async function playRound(l: Awaited<ReturnType<typeof lobby>>, answerA: string) {
+    await l.a.send({ type: 'start' })
+    await l.a.send({ type: 'saveAnswer', category: 'Animal', answer: answerA })
+    const stopping = l.a.send({ type: 'stop' })
+    await new Promise((r) => setTimeout(r))
+    l.release()
+    await stopping
+  }
+
+  it('finishes after the last round and creates the rematch', async () => {
+    const l = await lobby()
+    await l.a.send({ type: 'updateConfig', config: { letters: 'cdef', numRounds: 2 } })
+    await l.a.send({ type: 'toggleCategory', category: 'City' })
+    await playRound(l, 'cat')
+    await l.s.send({ type: 'setScore', playerId: 'p1', category: 'Animal', score: 3 })
+    await playRound(l, 'dog')
+    await l.a.send({ type: 'start' })
+
+    const game = l.game()!
+    expect(game.state).toMatchObject({
+      stage: 'finished',
+      nextGameId: 'next-game-1',
+      finalScores: { p1: expect.any(Number), p2: 0 },
+    })
+    expect(game.state.finalScores?.p1).toBeGreaterThanOrEqual(3)
+    expect(game.currentRound).toBeNull()
+    expect(game.previousRounds).toHaveLength(2)
+
+    const played = game.previousRounds!.map((r) => r.letter)
+    expect(l.created).toHaveLength(1)
+    expect(l.created[0].id).toBe('next-game-1')
+    expect(l.created[0].config).toMatchObject({
+      categories: ['Animal', 'City'],
+      numRounds: 2,
+      letters: 'cdef'
+        .split('')
+        .filter((x) => !played.includes(x))
+        .join(''),
+    })
+    // The finished game can't be started again
+    await l.a.send({ type: 'start' })
+    expect(l.a.sent.at(-1)).toMatchObject({ code: 'refused' })
+  })
+
+  it('sets up the rematch as an empty lobby', async () => {
+    const { room, game } = setup()
+    await room.createWithConfig({
+      categories: ['Animal'],
+      numRounds: 2,
+      letters: 'ab',
+      alliteration: false,
+    })
+    expect(game()).toMatchObject({
+      state: { stage: 'pre' },
+      players: [],
+      config: { letters: 'ab' },
+    })
+    await room.createWithConfig({ categories: [], numRounds: 1, letters: '', alliteration: false })
+    expect(game()?.config.letters).toBe('ab')
   })
 })

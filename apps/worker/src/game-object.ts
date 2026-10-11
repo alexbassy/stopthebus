@@ -1,18 +1,35 @@
 import { DurableObject } from 'cloudflare:workers'
-import type { Game as GameState, ServerMessage } from '@stopthebus/shared'
+import { hri } from 'human-readable-ids'
+import type { Game as GameState, GameConfig, RoundAnswers, ServerMessage } from '@stopthebus/shared'
 import { GameRules, type Connection } from './game-rules'
+
+type Bindings = { GAME: DurableObjectNamespace<Game> }
 
 // One per game. Sockets use the hibernation API, so the player a socket is
 // bound to lives in its attachment and survives the object being evicted.
-export class Game extends DurableObject {
+export class Game extends DurableObject<Bindings> {
   private rules = new GameRules(
     this.ctx.id.name ?? '',
     {
       get: () => this.ctx.storage.get<GameState>('game'),
       put: (game) => this.ctx.storage.put('game', game),
+      getAnswers: () => this.ctx.storage.get<RoundAnswers>('answers'),
+      putAnswers: (answers) => this.ctx.storage.put('answers', answers),
     },
     (message) => this.ctx.getWebSockets().forEach((ws) => ws.send(JSON.stringify(message))),
+    {
+      now: () => Date.now(),
+      sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+      newGameId: () => hri.random(),
+      createGame: (id, config) =>
+        this.env.GAME.get(this.env.GAME.idFromName(id)).createWithConfig(config),
+    },
   )
+
+  // Called by another game's Durable Object when it finishes, to set up the rematch
+  createWithConfig(config: GameConfig) {
+    return this.rules.createWithConfig(config)
+  }
 
   async fetch(request: Request) {
     if (request.headers.get('Upgrade') !== 'websocket') {
