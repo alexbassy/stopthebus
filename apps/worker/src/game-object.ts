@@ -27,7 +27,7 @@ export class Game extends DurableObject<Bindings> {
   )
 
   // Called by another game's Durable Object when it finishes, to set up the rematch
-  createWithConfig(config: GameConfig) {
+  createWithConfig(config: GameConfig): Promise<void> {
     return this.rules.createWithConfig(config)
   }
 
