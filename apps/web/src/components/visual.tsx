@@ -214,12 +214,14 @@ export const List = styled.ul<ListProps>`
             .join(' ')
             .trim()};
 
-          ${props.stackOnMobile &&
-          css`
-            @media screen and (max-width: 460px) {
-              grid-template-columns: 1fr;
-            }
-          `}
+          ${
+            props.stackOnMobile &&
+            css`
+              @media screen and (max-width: 460px) {
+                grid-template-columns: 1fr;
+              }
+            `
+          }
         `
       : ''}
 `

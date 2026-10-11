@@ -1,7 +1,8 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import useSound from 'use-sound'
-import { OverlayContainer, TextContainer, Text, Button } from '@/components/overlay/visual'
+
+import { Button, OverlayContainer, Text, TextContainer } from '@/components/overlay/visual'
 
 interface CountdownProps {
   from: number

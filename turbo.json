@@ -1,7 +1,12 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
-    "build": { "inputs": ["$TURBO_DEFAULT$", ".env*", "../web/src/**"], "dependsOn": ["^build"], "env": ["WORKERS_CI_COMMIT_SHA"], "outputs": ["dist/**"] },
+    "build": {
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "../web/src/**"],
+      "dependsOn": ["^build"],
+      "env": ["WORKERS_CI_COMMIT_SHA"],
+      "outputs": ["dist/**"]
+    },
     "dev": { "cache": false, "persistent": true },
     "lint": {},
     "typecheck": { "inputs": ["$TURBO_DEFAULT$", "../web/src/**"] },

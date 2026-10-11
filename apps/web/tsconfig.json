@@ -1,31 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "react-jsx",
     "incremental": true,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
-    "types": [
-      "@cloudflare/workers-types",
-      "vitest/globals"
-    ]
+    "types": ["@cloudflare/workers-types", "vitest/globals"]
   },
-  "include": [
-    "vite-env.d.ts",
-    "emotion.d.ts",
-    "human-readable-ids.d.ts",
-    "src",
-    "vite.config.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["vite-env.d.ts", "emotion.d.ts", "human-readable-ids.d.ts", "src", "vite.config.ts"],
+  "exclude": ["node_modules"]
 }

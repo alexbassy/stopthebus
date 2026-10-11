@@ -1,4 +1,12 @@
 {
   "plugins": ["typescript", "react", "nextjs"],
-  "ignorePatterns": ["**/.next/**", "**/dist/**"]
+  "ignorePatterns": ["**/.next/**", "**/dist/**"],
+  "rules": {
+    "sort-imports": [
+      "warn",
+      {
+        "ignoreDeclarationSort": true
+      }
+    ]
+  }
 }

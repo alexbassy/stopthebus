@@ -1,6 +1,7 @@
-import useScrollToTop from '@/hooks/useScrollToTop'
 import styled from '@emotion/styled'
+
 import ResultsRow from '@/components/round-review/ResultsRow'
+import useScrollToTop from '@/hooks/useScrollToTop'
 
 const Table = styled.table`
   width: 100%;

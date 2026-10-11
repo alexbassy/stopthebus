@@ -1,9 +1,11 @@
-import React from 'react'
 import { css } from '@emotion/react'
 import styled from '@emotion/styled'
+import React from 'react'
+
 import { SMALL_SCREEN_BREAKPOINT } from '@/constants/styles'
-import { Pin } from './Player'
 import { useGamePlayers, usegameRoundOpponentProgress } from '@/hooks/database'
+
+import { Pin } from './Player'
 
 interface LanesProps extends Record<string, number> {}
 

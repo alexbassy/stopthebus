@@ -1,4 +1,5 @@
 import { useLayoutEffect, useState } from 'react'
+
 import { SMALL_SCREEN_BREAKPOINT } from '@/constants/styles'
 
 export default function useIsSmallScreen(): boolean {
@@ -7,7 +8,7 @@ export default function useIsSmallScreen(): boolean {
   useLayoutEffect(() => {
     const onResize = () => {
       const isNowSmallScreen = window.matchMedia(
-        `screen and (max-width: ${SMALL_SCREEN_BREAKPOINT}px)`
+        `screen and (max-width: ${SMALL_SCREEN_BREAKPOINT}px)`,
       ).matches
 
       if (isSmallScreen !== isNowSmallScreen) setIsSmallScreen(isNowSmallScreen)

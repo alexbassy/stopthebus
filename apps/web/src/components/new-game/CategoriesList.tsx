@@ -1,9 +1,10 @@
 import React, { ChangeEvent, SyntheticEvent, useState } from 'react'
-import { categories as defaultCategories } from '@/constants/game'
-import { Flex } from '@/components/Grid'
-import { Button, Checkbox, Input, Item, List, HiddenLabel, H3, Lighter } from '@/components/visual'
-import { manager, useGameConfigCategories } from '@/hooks/database'
 import useSound from 'use-sound'
+
+import { Flex } from '@/components/Grid'
+import { Button, Checkbox, H3, HiddenLabel, Input, Item, Lighter, List } from '@/components/visual'
+import { categories as defaultCategories } from '@/constants/game'
+import { manager, useGameConfigCategories } from '@/hooks/database'
 
 function sortByDefaultOrder(array: string[]) {
   return array.sort((a, b) => defaultCategories.indexOf(a) - defaultCategories.indexOf(b))

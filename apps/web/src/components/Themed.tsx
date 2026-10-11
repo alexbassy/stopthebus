@@ -1,10 +1,11 @@
-import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react'
 import { ThemeProvider } from '@emotion/react'
 import { Global } from '@emotion/react'
-import { globalStyles, Background, GameWrapper, Spacing, ExternalLink, HiddenLabel } from './visual'
 import styled from '@emotion/styled'
-import { Flex } from './Grid'
+import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react'
+
 import themes, { Themes } from '../themes'
+import { Flex } from './Grid'
+import { Background, ExternalLink, GameWrapper, HiddenLabel, Spacing, globalStyles } from './visual'
 
 interface ThemedProps {
   children: ReactNode

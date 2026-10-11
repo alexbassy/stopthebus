@@ -1,6 +1,7 @@
-import React, { SyntheticEvent, useState, useEffect } from 'react'
 import { css } from '@emotion/react'
 import styled from '@emotion/styled'
+import React, { SyntheticEvent, useEffect, useState } from 'react'
+
 import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 
 interface GameParams {

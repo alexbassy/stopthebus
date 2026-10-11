@@ -1,8 +1,9 @@
-import { manager, useGameConfigLetters } from '@/hooks/database'
+import useSound from 'use-sound'
+
+import { Flex } from '@/components/Grid'
 import { Checkbox, H3, Item, List, Spacing } from '@/components/visual'
 import { ENGLISH_LETTERS } from '@/constants/letters'
-import { Flex } from '@/components/Grid'
-import useSound from 'use-sound'
+import { manager, useGameConfigLetters } from '@/hooks/database'
 
 const Letters: React.FC = () => {
   const gameLetters = useGameConfigLetters()

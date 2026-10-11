@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { GameSocket, MAX_RETRIES, RETRY_DELAY_MS } from './socket'
 
 class FakeWebSocket {

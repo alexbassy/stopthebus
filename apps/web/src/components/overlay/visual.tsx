@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion'
-import styled from '@emotion/styled'
 import isPropValid from '@emotion/is-prop-valid'
 import { css } from '@emotion/react'
+import styled from '@emotion/styled'
+import { motion } from 'framer-motion'
 
 export const OverlayContainer = styled(motion.div)`
   position: fixed;

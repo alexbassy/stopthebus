@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react'
 import { AnimatePresence } from 'framer-motion'
+import React, { useRef, useState } from 'react'
+
 import { OverlayContainer } from '@/components/overlay/visual'
 
 interface BaseOverlayProps {
@@ -13,7 +14,11 @@ const overlayStates = {
   hidden: { opacity: 0 },
 }
 
-const Base: React.FC<React.PropsWithChildren<BaseOverlayProps>> = ({ isShown, onShown, children }) => {
+const Base: React.FC<React.PropsWithChildren<BaseOverlayProps>> = ({
+  isShown,
+  onShown,
+  children,
+}) => {
   return (
     <OverlayContainer
       variants={overlayStates}

@@ -1,10 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Route, Switch } from 'wouter'
+
 import './styles/globals.css'
-import Home from './pages/home'
 import Acknowledgements from './pages/acknowledgements'
 import Game from './pages/game'
+import Home from './pages/home'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -1,7 +1,9 @@
-import { nanoid } from 'nanoid'
 import { Player } from '@stopthebus/shared'
-import * as random from './random'
+import { nanoid } from 'nanoid'
+
 import { COLOUR_VALUES } from '@/constants/colours'
+
+import * as random from './random'
 
 const ID_LENGTH = 8
 const LEGACY_KEY = 'session'

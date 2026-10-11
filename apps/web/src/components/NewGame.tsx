@@ -1,21 +1,22 @@
 import React from 'react'
-import { Grid } from '@/components/Grid'
-import { Button, Spacing } from '@/components/visual'
+
 import Dialog from '@/components/Dialog'
-import Countdown from '@/components/overlay/Countdown'
+import { Grid } from '@/components/Grid'
 import Alliteration from '@/components/new-game/Alliteration'
 import CategoriesList from '@/components/new-game/CategoriesList'
 import CurrentPlayer from '@/components/new-game/CurrentPlayer'
 import Letters from '@/components/new-game/Letters'
 import PlayerName from '@/components/new-game/PlayerName'
 import Players from '@/components/new-game/Players'
+import RaceRounds from '@/components/new-game/RaceRounds'
+import Countdown from '@/components/overlay/Countdown'
+import { Button, Spacing } from '@/components/visual'
 import {
   manager,
   useGameConfigCategories,
   useGameRoundLetter,
   useGameRoundTimeStarted,
 } from '@/hooks/database'
-import RaceRounds from '@/components/new-game/RaceRounds'
 import usePlayer from '@/hooks/usePlayer'
 
 export default function NewGame() {

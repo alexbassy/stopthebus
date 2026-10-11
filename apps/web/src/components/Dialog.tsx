@@ -1,7 +1,7 @@
+import styled from '@emotion/styled'
+import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
 import { createPortal } from 'react-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import styled from '@emotion/styled'
 
 const Underlay = styled(motion.div)`
   position: fixed;
@@ -44,6 +44,6 @@ function DialogWithOverlay(props: DialogProps) {
 export default function Dialog(props: DialogProps) {
   return createPortal(
     <DialogWithOverlay {...props} />,
-    document.getElementById('dialog-portal') as Element
+    document.getElementById('dialog-portal') as Element,
   )
 }

@@ -1,6 +1,6 @@
-import { useGamePlayers } from '@/hooks/database'
-import { H3, Item, List } from '@/components/visual'
 import Player from '@/components/Player'
+import { H3, Item, List } from '@/components/visual'
+import { useGamePlayers } from '@/hooks/database'
 
 const Players: React.FC = () => {
   const gamePlayers = useGamePlayers()

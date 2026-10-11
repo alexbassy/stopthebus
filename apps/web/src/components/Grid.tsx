@@ -13,8 +13,7 @@ const getTemplateColumns = (cols: number[]) =>
     .trim()
 
 export const Grid = styled.div<GridProps>`
-  --mobile-columns: ${(props) =>
-    props.stackOnMobile ? '1fr' : getTemplateColumns(props.columns)};
+  --mobile-columns: ${(props) => (props.stackOnMobile ? '1fr' : getTemplateColumns(props.columns))};
   display: grid;
   grid-template-columns: ${(props) => getTemplateColumns(props.columns)};
   grid-column-gap: ${(props) => props.gap + 'rem'};

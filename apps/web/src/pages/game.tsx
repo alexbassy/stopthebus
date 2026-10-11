@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
-import Themed from '@/components/Themed'
+
 import GameViewController from '@/components/GameViewController'
-import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
+import Themed from '@/components/Themed'
 import { manager } from '@/hooks/database'
+import useGameIdFromRoute from '@/hooks/useGameIdFromRoute'
 
 export default function Game() {
   const gameId = useGameIdFromRoute()

@@ -1,7 +1,8 @@
+import type { GameConfig, Game as GameState, RoundAnswers, ServerMessage } from '@stopthebus/shared'
 import { DurableObject } from 'cloudflare:workers'
 import { hri } from 'human-readable-ids'
-import type { Game as GameState, GameConfig, RoundAnswers, ServerMessage } from '@stopthebus/shared'
-import { GameRules, type Connection } from './game-rules'
+
+import { type Connection, GameRules } from './game-rules'
 
 type Bindings = { GAME: DurableObjectNamespace<Game> }
 

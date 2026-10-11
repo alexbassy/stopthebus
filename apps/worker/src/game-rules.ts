@@ -1,5 +1,6 @@
 import {
   ClientMessageSchema,
+  type ErrorCode,
   Game,
   GameConfig,
   GameStage,
@@ -9,8 +10,8 @@ import {
   ServerMessage,
   getFinalScores,
   getInitialScores,
-  type ErrorCode,
 } from '@stopthebus/shared'
+
 import { createGameConfig, createGameConfigFromPrevious, createGameState } from './lib/game'
 
 export interface Store {

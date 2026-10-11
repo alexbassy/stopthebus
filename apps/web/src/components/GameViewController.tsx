@@ -1,11 +1,13 @@
-import { useGameStateStage, useIsConnected } from '@/hooks/database'
 import { GameStage } from '@stopthebus/shared'
-import NewGame from '@/components/NewGame'
+
 import ActiveRound from '@/components/ActiveRound'
-import ReviewRound from '@/components/ReviewRound'
 import GameEnd from '@/components/GameEnd'
-import PageTitle from '@/components/PageTitle'
 import GameName from '@/components/GameName'
+import NewGame from '@/components/NewGame'
+import PageTitle from '@/components/PageTitle'
+import ReviewRound from '@/components/ReviewRound'
+import { useGameStateStage, useIsConnected } from '@/hooks/database'
+
 import EntryController from './new-game/EntryController'
 
 const GameViewController: React.FC = () => {

@@ -1,6 +1,7 @@
-import { Button, Description, Input, Spacing } from '@/components/visual'
-import FormControl from '@/components/FormControl'
 import { FormEventHandler, useState } from 'react'
+
+import FormControl from '@/components/FormControl'
+import { Button, Description, Input, Spacing } from '@/components/visual'
 import usePlayer from '@/hooks/usePlayer'
 
 const PlayerName: React.FC = () => {

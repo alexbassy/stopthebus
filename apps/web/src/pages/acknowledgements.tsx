@@ -1,7 +1,8 @@
+import styled from '@emotion/styled'
 import React from 'react'
+
 import PageTitle from '@/components/PageTitle'
 import { ExternalLink, Spacing } from '@/components/visual'
-import styled from '@emotion/styled'
 
 const StyledLink = styled.a`
   font-weight: bold;

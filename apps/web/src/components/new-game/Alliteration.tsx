@@ -1,6 +1,7 @@
-import { manager, useGameConfigAlliteration } from '@/hooks/database'
-import { Checkbox } from '@/components/visual'
 import useSound from 'use-sound'
+
+import { Checkbox } from '@/components/visual'
+import { manager, useGameConfigAlliteration } from '@/hooks/database'
 
 const Alliteration: React.FC = () => {
   const isAlliterationRewarded = useGameConfigAlliteration()

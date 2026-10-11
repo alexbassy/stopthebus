@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
 import type { Game, GameConfig, RoundAnswers, ServerMessage } from '@stopthebus/shared'
-import { GameRules, STOP_GRACE_MS, type Connection } from './game-rules'
+import { describe, expect, it } from 'vitest'
+
+import { type Connection, GameRules, STOP_GRACE_MS } from './game-rules'
 
 const alex = { id: 'p1', name: 'Alex', colour: '#f00' }
 const sam = { id: 'p2', name: 'Sam', colour: '#0f0' }

@@ -1,5 +1,6 @@
-import React, { SyntheticEvent } from 'react'
 import styled from '@emotion/styled'
+import React, { SyntheticEvent } from 'react'
+
 import { ExternalLink } from './visual'
 
 const StyledLink = styled.a`

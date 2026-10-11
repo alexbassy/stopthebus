@@ -1,8 +1,10 @@
-import React from 'react'
-import { Player as PlayerType } from '@stopthebus/shared'
 import styled from '@emotion/styled'
-import { Spacing, Lighter } from './visual'
+import { Player as PlayerType } from '@stopthebus/shared'
+import React from 'react'
+
 import usePlayer from '@/hooks/usePlayer'
+
+import { Lighter, Spacing } from './visual'
 
 interface PlayerProps extends PlayerType {
   inline?: boolean

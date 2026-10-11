@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { scoreAnswer, getInitialScores, getFinalScores } from './scores'
+
 import { rounds } from './__fixtures__/rounds'
 import type { GameConfig, Player, RoundAnswers } from './schemas'
+import { getFinalScores, getInitialScores, scoreAnswer } from './scores'
 
 describe('scoreAnswer()', () => {
   it('scores invalid answer', () => {

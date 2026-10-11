@@ -1,5 +1,5 @@
-import { useGamePlayers } from '@/hooks/database'
 import Player from '@/components/Player'
+import { useGamePlayers } from '@/hooks/database'
 import usePlayer from '@/hooks/usePlayer'
 
 const CurrentPlayer: React.FC = () => {

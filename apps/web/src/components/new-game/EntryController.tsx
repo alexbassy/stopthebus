@@ -1,8 +1,9 @@
+import { GameStage } from '@stopthebus/shared'
 import React, { useEffect } from 'react'
 import { Link } from 'wouter'
-import usePlayer from '@/hooks/usePlayer'
+
 import { manager, useGameError, useGamePlayers, useGameStateStage } from '@/hooks/database'
-import { GameStage } from '@stopthebus/shared'
+import usePlayer from '@/hooks/usePlayer'
 
 // Shows the game once the server has confirmed this player is in it, or says why not
 const EntryController: React.FC<React.PropsWithChildren> = (props) => {

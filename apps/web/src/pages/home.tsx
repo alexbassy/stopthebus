@@ -1,14 +1,15 @@
-import React, { useState, SyntheticEvent, useEffect } from 'react'
-import { useLocation } from 'wouter'
-import * as random from '@/helpers/random'
-import { Input, Button, H2, Spacing } from '@/components/visual'
-import PageTitle from '@/components/PageTitle'
-import FormControl from '@/components/FormControl'
-import Themed from '@/components/Themed'
-import { createGame } from '@/client/socket'
 import { Player } from '@stopthebus/shared'
-import { getUserSession } from '@/helpers/getPersistedPlayer'
+import React, { SyntheticEvent, useEffect, useState } from 'react'
+import { useLocation } from 'wouter'
+
 import { APP_ROUTES } from '@/client/api-routes'
+import { createGame } from '@/client/socket'
+import FormControl from '@/components/FormControl'
+import PageTitle from '@/components/PageTitle'
+import Themed from '@/components/Themed'
+import { Button, H2, Input, Spacing } from '@/components/visual'
+import { getUserSession } from '@/helpers/getPersistedPlayer'
+import * as random from '@/helpers/random'
 
 export default function Home() {
   const [, navigate] = useLocation()

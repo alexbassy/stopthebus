@@ -1,6 +1,6 @@
-import { Answers, FinalScores, Game, GameStage, Player, ServerMessage } from '@stopthebus/shared'
 import { bind, shareLatest } from '@react-rxjs/core'
-import { BehaviorSubject, map, Observable, of, ReplaySubject, Subject, timer } from 'rxjs'
+import { Answers, FinalScores, Game, GameStage, Player, ServerMessage } from '@stopthebus/shared'
+import { BehaviorSubject, Observable, ReplaySubject, Subject, map, of, timer } from 'rxjs'
 import {
   distinctUntilChanged,
   filter,
@@ -10,6 +10,7 @@ import {
   take,
   takeUntil,
 } from 'rxjs/operators'
+
 import { GameSocket } from '@/client/socket'
 import { getUserSession, updatePersistedUserName } from '@/helpers/getPersistedPlayer'
 

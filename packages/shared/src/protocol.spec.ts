@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { ClientMessageSchema, ServerMessageSchema } from './protocol'
 
 const player = { id: 'p1', name: 'Alex', colour: '#f00' }

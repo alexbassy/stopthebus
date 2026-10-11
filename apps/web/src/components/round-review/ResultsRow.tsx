@@ -1,17 +1,18 @@
 import styled from '@emotion/styled'
+import { scoreAnswer } from '@stopthebus/shared'
+import { ChangeEvent, memo } from 'react'
+import useSound from 'use-sound'
+
 import { Flex } from '@/components/Grid'
+import Player from '@/components/Player'
+import { Checkbox } from '@/components/visual'
 import {
   manager,
   useGameConfigAlliteration,
   useGamePlayers,
   useGameRoundLetter,
 } from '@/hooks/database'
-import Player from '@/components/Player'
-import { Checkbox } from '@/components/visual'
 import useIsSmallScreen from '@/hooks/useIsSmallScreen'
-import { ChangeEvent, memo } from 'react'
-import { scoreAnswer } from '@stopthebus/shared'
-import useSound from 'use-sound'
 
 const PlayerColumn = styled.td`
   word-break: break-all;
