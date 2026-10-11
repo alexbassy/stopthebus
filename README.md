@@ -31,10 +31,10 @@ Choose some categories and think of a word for each one, with the given letter.
 ```
 git clone https://github.com/alexbassy/stopthebus.git
 cd stopthebus
-yarn
-yarn dev
+pnpm install
+pnpm dev
 ```
 
 ### Cloudflare worker
 
-Cloudflare worker routes live in `/src/workers` and can be built with `yarn worker:build` and published with `yarn worker:publish`
+Cloudflare worker routes live in `apps/worker` and can be built with `pnpm --filter @stopthebus/worker build` and published with `pnpm --filter @stopthebus/worker deploy`

@@ -1,0 +1,4 @@
+{
+  "plugins": ["typescript", "react", "nextjs"],
+  "ignorePatterns": ["**/.next/**", "**/dist/**"]
+}

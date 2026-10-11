@@ -15,14 +15,14 @@ jobs:
         uses: cloudflare/wrangler-action@1.3.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          workingDirectory: 'src/workers'
+          workingDirectory: 'apps/worker'
           secrets: |
             WORKER_FAUNA_KEY
             SB_TOKEN
           preCommands: |
             echo "*** PRE COMMAND ***"
             pwd
-            (cd ../.. && yarn && yarn worker:build)
+            (cd ../.. && corepack enable && pnpm install --frozen-lockfile && pnpm --filter @stopthebus/worker build)
         env:
           WORKER_FAUNA_KEY: ${{ secrets.WORKER_FAUNA_KEY }}
           SB_TOKEN: ${{ secrets.SB_TOKEN }}

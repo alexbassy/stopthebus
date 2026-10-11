@@ -1,47 +1,20 @@
 {
   "name": "stopthebus",
   "private": true,
+  "packageManager": "pnpm@10.30.3",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "jest",
-    "worker:build": "esbuild src/workers/index.ts --bundle --target=es2019 --format=esm --outfile=src/workers/dist/worker.js",
-    "worker:publish": "(cd src/workers && wrangler publish)",
-    "worker:all": "yarn worker:build && yarn worker:publish"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.6.0",
-    "@emotion/styled": "^11.6.0",
-    "@react-rxjs/core": "^0.8.4",
-    "@react-rxjs/utils": "^0.9.3",
-    "@splitbee/node": "^0.3.1",
-    "faunadb": "^4.5.2",
-    "framer-motion": "^5.3.3",
-    "human-readable-ids": "^1.0.4",
-    "nanoid": "^3.2.0",
-    "next": "^12.2.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "rxjs": "^7.4.0",
-    "servertime": "^3.1.1",
-    "use-sound": "^4.0.1",
-    "worktop": "^0.7.3"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "format": "oxfmt"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^3.3.1",
-    "@cloudflare/wrangler": "^1.19.7",
-    "@swc/jest": "^0.2.17",
-    "@types/jest": "^27.0.3",
-    "@types/node": "16.11.10",
-    "@types/react": "17.0.37",
-    "@types/react-dom": "^17.0.11",
-    "esbuild": "^0.14.20",
-    "eslint": "7",
-    "eslint-config-next": "12.0.4",
-    "jest": "^27.4.7",
-    "prettier": "^2.4.1",
-    "typescript": "4.5.2"
+    "oxfmt": "^0.72.0",
+    "oxlint": "^1.87.0",
+    "turbo": "^2.11.7",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
   }
 }
