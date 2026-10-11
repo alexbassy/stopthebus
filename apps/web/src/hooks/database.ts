@@ -40,6 +40,7 @@ class Manager {
     this.disconnect()
     this.gameId = gameId
     this.gameSubject$.next(null)
+    this.ownAnswers$.next(null)
     this.error$.next(null)
     this.player$.next(getUserSession())
     this.socket = new GameSocket(gameId, {

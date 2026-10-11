@@ -19,7 +19,7 @@ export class Game extends DurableObject<Bindings> {
     (message) => this.ctx.getWebSockets().forEach((ws) => ws.send(JSON.stringify(message))),
     {
       now: () => Date.now(),
-      sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+      setAlarm: (at) => this.ctx.storage.setAlarm(at),
       newGameId: () => hri.random(),
       createGame: (id, config) =>
         this.env.GAME.get(this.env.GAME.idFromName(id)).createWithConfig(config),
@@ -29,6 +29,10 @@ export class Game extends DurableObject<Bindings> {
   // Called by another game's Durable Object when it finishes, to set up the rematch
   createWithConfig(config: GameConfig) {
     return this.rules.createWithConfig(config)
+  }
+
+  async alarm() {
+    await this.rules.onAlarm()
   }
 
   async fetch(request: Request) {

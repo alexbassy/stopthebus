@@ -25,7 +25,8 @@ export interface Store {
 // What the rules need from the outside world
 export interface Env {
   now(): number
-  sleep(ms: number): Promise<void>
+  // Wakes the game at `at` (ms since epoch) by calling `onAlarm`
+  setAlarm(at: number): Promise<void>
   newGameId(): string
   // Creates the rematch game, with no players
   createGame(id: string, config: GameConfig): Promise<void>
@@ -67,10 +68,7 @@ export class GameRules {
     const msg = parsed.data
 
     const game = await this.store.get()
-    const save = async (next: Game) => {
-      await this.store.put(next)
-      this.broadcast({ type: 'state', game: next })
-    }
+    const save = (next: Game) => this.save(next)
 
     if (msg.type === 'create') {
       if (game) return fail('refused', 'A game with that name already exists')
@@ -146,7 +144,7 @@ export class GameRules {
         if (round?.timeEnded) previousRounds.push(round)
 
         if (round && round.index === game.config.numRounds - 1) {
-          return this.finish(game, previousRounds, save)
+          return this.finish(game, previousRounds)
         }
 
         const letters = game.config.letters
@@ -214,13 +212,11 @@ export class GameRules {
         if (stage !== GameStage.active || !round || round.timeEnded) {
           return fail('refused', 'No round is in play')
         }
-        await save({
-          ...game,
-          currentRound: { ...round, stopperId: me, timeEnded: this.env.now() },
-        })
-        // Wait for the other players' final answers
-        await this.env.sleep(STOP_GRACE_MS)
-        return this.review(save)
+        const timeEnded = this.env.now()
+        await save({ ...game, currentRound: { ...round, stopperId: me, timeEnded } })
+        // The other players get a moment to send their final answers. An alarm
+        // rather than a timer, so a restart can't strand the game mid-Stop.
+        return this.env.setAlarm(timeEnded + STOP_GRACE_MS)
       }
       case 'setScore': {
         if (stage !== GameStage.review || !round) return fail('refused', 'Not in review')
@@ -236,12 +232,23 @@ export class GameRules {
     }
   }
 
-  // Scores the stopped round and moves the game to review. Reads the game
-  // afresh, because answers keep arriving during the grace window.
-  private async review(save: (game: Game) => Promise<void>) {
+  private async save(game: Game) {
+    await this.store.put(game)
+    this.broadcast({ type: 'state', game })
+  }
+
+  // Called when the alarm fires. Once the grace window after a Stop is over,
+  // scores the round and moves the game to review. Reads the game afresh,
+  // because answers keep arriving during the window.
+  // ponytail: ticket 06's expiry must share this single alarm, so it should
+  // re-arm the Stop deadline rather than overwrite it.
+  async onAlarm() {
     const game = await this.store.get()
     const round = game?.currentRound
     if (!game || !round?.timeEnded || game.state.stage !== GameStage.active) return
+
+    const due = round.timeEnded + STOP_GRACE_MS
+    if (this.env.now() < due) return this.env.setAlarm(due)
 
     const saved = (await this.store.getAnswers()) ?? {}
     const { categories } = game.config
@@ -255,21 +262,16 @@ export class GameRules {
     const scores = getInitialScores(answers, round.letter, game.config, game.players)
 
     await this.store.putAnswers({})
-    await save({
+    await this.save({
       ...game,
       state: { stage: GameStage.review },
       currentRound: { ...round, answers, scores, opponentProgress: null },
     })
   }
 
-  private async finish(game: Game, rounds: Round[], save: (game: Game) => Promise<void>) {
+  private async finish(game: Game, rounds: Round[]) {
+    // Create the rematch first, so the link we hand out always leads somewhere
     const nextGameId = this.env.newGameId()
-    await save({
-      ...game,
-      state: { stage: GameStage.finished, finalScores: getFinalScores(rounds), nextGameId },
-      previousRounds: rounds,
-      currentRound: null,
-    })
     await this.env.createGame(
       nextGameId,
       createGameConfigFromPrevious(
@@ -277,6 +279,14 @@ export class GameRules {
         rounds.map((r) => r.letter),
       ),
     )
+    // Another Start may have finished the game while we were creating it
+    if ((await this.store.get())?.state.stage === GameStage.finished) return
+    await this.save({
+      ...game,
+      state: { stage: GameStage.finished, finalScores: getFinalScores(rounds), nextGameId },
+      previousRounds: rounds,
+      currentRound: null,
+    })
   }
 
   // Sets up a game that has no players yet: the rematch of a finished game

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Game, GameConfig, RoundAnswers, ServerMessage } from '@stopthebus/shared'
-import { GameRules, type Connection } from './game-rules'
+import { GameRules, STOP_GRACE_MS, type Connection } from './game-rules'
 
 const alex = { id: 'p1', name: 'Alex', colour: '#f00' }
 const sam = { id: 'p2', name: 'Sam', colour: '#0f0' }
@@ -11,8 +11,7 @@ function setup() {
   const broadcasts: ServerMessage[] = []
   const clock = { now: 1_000_000 }
   const created: { id: string; config: GameConfig }[] = []
-  // Stop waits on this; tests release it to end the grace window
-  let release = () => {}
+  const alarms: number[] = []
   const room = new GameRules(
     'happy-cat-12',
     {
@@ -24,7 +23,7 @@ function setup() {
     (m) => broadcasts.push(m),
     {
       now: () => clock.now,
-      sleep: () => new Promise<void>((resolve) => (release = resolve)),
+      setAlarm: async (at) => void alarms.push(at),
       newGameId: () => 'next-game-1',
       createGame: async (id, config) => void created.push({ id, config }),
     },
@@ -42,7 +41,12 @@ function setup() {
     broadcasts,
     clock,
     created,
-    release: () => release(),
+    alarms,
+    // Ends the grace window after a Stop
+    endGrace: async () => {
+      clock.now += STOP_GRACE_MS
+      await room.onAlarm()
+    },
     game: () => stored,
     seed,
   }
@@ -226,13 +230,11 @@ describe('start and cancel', () => {
   })
 
   it('cancelling a later start goes back to reviewing the last round', async () => {
-    const { a, s, game, release } = await lobby()
+    const { a, s, game, endGrace } = await lobby()
     await a.send({ type: 'updateConfig', config: { letters: 'cd', numRounds: 3 } })
     await a.send({ type: 'start' })
-    const stopping = a.send({ type: 'stop' })
-    await new Promise((r) => setTimeout(r))
-    release()
-    await stopping
+    await a.send({ type: 'stop' })
+    await endGrace()
     const reviewed = game()!.currentRound
     await s.send({ type: 'start' })
     expect(game()?.currentRound).toMatchObject({ index: 1 })
@@ -250,10 +252,8 @@ describe('start and cancel', () => {
     await a.send({ type: 'cancelStart' })
     expect(a.sent.at(-1)).toMatchObject({ type: 'error', code: 'refused' })
     await a.send({ type: 'start' })
-    void a.send({ type: 'stop' })
-    await Promise.resolve()
+    await a.send({ type: 'stop' })
     await a.send({ type: 'cancelStart' })
-    await new Promise((r) => setTimeout(r))
     expect(a.sent.at(-1)).toMatchObject({ type: 'error', code: 'refused' })
     expect(game()?.state.stage).toBe('active')
   })
@@ -294,19 +294,18 @@ describe('answers', () => {
 
 describe('stop and review', () => {
   it('keeps answers that arrive in the grace window, then scores the round', async () => {
-    const { a, s, game, clock, release } = await lobby()
+    const { a, s, game, clock, alarms, endGrace } = await lobby()
     await a.send({ type: 'start' })
     await a.send({ type: 'saveAnswer', category: 'Animal', answer: 'Cat' })
 
     clock.now += 60_000
-    const stopping = a.send({ type: 'stop' })
-    await new Promise((r) => setTimeout(r))
+    await a.send({ type: 'stop' })
+    expect(alarms).toEqual([clock.now + STOP_GRACE_MS])
     expect(game()?.currentRound).toMatchObject({ stopperId: 'p1', timeEnded: clock.now })
     expect(game()?.state.stage).toBe('active')
 
     await s.send({ type: 'saveAnswer', category: 'Animal', answer: 'camel' })
-    release()
-    await stopping
+    await endGrace()
 
     expect(game()?.state.stage).toBe('review')
     expect(game()?.currentRound).toMatchObject({
@@ -317,30 +316,42 @@ describe('stop and review', () => {
     expect(s.sent.at(-1)).toMatchObject({ code: 'refused' })
   })
 
+  it('does not review before the grace window is over, and re-arms the alarm', async () => {
+    const { a, game, room, alarms, clock } = await lobby()
+    await a.send({ type: 'start' })
+    await a.send({ type: 'stop' })
+    clock.now += STOP_GRACE_MS - 1
+    await room.onAlarm()
+    expect(game()?.state.stage).toBe('active')
+    expect(alarms).toHaveLength(2)
+    await room.onAlarm() // a stray alarm outside a Stop does nothing
+    clock.now += 1
+    await room.onAlarm()
+    expect(game()?.state.stage).toBe('review')
+    await room.onAlarm()
+    expect(game()?.state.stage).toBe('review')
+  })
+
   it('fills missing answers with empty strings and ignores a second stop', async () => {
-    const { a, s, game, release } = await lobby()
+    const { a, s, game, endGrace } = await lobby()
     await a.send({ type: 'start' })
     await a.send({ type: 'saveAnswer', category: 'Animal', answer: 'cat' })
-    const stopping = a.send({ type: 'stop' })
-    await new Promise((r) => setTimeout(r))
+    await a.send({ type: 'stop' })
     await s.send({ type: 'stop' })
     expect(s.sent.at(-1)).toMatchObject({ code: 'refused' })
     expect(game()?.currentRound?.stopperId).toBe('p1')
-    release()
-    await stopping
+    await endGrace()
     expect(game()?.currentRound?.answers.p2).toEqual({ Animal: '' })
     expect(game()?.currentRound?.scores.p2).toEqual({ Animal: 0 })
   })
 
   it('lets any player change any score in review, and only in review', async () => {
-    const { a, s, game, release } = await lobby()
+    const { a, s, game, endGrace } = await lobby()
     await a.send({ type: 'start' })
     await s.send({ type: 'setScore', playerId: 'p1', category: 'Animal', score: 5 })
     expect(s.sent.at(-1)).toMatchObject({ code: 'refused' })
-    const stopping = a.send({ type: 'stop' })
-    await new Promise((r) => setTimeout(r))
-    release()
-    await stopping
+    await a.send({ type: 'stop' })
+    await endGrace()
     await s.send({ type: 'setScore', playerId: 'p1', category: 'Animal', score: 5 })
     expect(game()?.currentRound?.scores.p1).toEqual({ Animal: 5 })
     await s.send({ type: 'setScore', playerId: 'nobody', category: 'Animal', score: 1 })
@@ -352,10 +363,8 @@ describe('finishing', () => {
   async function playRound(l: Awaited<ReturnType<typeof lobby>>, answerA: string) {
     await l.a.send({ type: 'start' })
     await l.a.send({ type: 'saveAnswer', category: 'Animal', answer: answerA })
-    const stopping = l.a.send({ type: 'stop' })
-    await new Promise((r) => setTimeout(r))
-    l.release()
-    await stopping
+    await l.a.send({ type: 'stop' })
+    await l.endGrace()
   }
 
   it('finishes after the last round and creates the rematch', async () => {
