@@ -199,16 +199,13 @@ export class GameRules {
           currentRound: reviewed,
         })
       }
-      case 'saveAnswer': {
+      case 'saveAnswers': {
         if (stage !== GameStage.active || !round) return fail('refused', 'No round is in play')
-        if (!game.config.categories.includes(msg.category)) {
+        if (!Object.keys(msg.answers).every((c) => game.config.categories.includes(c))) {
           return fail('invalid', 'Unknown category')
         }
         const answers = (await this.store.getAnswers()) ?? {}
-        await this.store.putAnswers({
-          ...answers,
-          [me]: { ...answers[me], [msg.category]: msg.answer },
-        })
+        await this.store.putAnswers({ ...answers, [me]: { ...answers[me], ...msg.answers } })
         return
       }
       case 'setProgress': {

@@ -29,7 +29,9 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   message('toggleCategory', { category: TextSchema.min(1) }),
   message('start'),
   message('cancelStart'),
-  message('saveAnswer', { category: TextSchema.min(1), answer: TextSchema }),
+  // Sent when the round is stopped (and when the tab is hidden), not as the
+  // player types. Each category given replaces the saved answer.
+  message('saveAnswers', { answers: z.record(TextSchema.min(1), TextSchema) }),
   message('setProgress', { category: TextSchema.min(1) }),
   // Ends the round early; the sender becomes the stopper
   message('stop'),

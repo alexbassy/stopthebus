@@ -37,7 +37,7 @@ export default function ActiveRound() {
   const gameRoundLetter = useGameRoundLetter()
   const gameRoundEndingPlayer = useGameRoundEndingPlayer()
   const [values, setValues] = useState<Answers>({})
-  const [lastFocusedCategory, setLastFocusedCategory] = useState<string>('')
+  const valuesRef = useRef<Answers>({})
   const [hasEnded, setHasEnded] = useState<boolean>(false)
   const formRef = useRef<HTMLFormElement>(null)
   const [questionPositions, setQuestionPositions] = useState<QuestionPositions>({})
@@ -49,6 +49,10 @@ export default function ActiveRound() {
 
     return () => setValues({})
   }, [])
+
+  useEffect(() => {
+    valuesRef.current = values
+  }, [values])
 
   useScrollToTop()
 
@@ -91,12 +95,18 @@ export default function ActiveRound() {
     }
 
     setHasEnded(true)
-    // Send the answer being typed when the round was stopped, if there is one
-    const lastAnswer = values[lastFocusedCategory]
-    if (lastFocusedCategory && lastAnswer !== undefined) {
-      manager.setRoundAnswer(lastFocusedCategory, lastAnswer)
+    // Everyone's answers go up in one message when the round is stopped
+    manager.saveRoundAnswers(values)
+  }, [gameRoundEndingPlayer, hasEnded, values])
+
+  // Best-effort save for a player who switches away or reloads mid-round
+  useEffect(() => {
+    const save = () => {
+      if (document.visibilityState === 'hidden') manager.saveRoundAnswers(valuesRef.current)
     }
-  }, [gameRoundEndingPlayer, hasEnded, values, lastFocusedCategory])
+    document.addEventListener('visibilitychange', save)
+    return () => document.removeEventListener('visibilitychange', save)
+  }, [])
 
   const handleChange = (category: string) => (event: ChangeEvent<HTMLInputElement>) => {
     setValues((currentValues) => ({
@@ -106,12 +116,7 @@ export default function ActiveRound() {
   }
 
   const handleFocus = (event: SyntheticEvent<HTMLInputElement>) => {
-    setLastFocusedCategory(event.currentTarget.name)
     manager.setPlayerProgress(event.currentTarget.name)
-  }
-
-  const pushAnswer = (category: string, answer: string) => {
-    manager.setRoundAnswer(category, answer)
   }
 
   const handleEndRoundClick = (event: SyntheticEvent<HTMLFormElement>) => {
@@ -151,7 +156,6 @@ export default function ActiveRound() {
                         type='text'
                         id={id}
                         name={category}
-                        onBlur={(event) => pushAnswer(category, event.target.value)}
                         onFocus={handleFocus}
                         onChange={handleChange(category)}
                         value={values[category] ?? ''}

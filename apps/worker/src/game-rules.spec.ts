@@ -272,8 +272,8 @@ describe('answers', () => {
   it('never broadcasts answers, and gives a rejoining player their own back', async () => {
     const { a, s, broadcasts, connect } = await lobby()
     await a.send({ type: 'start' })
-    await a.send({ type: 'saveAnswer', category: 'Animal', answer: 'cat-secret' })
-    await s.send({ type: 'saveAnswer', category: 'Animal', answer: 'camel-secret' })
+    await a.send({ type: 'saveAnswers', answers: { Animal: 'cat-secret' } })
+    await s.send({ type: 'saveAnswers', answers: { Animal: 'camel-secret' } })
     await a.send({ type: 'setProgress', category: 'Animal' })
     expect(JSON.stringify(broadcasts)).not.toContain('secret')
     expect(JSON.stringify(s.sent)).not.toContain('cat-secret')
@@ -293,10 +293,10 @@ describe('answers', () => {
 
   it('rejects answers outside a round or for unknown categories', async () => {
     const { a } = await lobby()
-    await a.send({ type: 'saveAnswer', category: 'Animal', answer: 'cat' })
+    await a.send({ type: 'saveAnswers', answers: { Animal: 'cat' } })
     expect(a.sent.at(-1)).toMatchObject({ code: 'refused' })
     await a.send({ type: 'start' })
-    await a.send({ type: 'saveAnswer', category: 'Nope', answer: 'cat' })
+    await a.send({ type: 'saveAnswers', answers: { Nope: 'cat' } })
     expect(a.sent.at(-1)).toMatchObject({ code: 'invalid' })
   })
 })
@@ -305,7 +305,7 @@ describe('stop and review', () => {
   it('keeps answers that arrive in the grace window, then scores the round', async () => {
     const { a, s, game, clock, alarms, endGrace } = await lobby()
     await a.send({ type: 'start' })
-    await a.send({ type: 'saveAnswer', category: 'Animal', answer: 'Cat' })
+    await a.send({ type: 'saveAnswers', answers: { Animal: 'Cat' } })
 
     clock.now += 60_000
     await a.send({ type: 'stop' })
@@ -313,7 +313,7 @@ describe('stop and review', () => {
     expect(game()?.currentRound).toMatchObject({ stopperId: 'p1', timeEnded: clock.now })
     expect(game()?.state.stage).toBe('active')
 
-    await s.send({ type: 'saveAnswer', category: 'Animal', answer: 'camel' })
+    await s.send({ type: 'saveAnswers', answers: { Animal: 'camel' } })
     await endGrace()
 
     expect(game()?.state.stage).toBe('review')
@@ -321,7 +321,7 @@ describe('stop and review', () => {
       answers: { p1: { Animal: 'Cat' }, p2: { Animal: 'camel' } },
       scores: { p1: { Animal: 1 }, p2: { Animal: 1 } },
     })
-    await s.send({ type: 'saveAnswer', category: 'Animal', answer: 'late' })
+    await s.send({ type: 'saveAnswers', answers: { Animal: 'late' } })
     expect(s.sent.at(-1)).toMatchObject({ code: 'refused' })
   })
 
@@ -344,7 +344,7 @@ describe('stop and review', () => {
   it('fills missing answers with empty strings and ignores a second stop', async () => {
     const { a, s, game, endGrace } = await lobby()
     await a.send({ type: 'start' })
-    await a.send({ type: 'saveAnswer', category: 'Animal', answer: 'cat' })
+    await a.send({ type: 'saveAnswers', answers: { Animal: 'cat' } })
     await a.send({ type: 'stop' })
     await s.send({ type: 'stop' })
     expect(s.sent.at(-1)).toMatchObject({ code: 'refused' })
@@ -371,7 +371,7 @@ describe('stop and review', () => {
 describe('finishing', () => {
   async function playRound(l: Awaited<ReturnType<typeof lobby>>, answerA: string) {
     await l.a.send({ type: 'start' })
-    await l.a.send({ type: 'saveAnswer', category: 'Animal', answer: answerA })
+    await l.a.send({ type: 'saveAnswers', answers: { Animal: answerA } })
     await l.a.send({ type: 'stop' })
     await l.endGrace()
   }

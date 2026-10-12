@@ -240,8 +240,9 @@ class Manager {
     return this.ownAnswers$.pipe(filter(Boolean), take(1))
   }
 
-  setRoundAnswer(category: string, answer: string) {
-    this.socket?.send({ type: 'saveAnswer', category, answer })
+  // Sends every answer in one message. Called when the round is stopped, not per keystroke.
+  saveRoundAnswers(answers: Answers) {
+    this.socket?.send({ type: 'saveAnswers', answers })
   }
 
   setPlayerProgress(category: string) {
