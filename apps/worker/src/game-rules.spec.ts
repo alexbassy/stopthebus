@@ -284,6 +284,15 @@ describe('answers', () => {
     expect(JSON.stringify(reloaded.sent)).not.toContain('camel-secret')
   })
 
+  it('confirms saved answers, echoing whether they were final', async () => {
+    const { a } = await lobby()
+    await a.send({ type: 'start' })
+    await a.send({ type: 'saveAnswers', answers: { Animal: 'cat' } })
+    expect(a.sent.at(-1)).toEqual({ type: 'answersSaved', final: false })
+    await a.send({ type: 'saveAnswers', answers: { Animal: 'cat' }, final: true })
+    expect(a.sent.at(-1)).toEqual({ type: 'answersSaved', final: true })
+  })
+
   it('shares only which category each player is on', async () => {
     const { a, game } = await lobby()
     await a.send({ type: 'start' })

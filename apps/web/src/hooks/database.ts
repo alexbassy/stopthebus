@@ -22,6 +22,8 @@ import {
 import { GameSocket } from '@/client/socket'
 import { getUserSession, updatePersistedUserName } from '@/helpers/getPersistedPlayer'
 
+const SUBMIT_RETRY_MS = 500
+
 export type GameError = Extract<ServerMessage, { type: 'error' }>
 
 class Manager {
@@ -39,6 +41,8 @@ class Manager {
   private gameSubject$ = new BehaviorSubject<Game | null>(null)
 
   // Reset when no round is in play so a later round never sees an old round's answers
+  private submitTimer?: ReturnType<typeof setInterval>
+
   private ownAnswers$ = new BehaviorSubject<Answers | null>(null)
 
   sharedGame$!: Observable<Game>
@@ -58,15 +62,21 @@ class Manager {
       onMessage: (message) => {
         if (message.type === 'state') {
           this.error$.next(null)
-          if (message.game.state.stage !== GameStage.active) this.ownAnswers$.next(null)
+          if (message.game.state.stage !== GameStage.active) {
+            this.ownAnswers$.next(null)
+            this.cancelSubmit()
+          }
           this.gameSubject$.next(message.game)
         } else if (message.type === 'answers') this.ownAnswers$.next(message.answers)
-        else this.error$.next(message)
+        else if (message.type === 'answersSaved') {
+          if (message.final) this.cancelSubmit()
+        } else this.error$.next(message)
       },
     })
   }
 
   disconnect() {
+    this.cancelSubmit()
     this.socket?.close()
     this.socket = undefined
   }
@@ -240,9 +250,24 @@ class Manager {
     return this.ownAnswers$.pipe(filter(Boolean), take(1))
   }
 
-  // Sends every answer in one message. Called when the round is stopped, not per keystroke.
+  // Sends every answer in one message, not per keystroke. A best-effort save.
   saveRoundAnswers(answers: Answers) {
     this.socket?.send({ type: 'saveAnswers', answers })
+  }
+
+  // Submits the answers once the round is stopped, and keeps resending them
+  // until the server confirms, so a dropped socket or lost message can't lose
+  // them. Stops when confirmed, when the round leaves play, or on `cancelSubmit`.
+  submitRoundAnswers(answers: Answers) {
+    this.cancelSubmit()
+    const send = () => this.socket?.send({ type: 'saveAnswers', answers, final: true })
+    send()
+    this.submitTimer = setInterval(send, SUBMIT_RETRY_MS)
+  }
+
+  cancelSubmit() {
+    clearInterval(this.submitTimer)
+    this.submitTimer = undefined
   }
 
   setPlayerProgress(category: string) {

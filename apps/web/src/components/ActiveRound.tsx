@@ -95,9 +95,12 @@ export default function ActiveRound() {
     }
 
     setHasEnded(true)
-    // Everyone's answers go up in one message when the round is stopped
-    manager.saveRoundAnswers(values)
+    // Everyone's answers go up in one message when the round is stopped, and
+    // are resent until the server confirms them
+    manager.submitRoundAnswers(values)
   }, [gameRoundEndingPlayer, hasEnded, values])
+
+  useEffect(() => () => manager.cancelSubmit(), [])
 
   // Best-effort save for a player who switches away or reloads mid-round
   useEffect(() => {

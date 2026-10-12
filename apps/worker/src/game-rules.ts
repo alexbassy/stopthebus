@@ -206,7 +206,7 @@ export class GameRules {
         }
         const answers = (await this.store.getAnswers()) ?? {}
         await this.store.putAnswers({ ...answers, [me]: { ...answers[me], ...msg.answers } })
-        return
+        return conn.send({ type: 'answersSaved', final: msg.final ?? false })
       }
       case 'setProgress': {
         if (stage !== GameStage.active || !round) return fail('refused', 'No round is in play')

@@ -30,8 +30,12 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   message('start'),
   message('cancelStart'),
   // Sent when the round is stopped (and when the tab is hidden), not as the
-  // player types. Each category given replaces the saved answer.
-  message('saveAnswers', { answers: z.record(TextSchema.min(1), TextSchema) }),
+  // player types. Each category given replaces the saved answer. `final` marks
+  // the player's submission after a Stop; the server confirms it with `answersSaved`.
+  message('saveAnswers', {
+    answers: z.record(TextSchema.min(1), TextSchema),
+    final: z.boolean().optional(),
+  }),
   message('setProgress', { category: TextSchema.min(1) }),
   // Ends the round early; the sender becomes the stopper
   message('stop'),
@@ -54,6 +58,8 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   // The receiving player's own saved answers, sent when they (re)join during an
   // active round so a reload restores their inputs
   message('answers', { answers: AnswersSchema }),
+  // Confirms a `saveAnswers`, echoing its `final` flag
+  message('answersSaved', { final: z.boolean() }),
   message('error', { code: ErrorCodeSchema, message: z.string() }),
 ])
 export type ServerMessage = z.infer<typeof ServerMessageSchema>
