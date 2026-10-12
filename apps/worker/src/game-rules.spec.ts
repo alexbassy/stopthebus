@@ -9,6 +9,7 @@ const sam = { id: 'p2', name: 'Sam', colour: '#0f0' }
 function setup() {
   let stored: Game | undefined
   let answers: RoundAnswers | undefined
+  let submitted: string[] | undefined
   let activity: number | undefined
   const broadcasts: ServerMessage[] = []
   const clock = { now: 1_000_000 }
@@ -21,11 +22,14 @@ function setup() {
       put: async (g) => void (stored = g),
       getAnswers: async () => answers,
       putAnswers: async (a) => void (answers = a),
+      getSubmitted: async () => submitted,
+      putSubmitted: async (ids) => void (submitted = ids),
       getActivity: async () => activity,
       putActivity: async (t) => void (activity = t),
       clear: async () => {
         stored = undefined
         answers = undefined
+        submitted = undefined
         activity = undefined
       },
     },
@@ -332,6 +336,27 @@ describe('stop and review', () => {
     })
     await s.send({ type: 'saveAnswers', answers: { Animal: 'late' } })
     expect(s.sent.at(-1)).toMatchObject({ code: 'refused' })
+  })
+
+  it('reviews as soon as every player has submitted, without waiting out the window', async () => {
+    const { a, s, game, clock } = await lobby()
+    await a.send({ type: 'start' })
+    await a.send({ type: 'stop' })
+    await a.send({ type: 'saveAnswers', answers: { Animal: 'cat' }, final: true })
+    // Answers saved without `final` don't count as a submission
+    await s.send({ type: 'saveAnswers', answers: { Animal: 'camel' } })
+    expect(game()?.state.stage).toBe('active')
+    // A resent submission is harmless
+    await a.send({ type: 'saveAnswers', answers: { Animal: 'cat' }, final: true })
+    expect(game()?.state.stage).toBe('active')
+
+    clock.now += 100
+    await s.send({ type: 'saveAnswers', answers: { Animal: 'camel' }, final: true })
+    expect(game()?.state.stage).toBe('review')
+    expect(game()?.currentRound?.answers).toEqual({
+      p1: { Animal: 'cat' },
+      p2: { Animal: 'camel' },
+    })
   })
 
   it('does not review before the grace window is over, and re-arms the alarm', async () => {

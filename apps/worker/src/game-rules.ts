@@ -21,6 +21,9 @@ export interface Store {
   // we broadcast can never include them
   getAnswers(): Promise<RoundAnswers | undefined>
   putAnswers(answers: RoundAnswers): Promise<void>
+  // Players who have sent their final answers since the round was stopped
+  getSubmitted(): Promise<string[] | undefined>
+  putSubmitted(playerIds: string[]): Promise<void>
   // When the game last received a message
   getActivity(): Promise<number | undefined>
   putActivity(at: number): Promise<void>
@@ -47,8 +50,9 @@ export interface Connection {
 
 // Clients show the countdown from the start time, so it is set a little ahead
 export const START_DELAY_MS = 3500
-// How long the other players have to get their final answers in after a Stop
-export const STOP_GRACE_MS = 2000
+// The longest the other players have to get their final answers in after a
+// Stop. The round is reviewed sooner if everyone has submitted.
+export const STOP_GRACE_MS = 5000
 // A game with no activity for this long is deleted
 export const EXPIRY_MS = 24 * 60 * 60 * 1000
 
@@ -176,6 +180,7 @@ export class GameRules {
           scores: {},
         }
         await this.store.putAnswers({})
+        await this.store.putSubmitted([])
         return save({
           ...game,
           state: { stage: GameStage.active },
@@ -192,6 +197,7 @@ export class GameRules {
         const previousRounds = [...(game.previousRounds ?? [])]
         const reviewed = previousRounds.pop() ?? null
         await this.store.putAnswers({})
+        await this.store.putSubmitted([])
         return save({
           ...game,
           state: { stage: reviewed ? GameStage.review : GameStage.pre },
@@ -206,7 +212,15 @@ export class GameRules {
         }
         const answers = (await this.store.getAnswers()) ?? {}
         await this.store.putAnswers({ ...answers, [me]: { ...answers[me], ...msg.answers } })
-        return conn.send({ type: 'answersSaved', final: msg.final ?? false })
+        conn.send({ type: 'answersSaved', final: msg.final ?? false })
+        // Once everyone has sent their final answers there is no need to wait
+        // out the rest of the grace window
+        if (msg.final && round.timeEnded) {
+          const submitted = new Set([...((await this.store.getSubmitted()) ?? []), me])
+          await this.store.putSubmitted([...submitted])
+          if (game.players.every((p) => submitted.has(p.id))) await this.review(game, round)
+        }
+        return
       }
       case 'setProgress': {
         if (stage !== GameStage.active || !round) return fail('refused', 'No round is in play')
@@ -303,6 +317,7 @@ export class GameRules {
     const scores = getInitialScores(answers, round.letter, game.config, game.players)
 
     await this.store.putAnswers({})
+    await this.store.putSubmitted([])
     await this.save({
       ...game,
       state: { stage: GameStage.review },

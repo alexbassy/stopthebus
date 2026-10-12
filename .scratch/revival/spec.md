@@ -55,7 +55,7 @@ Read from the Fauna-based code; the Durable Object must reproduce it unless note
 - **Cancel start** (active stage only): undoes the start. The game returns to review if an earlier round exists, otherwise to the pre stage.
 - **Answers:** each player saves answers one category at a time while the round is active, and can fetch their own saved answers to restore their inputs after a reload. **Other players' answers must not be sent to anyone until review.**
 - **Progress:** as a player completes categories the other players see only which category that player is on. This drives the lanes view.
-- **Stop** (active stage only): records the stopper and the end time, and the stage moves toward review. There is a 2 second grace window for the other players' final answers to arrive. Missing answers become empty strings. Initial scores are computed (letter match, alliteration, duplicates), stored answers are cleared, and the stage becomes review with all answers and scores visible.
+- **Stop** (active stage only): records the stopper and the end time, and the stage moves toward review. There is a 5 second grace window for the other players' final answers to arrive; the round is reviewed sooner once every player has submitted. Missing answers become empty strings. Initial scores are computed (letter match, alliteration, duplicates), stored answers are cleared, and the stage becomes review with all answers and scores visible.
 - **Review:** any player can change any player's score for a category.
 - **Dropped:** the client auto-retries a lost connection every 2 seconds, up to 15 times, and shows a connection indicator.
 

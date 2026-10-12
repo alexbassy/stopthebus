@@ -16,6 +16,8 @@ export class Game extends DurableObject<Bindings> {
       put: (game) => this.ctx.storage.put('game', game),
       getAnswers: () => this.ctx.storage.get<RoundAnswers>('answers'),
       putAnswers: (answers) => this.ctx.storage.put('answers', answers),
+      getSubmitted: () => this.ctx.storage.get<string[]>('submitted'),
+      putSubmitted: (ids) => this.ctx.storage.put('submitted', ids),
       getActivity: () => this.ctx.storage.get<number>('activity'),
       putActivity: (at) => this.ctx.storage.put('activity', at),
       clear: () => this.ctx.storage.deleteAll(),
