@@ -12,11 +12,13 @@ import { fromEvent, startWith } from 'rxjs'
 
 import Dialog from '@/components/Dialog'
 import EndRoundOverlay from '@/components/overlay/EndRoundOverlay'
+import { clearAnswerBackup, loadAnswerBackup, saveAnswerBackup } from '@/helpers/answerBackup'
 import {
   manager,
   useGameConfigCategories,
   useGameRoundEndingPlayer,
   useGameRoundLetter,
+  useGameRoundTimeStarted,
 } from '@/hooks/database'
 
 import useScrollToTop from '../hooks/useScrollToTop'
@@ -36,6 +38,9 @@ export default function ActiveRound() {
   const gameConfigCategories = useGameConfigCategories()
   const gameRoundLetter = useGameRoundLetter()
   const gameRoundEndingPlayer = useGameRoundEndingPlayer()
+  // Identifies this round, so a backup from another round is never restored
+  const timeStarted = useGameRoundTimeStarted()
+  const roundKey = timeStarted ? `${manager.gameId}:${timeStarted}` : null
   const [values, setValues] = useState<Answers>({})
   const valuesRef = useRef<Answers>({})
   const [hasEnded, setHasEnded] = useState<boolean>(false)
@@ -43,8 +48,9 @@ export default function ActiveRound() {
   const [questionPositions, setQuestionPositions] = useState<QuestionPositions>({})
 
   useEffect(() => {
+    // What the player has typed here wins over the server's older copy
     manager.getRoundAnswers().subscribe((answers) => {
-      setValues(answers)
+      setValues((current) => ({ ...answers, ...current }))
     })
 
     return () => setValues({})
@@ -53,6 +59,16 @@ export default function ActiveRound() {
   useEffect(() => {
     valuesRef.current = values
   }, [values])
+
+  // Restore this device's backup after a reload, and keep it current. It is
+  // newer than anything the server has, as the server only hears at Stop.
+  useEffect(() => {
+    if (roundKey) setValues((current) => ({ ...current, ...loadAnswerBackup(roundKey) }))
+  }, [roundKey])
+
+  useEffect(() => {
+    if (roundKey && Object.keys(values).length) saveAnswerBackup(roundKey, values)
+  }, [roundKey, values])
 
   useScrollToTop()
 
@@ -97,10 +113,19 @@ export default function ActiveRound() {
     setHasEnded(true)
     // Everyone's answers go up in one message when the round is stopped, and
     // are resent until the server confirms them
-    manager.submitRoundAnswers(values)
-  }, [gameRoundEndingPlayer, hasEnded, values])
+    // (after a reload the state may not hold the restored answers yet)
+    manager.submitRoundAnswers({ ...(roundKey && loadAnswerBackup(roundKey)), ...values })
+  }, [gameRoundEndingPlayer, hasEnded, values, roundKey])
 
-  useEffect(() => () => manager.cancelSubmit(), [])
+  // Leaving the round, whether the answers got through or the round moved on
+  // without them, there is nothing left to restore
+  useEffect(
+    () => () => {
+      manager.cancelSubmit()
+      clearAnswerBackup()
+    },
+    [],
+  )
 
   // Best-effort save for a player who switches away or reloads mid-round
   useEffect(() => {
