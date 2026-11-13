@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@stopthebus/shared": "workspace:*",
-    "hono": "^4.13.13",
+    "hono": "^4.13.16",
     "human-readable-ids": "^1.0.4"
   },
   "devDependencies": {
